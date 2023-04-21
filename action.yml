@@ -1,5 +1,5 @@
 name: 'action-gpt'
-description: 'GPT-3 reviews your PR'
+description: 'Review your PRs with a GPT Model from Azure Open AI'
 branding:
   icon: 'eye'
   color: 'gray-dark'
@@ -37,7 +37,12 @@ inputs:
     required: false
     type: string
   FILE_SUMMARY:
-    description: 'Include summary of each changed file'
+    description: 'Include summary of changed file'
+    default: false
+    required: false
+    type: string
+  FILE_SUMMARY_FULL:
+    description: 'Include individual summary of each changed file'
     default: true
     required: false
     type: string
@@ -48,6 +53,51 @@ inputs:
     type: string
   BUG_SUMMARY:
     description: 'Include summary of potential bugs'
+    default: true
+    required: false
+    type: string
+  RISK_SUMMARY:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  RISK_ROLLBACK:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  RISK_BREAKING:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  RISK_FLAGGED:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  SUMMARY_CONFIG:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  SUMMARY_SCHEMA:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  SUMMARY_FEATURES:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  SUMMARY_FLAGS:
+    description: 'Include summary of potential breaking changes'
+    default: true
+    required: false
+    type: string
+  SUMMARY_INCIDENTS:
+    description: 'Include summary of potential breaking changes'
     default: true
     required: false
     type: string
@@ -66,7 +116,11 @@ runs:
           python3 -m venv .env
           source .env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install requests openai
+          python -m pip install \
+            requests \
+            openai \
+            pyyaml
+
       - name: Set env.BRANCH
         shell: bash
         if: ${{ github.action_ref == '' }}
@@ -96,3 +150,12 @@ runs:
           FILE_SUMMARY: ${{ inputs.FILE_SUMMARY }}
           TEST_SUMMARY: ${{ inputs.TEST_SUMMARY }}
           BUG_SUMMARY: ${{ inputs.BUG_SUMMARY }}
+          RISK_SUMMARY: ${{ inputs.RISK_SUMMARY }}
+          RISK_ROLLBACK: ${{ inputs.RISK_ROLLBACK }}
+          RISK_BREAKING: ${{ inputs.RISK_BREAKING }}
+          RISK_FLAGGED: ${{ inputs.RISK_FLAGGED }}
+          SUMMARY_CONFIG: ${{ inputs.SUMMARY_CONFIG }}
+          SUMMARY_SCHEMA: ${{ inputs.SUMMARY_SCHEMA }}
+          SUMMARY_FEATURES: ${{ inputs.SUMMARY_FEATURES }}
+          SUMMARY_FLAGS: ${{ inputs.SUMMARY_FLAGS }}
+          SUMMARY_INCIDENTS: ${{ inputs.SUMMARY_INCIDENTS }}

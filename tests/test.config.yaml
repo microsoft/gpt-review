@@ -1,0 +1,20 @@
+# This configuration file generates sample.report.md
+file_summaries: true
+file_changes_summary: true
+test_coverage: true
+
+report:
+  Summary by GPT-4:
+    _:
+    Overview:
+      _: What is the main goal of this PR?
+      Suggestions: Any suggestions for improving the changes in this PR?
+      Configuration Changes: Any configuration changes?
+      Schema Changes: Any schema changes?
+      Features: What features where added?
+      Feature Flags: Any feature flags added?
+      Incidents: Any changes that appear to be in response to incidents?
+    Risks:
+      Rollback Capability: Any concerns about rollback capability (example, typically associated with schema-related changes)?
+      Breaking Changes: Detect breaking changes in a git diff. Breaking changes are commonly caused by new parameters to public functions which are not optional nor have a default value.
+      Flagged Risks: Anything flagged as a risk in the code/comments itself?
