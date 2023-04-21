@@ -1,0 +1,98 @@
+name: 'action-gpt'
+description: 'GPT-3 reviews your PR'
+branding:
+  icon: 'eye'
+  color: 'gray-dark'
+inputs:
+  GIT_COMMIT_HASH:
+    description: 'SHA of the pull request-head to attach a review comment'
+    required: true
+  GITHUB_TOKEN:
+    description: 'Derivative token for using the GitHub REST API'
+    required: true
+  OPENAI_API_KEY:
+    description: 'OpenAI API Key'
+    required: true
+  OPENAI_ORG_KEY:
+    description: 'OpenAI Organization ID'
+    required: true
+  PR_NUMBER:
+    description: 'The pull request id (ie: 17)'
+    required: true
+  PR_TITLE:
+    description: 'The pull request title'
+    required: true
+  REPOSITORY_NAME:
+    description: 'The repository name (ie: octocat/hello-world)'
+    required: true
+  AZURE_OPENAI_API:
+    description: 'URL of custom Azure Open AI API'
+    required: false
+  AZURE_OPENAI_API_KEY:
+    description: 'Key of custom Azure Open AI API'
+    required: false
+  FULL_SUMMARY:
+    description: 'Include summary of all changes (limited to first 32k tokens)'
+    default: true
+    required: false
+    type: string
+  FILE_SUMMARY:
+    description: 'Include summary of each changed file'
+    default: true
+    required: false
+    type: string
+  TEST_SUMMARY:
+    description: 'Include summary of test coverage'
+    default: true
+    required: false
+    type: string
+  BUG_SUMMARY:
+    description: 'Include summary of potential bugs'
+    default: true
+    required: false
+    type: string
+
+runs:
+  using: "composite"
+  steps:
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install
+        shell: bash
+        run: |
+          sudo apt-get update
+          python3 -m venv .env
+          source .env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install requests openai
+      - name: Set env.BRANCH
+        shell: bash
+        if: ${{ github.action_ref == '' }}
+        run: echo "BRANCH=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF##*/}})" >> $GITHUB_ENV
+
+      - name: Review PR and make comment
+        shell: bash
+        run: |
+          source .env/bin/activate
+
+          curl --request GET --url https://raw.githubusercontent.com/dciborow/action-gpt/$ACTION_REF/review.py > review.py
+
+          python review.py
+        env:
+          ACTION_REF: ${{ github.action_ref || env.BRANCH }}
+          GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
+          GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+          LINK: "https://github.com/${{ inputs.REPOSITORY_NAME }}/pull/${{ inputs.PR_NUMBER }}"
+          OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
+          OPENAI_ORG_KEY: ${{ inputs.OPENAI_ORG_KEY }}
+          PR_TITLE: ${{ inputs.PR_TITLE }}
+          AZURE_OPENAI_API_KEY: ${{ inputs.AZURE_OPENAI_API_KEY || '' }}
+          AZURE_OPENAI_API: ${{ inputs.AZURE_OPENAI_API || '' }}
+          PATCH_PR: ${{ github.event.pull_request.number }}
+          PATCH_REPO: ${{ github.repository }}
+          FULL_SUMMARY: ${{ inputs.FULL_SUMMARY }}
+          FILE_SUMMARY: ${{ inputs.FILE_SUMMARY }}
+          TEST_SUMMARY: ${{ inputs.TEST_SUMMARY }}
+          BUG_SUMMARY: ${{ inputs.BUG_SUMMARY }}
