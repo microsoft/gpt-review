@@ -19,7 +19,8 @@
 				"ryanluker.vscode-coverage-gutters",
 				"bungcip.better-toml",
 				"GitHub.copilot",
-				"GitHub.vscode-github-actions"
+				"GitHub.vscode-github-actions",
+				"ms-vscode.azurecli"
 			],
 			"settings": {
 				"python.defaultInterpreterPath": "/usr/local/bin/python",

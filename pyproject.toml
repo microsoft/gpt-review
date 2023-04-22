@@ -3,7 +3,7 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [project]
-name =  "simple-gpt"
+name =  "easy-gpt"
 authors = [
     {name = "Daniel Ciborowski", email = "dciborow@microsoft.com"},
 ]
@@ -26,6 +26,8 @@ dependencies = [
   'azure-keyvault-secrets',
   'llama-index',
   'httpx',
+  'GitPython',
+  'knack',
   'openai',
   'requests',
   "pyyaml",
@@ -53,7 +55,7 @@ test = [
 ]
 
 [project.scripts]
-gpt = "simple_gpt.main:main"
+gpt = "easy_gpt.main:__main__"
 
 [project.urls]
 Documentation = "https://github.com/dciborow/action-gpt/tree/main#readme"
@@ -61,7 +63,7 @@ Source = "https://github.com/dciborow/action-gpt"
 Tracker = "https://github.com/dciborow/action-gpt/issues"
 
 [tool.flit.module]
-name = "simple_gpt"
+name = "easy_gpt"
 
 [tool.bandit]
 exclude_dirs = ["build","dist","tests","scripts"]
