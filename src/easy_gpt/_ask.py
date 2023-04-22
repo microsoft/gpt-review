@@ -1,8 +1,11 @@
 """Ask GPT a question."""
-import sys
 import logging
 import os
 import time
+from knack import CLICommandsLoader
+from knack.arguments import ArgumentsContext
+from knack.commands import CommandGroup
+
 import openai
 
 from azure.identity import DefaultAzureCredential
@@ -11,19 +14,80 @@ from azure.keyvault.secrets import SecretClient
 
 from openai.error import RateLimitError, InvalidRequestError
 
+from llama_index import (
+    GPTSimpleVectorIndex,
+    LangchainEmbedding,
+    PromptHelper,
+    ServiceContext,
+    LLMPredictor,
+)
+
+from langchain.llms import AzureOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+
+from easy_gpt._command import GPTCommandGroup
+
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def ask(question):
+def _ask(question, max_tokens=100):
     """Ask GPT a question."""
-    return request_goal(question, "Try to answer the following question: ", max_tokens=1000)
+
+    # documents = SimpleDirectoryReader(".").load_data()
+    # index = GPTSimpleVectorIndex.from_documents(documents)
+    # response = index.query(question[0]).response
+
+    response = _request_goal(question[0], max_tokens)
+    return {"response": response}
 
 
-def question():
-    return print("Hello World")
+def _document_indexer(documents):
+    """
+    Create a document indexer.
+
+    Args:
+        documents (List[Document]): The documents to index.
+        azure (bool): Whether to use Azure OpenAI.
+
+    Returns:
+        GPTSimpleVectorIndex: The document indexer.
+    """
+    if os.getenv("AZURE_OPENAI_API_KEY"):
+        _load_azure_openai_context()
+
+        os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
+        llm = AzureOpenAI(  # type: ignore
+            deployment_name="text-davinci-003",
+            model_kwargs={
+                "api_key": openai.api_key,
+                "api_base": openai.api_base,
+                "api_type": "azure",
+                "api_version": "2023-03-15-preview",
+            },
+            max_retries=10,
+        )
+        llm_predictor = LLMPredictor(llm=llm)
+
+        embedding_llm = LangchainEmbedding(
+            OpenAIEmbeddings(
+                document_model_name="text-embedding-ada-002",
+                query_model_name="text-embedding-ada-002",
+            ),  # type: ignore
+            embed_batch_size=1,
+        )
+
+        prompt_helper = PromptHelper(max_input_size=500, num_output=1, max_chunk_overlap=20)
+        service_context = ServiceContext.from_defaults(
+            llm_predictor=llm_predictor,
+            embed_model=embedding_llm,
+            prompt_helper=prompt_helper,
+        )
+        return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
+
+    return GPTSimpleVectorIndex.from_documents(documents)
 
 
-def request_goal(git_diff, goal=None, max_tokens=500) -> str:
+def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
     """
     Request a goal from GPT-4.
 
@@ -41,36 +105,9 @@ def request_goal(git_diff, goal=None, max_tokens=500) -> str:
 {git_diff}
 """
 
-    response = call_gpt(prompt, max_tokens=max_tokens)
+    response = _call_gpt(prompt, max_tokens=max_tokens)
     logging.info(response)
     return response
-
-
-def call_gpt(
-    prompt: str = "",
-    temperature=0.10,
-    max_tokens=500,
-    top_p=1,
-    frequency_penalty=0.5,
-    presence_penalty=0.0,
-    messages=None,
-) -> str:
-    """Call GPT-3 or GPT-4 depending on the model.
-
-    Args:
-        prompt (str): The prompt to send to GPT-3 or GPT-4.
-        temperature (float, optional): The temperature to use. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 500.
-        top_p (float, optional): The top_p to use. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
-
-    Returns:
-        str: The response from GPT-3 or GPT-4.
-    """
-    _load_azure_openai_context()
-
-    return call_gpt4(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, messages=messages)
 
 
 def _load_azure_openai_context():
@@ -93,7 +130,7 @@ def _load_azure_openai_context():
         openai.api_key = secret_client.get_secret("azure-openai-key").value
 
 
-def call_gpt4(
+def _call_gpt(
     prompt: str,
     temperature=0.10,
     max_tokens=500,
@@ -118,8 +155,9 @@ def call_gpt4(
     Returns:
         str: The response from GPT-4.
     """
+    _load_azure_openai_context()
+
     if len(prompt) > 32767:
-        logging.warning("Prompt too long, truncating")
         return _batch_large_changes(
             prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages
         )
@@ -127,25 +165,24 @@ def call_gpt4(
     messages = messages or [{"role": "user", "content": prompt}]
     try:
         engine = _get_engine(prompt)
-
         logging.info("Model Selected based on prompt size: %s", engine)
+
         logging.info("Prompt sent to GPT: %s\n", prompt)
         completion = openai.ChatCompletion.create(
             engine=engine,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=temperature,
+            messages=messages,
             max_tokens=max_tokens,
+            temperature=temperature,
             top_p=top_p,
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
-        return completion.choices[0].message.content
-    except InvalidRequestError:
-        return call_gpt4(prompt[:32767], temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
+        return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
         if retry < 5:
+            logging.warn("Call to GPT failed due to rate limit, retry attempt: %s", retry)
             time.sleep(retry * 5)
-            return call_gpt4(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
+            return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
 
 
@@ -160,14 +197,13 @@ def _batch_large_changes(
     messages=None,
 ) -> str:
     """Placeholder for batching large changes to GPT-4."""
-
     try:
         logging.warning("Prompt too long, batching")
         output = ""
         for i in range(0, len(prompt), 32767):
-            logging.debug(f"Batching {i} to {i+32767}")
+            logging.debug("Batching %s to %s", i, i + 32767)
             batch = prompt[i : i + 32767]
-            output += call_gpt4(
+            output += _call_gpt(
                 batch,
                 temperature=temperature,
                 max_tokens=max_tokens,
@@ -178,11 +214,11 @@ def _batch_large_changes(
                 messages=messages,
             )
 
-        return request_goal(output, "Summarize the large file batches")
+        return _request_goal(output, "Summarize the large file batches")
     except RateLimitError:
         logging.warning("Prompt too long, truncating")
         prompt = prompt[:32767]
-        return call_gpt4(
+        return _call_gpt(
             prompt,
             temperature=temperature,
             max_tokens=max_tokens,
@@ -204,3 +240,26 @@ def _get_engine(prompt: str) -> str:
     if len(prompt) > 8000:
         return "gpt-4-32k"
     return "gpt-4" if len(prompt) > 4000 else "gpt-35-turbo"
+
+
+def _load_ask_command(self):
+    with CommandGroup(self, "", "easy_gpt._ask#{}") as group:
+        group.command("ask", "_ask", is_preview=True)
+
+
+def _load_ask_args(self):
+    with ArgumentsContext(self, "ask") as args:
+        args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
+        args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
+
+
+class AskCommandGroup(GPTCommandGroup):
+    """Ask Command Group."""
+
+    @staticmethod
+    def load_command_table(loader: CLICommandsLoader):
+        _load_ask_command(loader)
+
+    @staticmethod
+    def load_arguments(loader: CLICommandsLoader):
+        _load_ask_args(loader)

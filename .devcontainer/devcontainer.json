@@ -1,42 +1,45 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.222.0/containers/python-3-miniconda
 {
-	"name": "Python Environment",
-	"image": "mcr.microsoft.com/devcontainers/python:3",
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"editorconfig.editorconfig",
-				"github.vscode-pull-request-github",
-				"ms-azuretools.vscode-docker",
-				"ms-python.python",
-				"ms-python.vscode-pylance",
-				"ms-python.pylint",
-				"ms-python.isort",
-				"ms-python.flake8",
-				"ms-python.black-formatter",
-				"ms-vsliveshare.vsliveshare",
-				"ryanluker.vscode-coverage-gutters",
-				"bungcip.better-toml",
-				"GitHub.copilot",
-				"GitHub.vscode-github-actions",
-				"ms-vscode.azurecli"
-			],
-			"settings": {
-				"python.defaultInterpreterPath": "/usr/local/bin/python",
-				"black-formatter.path": [
-					"/usr/local/py-utils/bin/black"
-				],
-				"pylint.path": [
-					"/usr/local/py-utils/bin/pylint"
-				],
-				"flake8.path": [
-					"/usr/local/py-utils/bin/flake8"
-				],
-				"isort.path": [
-					"/usr/local/py-utils/bin/isort"
-				]
-			}
-		}
-	}
+  "name": "Python Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "editorconfig.editorconfig",
+        "github.vscode-pull-request-github",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.pylint",
+        "ms-python.isort",
+        "ms-python.flake8",
+        "ms-python.black-formatter",
+        "ms-vsliveshare.vsliveshare",
+        "ryanluker.vscode-coverage-gutters",
+        "bungcip.better-toml",
+        "GitHub.copilot",
+        "GitHub.vscode-github-actions",
+        "ms-vscode.azurecli"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "black-formatter.path": [
+          "/usr/local/py-utils/bin/black"
+        ],
+        "pylint.path": [
+          "/usr/local/py-utils/bin/pylint"
+        ],
+        "flake8.path": [
+          "/usr/local/py-utils/bin/flake8"
+        ],
+        "isort.path": [
+          "/usr/local/py-utils/bin/isort"
+        ]
+      }
+    }
+  },
+  "features": {
+    "azure-cli": "latest"
+  }
 }
