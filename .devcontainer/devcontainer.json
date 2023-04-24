@@ -2,7 +2,10 @@
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.222.0/containers/python-3-miniconda
 {
   "name": "Python Environment",
-  "image": "mcr.microsoft.com/devcontainers/python:3",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -41,5 +44,6 @@
   },
   "features": {
     "azure-cli": "latest"
-  }
+  },
+  "onCreateCommand": "pip install -e ."
 }

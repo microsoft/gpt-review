@@ -1,15 +1,9 @@
-"""GPT CLI"""
-import os
+"""The GPT CLI entry point."""
 import sys
-from collections import OrderedDict
 
-from knack import CLI, CLICommandsLoader
 from knack.help_files import helps
 
-import easy_gpt
-from easy_gpt._ask import AskCommandGroup
-from easy_gpt._gpt_cli import GPTCLI, GPTCommandsLoader, cli
-from easy_gpt._git import GitCommandGroup
+from easy_gpt._gpt_cli import cli
 
 
 def _help_text(help_type, short_summary) -> str:

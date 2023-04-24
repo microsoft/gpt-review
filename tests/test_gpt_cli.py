@@ -4,6 +4,8 @@ import pytest
 import subprocess
 import sys
 
+from easy_gpt._gpt_cli import cli
+
 ARGS = [
     "--version",
     "--help",
@@ -15,7 +17,8 @@ ARGS = [
 
 
 @pytest.mark.parametrize("command", ARGS)
-def test_gpt_cli(command):
+@pytest.mark.integration
+def test_int_gpt_cli(command):
     """Test gpt --version"""
     result = subprocess.run(
         ["gpt", command],
@@ -38,17 +41,25 @@ def test_gpt_cli(command):
 #     assert "Easily interact with GPT APIs." in result.stdout.decode("utf-8")
 
 
-# def gpt_cli_test(command):
-#     os.environ["GPT_ASK_COMMANDS"] = "1"
+def gpt_cli_test(command):
+    os.environ["GPT_ASK_COMMANDS"] = "1"
 
-#     sys.argv[1:] = command.split(" ")
-#     exit_code = cli()
-#     assert exit_code == 0
+    sys.argv[1:] = command.split(" ")
+
+    if command == "--help":
+        with pytest.raises(SystemExit):
+            cli()
+    else:
+        exit_code = cli()
+        assert exit_code == 0
 
 
-# @pytest.mark.parametrize("command", ARGS)
-# def test_gpt_cli(command):
-#     gpt_cli_test(command)
+@pytest.mark.parametrize(
+    "command",
+    ARGS,
+)
+def test_gpt_cli(command):
+    gpt_cli_test(command)
 
 
 # @pytest.mark.parametrize("command", ARGS)

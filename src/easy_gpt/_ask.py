@@ -12,7 +12,7 @@ from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
 
-from openai.error import RateLimitError, InvalidRequestError
+from openai.error import RateLimitError
 
 from llama_index import (
     GPTSimpleVectorIndex,
