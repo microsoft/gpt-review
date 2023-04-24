@@ -11,8 +11,6 @@ ARGS = [
     "--help",
     "ask --help",
     "ask how are you",
-    # "git --help",
-    # "git status",
 ]
 
 
