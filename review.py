@@ -6,16 +6,11 @@ import time
 import sys
 import requests
 import openai
-<<<<<<< HEAD
-=======
 import yaml
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
 from openai.error import RateLimitError, InvalidRequestError
 
 
-<<<<<<< HEAD
-=======
 CHECKS = {
     "SUMMARY_CHECKS": [
         {
@@ -71,7 +66,6 @@ CHECKS = {
 }
 
 
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 class GitFile:
     """A git file with its diff contents."""
 
@@ -126,19 +120,11 @@ def call_davinci(
 
     Args:
         prompt (str): The prompt to send to GPT-3.
-<<<<<<< HEAD
-        temperature (float, optional): The temperature of the model. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to return. Defaults to 312.
-        top_p (float, optional): The top_p of the model. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty of the model. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty of the model. Defaults to 0.0.
-=======
         temperature (float): The temperature of the model. Defaults to 0.10.
         max_tokens (int): The maximum number of tokens to return. Defaults to 312.
         top_p (float): The top_p of the model. Defaults to 1.
         frequency_penalty (float): The frequency penalty of the model. Defaults to 0.5.
         presence_penalty (float): The presence penalty of the model. Defaults to 0.0.
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
     Returns:
         str: The response from the model.
@@ -155,7 +141,7 @@ def call_davinci(
         frequency_penalty=frequency_penalty,
         presence_penalty=presence_penalty,
     )
-    return response["choices"][0]["text"]
+    return response["choices"][0]["text"]  # type: ignore
 
 
 def call_gpt3(
@@ -171,21 +157,12 @@ def call_gpt3(
 
     Args:
         prompt (str): The prompt to send to GPT-3.
-<<<<<<< HEAD
-        temperature (float, optional): The temperature of the model. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to return. Defaults to 312.
-        top_p (float, optional): The top_p of the model. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty of the model. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty of the model. Defaults to 0.0.
-        retry (int, optional): The number of retries. Defaults to 0.
-=======
         temperature (float): The temperature of the model. Defaults to 0.10.
         max_tokens (int): The maximum number of tokens to return. Defaults to 312.
         top_p (float): The top_p of the model. Defaults to 1.
         frequency_penalty (float): The frequency penalty of the model. Defaults to 0.5.
         presence_penalty (float): The presence penalty of the model. Defaults to 0.0.
         retry (int): The number of retries. Defaults to 0.
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
     Returns:
         str: The response from the model.
@@ -201,8 +178,8 @@ def call_gpt3(
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
-        logging.info(completion.choices[0].message.content)
-        return completion.choices[0].message.content
+        logging.info(completion.choices[0].message.content)  # type: ignore
+        return completion.choices[0].message.content  # type: ignore
     except InvalidRequestError as error:
         if retry < 5:
             time.sleep(retry * 5)
@@ -219,11 +196,7 @@ def _batch_gpt3(prompt: str) -> str:
 
     Args:
         prompt (str): The prompt to send to GPT-3.
-<<<<<<< HEAD
-        batch_size (int, optional): The number of prompts to send at once. Defaults to 1.
-=======
         batch_size (int): The number of prompts to send at once. Defaults to 1.
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
     Returns:
         str: The response from GPT-3.
@@ -253,39 +226,24 @@ def call_gpt4(
     frequency_penalty=0.5,
     presence_penalty=0.0,
     retry=0,
-<<<<<<< HEAD
-=======
     messages=None,
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 ) -> str:
     """
     Call GPT-4 with the given prompt.
 
     Args:
         prompt (str): The prompt to send to GPT-4.
-<<<<<<< HEAD
-        temperature (float, optional): The temperature to use. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 500.
-        top_p (float, optional): The top_p to use. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
-        retry (int, optional): The number of times to retry the request. Defaults to 0.
-=======
         temperature (float): The temperature to use. Defaults to 0.10.
         max_tokens (int): The maximum number of tokens to generate. Defaults to 500.
         top_p (float): The top_p to use. Defaults to 1.
         frequency_penalty (float): The frequency penalty to use. Defaults to 0.5.
         presence_penalty (float): The presence penalty to use. Defaults to 0.0.
         retry (int): The number of times to retry the request. Defaults to 0.
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
     Returns:
         str: The response from GPT-4.
     """
-<<<<<<< HEAD
-=======
     messages = messages or [{"role": "user", "content": prompt}]
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
     try:
         engine = "gpt-4-32k"
 
@@ -303,7 +261,7 @@ def call_gpt4(
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
         )
-        return completion.choices[0].message.content
+        return completion.choices[0].message.content  # type: ignore
     except InvalidRequestError:
         return call_gpt4(prompt[:32767], temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
     except RateLimitError as error:
@@ -314,38 +272,23 @@ def call_gpt4(
 
 
 def call_gpt(
-<<<<<<< HEAD
-    prompt: str,
-=======
     prompt: str = "",
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
     temperature=0.10,
     max_tokens=500,
     top_p=1,
     frequency_penalty=0.5,
     presence_penalty=0.0,
-<<<<<<< HEAD
-=======
     messages=None,
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 ) -> str:
     """Call GPT-3 or GPT-4 depending on the model.
 
     Args:
         prompt (str): The prompt to send to GPT-3 or GPT-4.
-<<<<<<< HEAD
-        temperature (float, optional): The temperature to use. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 500.
-        top_p (float, optional): The top_p to use. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
-=======
         temperature (float): The temperature to use. Defaults to 0.10.
         max_tokens (int): The maximum number of tokens to generate. Defaults to 500.
         top_p (float): The top_p to use. Defaults to 1.
         frequency_penalty (float): The frequency penalty to use. Defaults to 0.5.
         presence_penalty (float): The presence penalty to use. Defaults to 0.0.
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
     Returns:
         str: The response from GPT-3 or GPT-4.
@@ -356,11 +299,7 @@ def call_gpt(
         openai.api_version = "2023-03-15-preview"
         openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
 
-<<<<<<< HEAD
-        return call_gpt4(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty)
-=======
         return call_gpt4(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, messages=messages)
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 
     openai.api_key = os.getenv("OPENAI_API_KEY")
     return call_gpt3(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty)
@@ -450,26 +389,6 @@ Summarize the changes to the file {git_file.file_name}.
 """
 
 
-<<<<<<< HEAD
-def summarize_pr(git_diff):
-    """Summarize a git diff.
-
-    Args:
-        git_diff (str): The git diff to summarize.
-
-    Returns:
-        str: The summary of the git diff.
-    """
-    gpt4_big_prompot = f"""
-{git_diff}
-"""
-    response = call_gpt(gpt4_big_prompot)
-    logging.info(response)
-    return response
-
-
-=======
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 def summarize_bugs_in_pr(git_diff):
     """
     Summarize bugs that may be introduced.
@@ -490,8 +409,6 @@ Summarize bugs that may be introduced.
     return response
 
 
-<<<<<<< HEAD
-=======
 def request_goal(git_diff, goal):
     """
     Request a goal from GPT-4.
@@ -514,28 +431,12 @@ def request_goal(git_diff, goal):
     return response
 
 
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 def summarize_files(git_diff):
     """Summarize git files."""
     summary = """
 # Summary by GPT-4
 """
 
-<<<<<<< HEAD
-    if(os.getenv("FULL_SUMMARY", "true").lower() == "true"):
-        summary += f"""
-{summarize_pr(git_diff)}
-"""
-
-    if(os.getenv("FILE_SUMMARY", "true").lower() == "true"):
-        summary += """
-## Changes
-"""
-        for diff in split_diff(git_diff):
-            summary += summarize_file(diff)
-
-    if(os.getenv("TEST_SUMMARY", "true").lower() == "true"):
-=======
     summary += summarize_pr(git_diff)
 
     if os.getenv("FILE_SUMMARY", "true").lower() == "true":
@@ -553,27 +454,17 @@ def summarize_files(git_diff):
 """
 
     if os.getenv("TEST_SUMMARY", "true").lower() == "true":
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
         summary += f"""
 ## Test Coverage
 {summarize_test_coverage(git_diff)}
 """
 
-<<<<<<< HEAD
-    if(os.getenv("BUG_SUMMARY", "true").lower() == "true"):
-=======
     if os.getenv("BUG_SUMMARY", "true").lower() == "true":
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
         summary += f"""
 ## Potential Bugs
 {summarize_bugs_in_pr(git_diff)}
 """
 
-<<<<<<< HEAD
-    return summary
-
-
-=======
     summary += summarize_risk(git_diff)
 
     return summary
@@ -695,7 +586,6 @@ def check_goals(git_diff, checks, indent="###"):
     )
 
 
->>>>>>> 2347e7b (Initialize dciborow/additional-checks)
 def get_review(pr_patch):
     """Get a review of a PR.
 
@@ -721,6 +611,8 @@ def _post_pr_comment(review):
     data = json.dumps(data)
 
     pr_link = os.getenv("LINK")
+    if not isinstance(pr_link, str):
+        raise ValueError("PR link not found, set the LINK environment variable.")
     owner = pr_link.split("/")[-4]
     repo = pr_link.split("/")[-3]
     pr_number = pr_link.split("/")[-1]
