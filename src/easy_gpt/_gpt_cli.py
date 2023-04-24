@@ -1,11 +1,11 @@
 import os
 import sys
 
-
 from knack import CLI, CLICommandsLoader
 
-
 from easy_gpt import __version__
+
+
 CLI_NAME = "gpt"
 
 
