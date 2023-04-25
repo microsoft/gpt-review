@@ -6,15 +6,18 @@ import sys
 
 from easy_gpt._gpt_cli import cli
 
-ARGS = [
+ROOT_COMMANDS = [
     "--version",
     "--help",
+]
+
+ASK_COMMANDS = [
     "ask --help",
     "ask how are you",
     "ask --doc review.py what does this file do?",
-    # "git --help",
-    # "git status",
 ]
+
+ARGS = ROOT_COMMANDS + ASK_COMMANDS
 
 
 @pytest.mark.parametrize("command", ARGS)
