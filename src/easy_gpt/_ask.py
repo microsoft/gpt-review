@@ -51,13 +51,13 @@ def _ask(question, doc=None, max_tokens=100):
     """Ask GPT a question."""
 
     if doc:
-        response = _ask_doc(question, doc, max_tokens)
+        response = _ask_doc(question, doc)
     else:
         response = _request_goal(question[0], max_tokens)
     return {"response": response}
 
 
-def _ask_doc(question, doc, max_tokens=100):
+def _ask_doc(question, doc):
     """Ask GPT a question."""
     documents = SimpleDirectoryReader(input_files=[doc]).load_data()
     index = _document_indexer(documents)
