@@ -4,7 +4,7 @@ import pytest
 import subprocess
 import sys
 
-from review_gpt._gpt_cli import cli
+from gpt_review._gpt_cli import cli
 
 ROOT_COMMANDS = [
     "--version",
