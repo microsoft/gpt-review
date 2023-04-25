@@ -20,33 +20,10 @@ from easy_gpt._command import GPTCommandGroup
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, max_tokens=100):
+def _ask(question, temperature=0.7, max_tokens=100):
     """Ask GPT a question."""
-    response = _call_gpt(prompt=question[0], max_tokens=max_tokens)
+    response = _call_gpt(prompt=question[0], temperature=temperature, max_tokens=max_tokens)
     return {"response": response}
-
-
-def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
-    """
-    Request a goal from GPT-4.
-
-    Args:
-        git_diff (str): The git diff to split.
-        goal (str): The goal to request from GPT-4.
-
-    Returns:
-        response (str): The response from GPT-4.
-    """
-    goal = goal or ""
-    prompt = f"""
-{goal}
-
-{git_diff}
-"""
-
-    response = _call_gpt(prompt, max_tokens=max_tokens)
-    logging.info(response)
-    return response
 
 
 def _load_azure_openai_context():
@@ -152,8 +129,12 @@ def _batch_large_changes(
                 retry=retry,
                 messages=messages,
             )
+        prompt = f"""
+"Summarize the large file batches"
 
-        return _request_goal(output, "Summarize the large file batches")
+{output}
+"""
+        return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages)
     except RateLimitError:
         logging.warning("Prompt too long, truncating")
         prompt = prompt[:32767]
@@ -193,4 +174,5 @@ class AskCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
+            args.argument("temperature", type=int, help="The maximum number of tokens to generate.")
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
