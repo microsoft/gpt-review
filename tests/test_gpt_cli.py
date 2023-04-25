@@ -1,4 +1,4 @@
-"""Pytest for easy_gpt/main.py"""
+"""Pytest for ask_gpt/main.py"""
 import os
 import pytest
 import subprocess
