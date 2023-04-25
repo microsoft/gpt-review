@@ -1,4 +1,4 @@
-name: 'ask-gpt'
+name: 'gpt-review'
 description: 'Review your PRs with a GPT Model from Azure Open AI'
 branding:
   icon: 'eye'
