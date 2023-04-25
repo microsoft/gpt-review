@@ -20,9 +20,9 @@ from easy_gpt._command import GPTCommandGroup
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, temperature=0.7, max_tokens=100):
+def _ask(question, max_tokens=100):
     """Ask GPT a question."""
-    response = _call_gpt(prompt=question[0], temperature=temperature, max_tokens=max_tokens)
+    response = _call_gpt(prompt=question[0], max_tokens=max_tokens)
     return {"response": response}
 
 
@@ -174,5 +174,4 @@ class AskCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
-            args.argument("temperature", type=int, help="The maximum number of tokens to generate.")
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
