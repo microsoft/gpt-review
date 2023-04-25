@@ -11,6 +11,7 @@ ARGS = [
     "--help",
     "ask --help",
     "ask how are you",
+    """ask --doc PRInsights.docx "can you summarize what PR Insights is" --output tsv""",
     # "git --help",
     # "git status",
 ]
