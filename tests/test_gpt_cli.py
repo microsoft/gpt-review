@@ -1,10 +1,10 @@
-"""Pytest for easy_gpt/main.py"""
+"""Pytest for ask_gpt/main.py"""
 import os
 import pytest
 import subprocess
 import sys
 
-from easy_gpt._gpt_cli import cli
+from ask_gpt._gpt_cli import cli
 
 ROOT_COMMANDS = [
     "--version",

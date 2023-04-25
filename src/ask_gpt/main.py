@@ -3,7 +3,7 @@ import sys
 
 from knack.help_files import helps
 
-from easy_gpt._gpt_cli import cli
+from ask_gpt._gpt_cli import cli
 
 
 def _help_text(help_type, short_summary) -> str:

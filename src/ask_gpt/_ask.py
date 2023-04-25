@@ -15,7 +15,7 @@ from azure.keyvault.secrets import SecretClient
 from openai.error import RateLimitError
 
 
-from easy_gpt._command import GPTCommandGroup
+from ask_gpt._command import GPTCommandGroup
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
@@ -167,7 +167,7 @@ class AskCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader):
-        with CommandGroup(loader, "", "easy_gpt._ask#{}") as group:
+        with CommandGroup(loader, "", "ask_gpt._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
     @staticmethod
