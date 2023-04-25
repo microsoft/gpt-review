@@ -148,6 +148,8 @@ def _llama_agent_chain(index, question):
 class AzureOpenAIChat(AzureOpenAI):
     """Azure OpenAI Chat API."""
 
+    temperature: float = 0.3
+
     @property
     @override
     def _default_params(self):
