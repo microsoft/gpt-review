@@ -167,7 +167,7 @@ class AskCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader):
-        with CommandGroup(loader, "", "easy_gpt._ask#{}") as group:
+        with CommandGroup(loader, "", "gpt_review._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
     @staticmethod
