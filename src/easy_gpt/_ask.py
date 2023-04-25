@@ -181,24 +181,16 @@ def _get_engine(prompt: str) -> str:
     return "gpt-4" if len(prompt) > 4000 else "gpt-35-turbo"
 
 
-def _load_ask_command(self):
-    with CommandGroup(self, "", "easy_gpt._ask#{}") as group:
-        group.command("ask", "_ask", is_preview=True)
-
-
-def _load_ask_args(self):
-    with ArgumentsContext(self, "ask") as args:
-        args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
-        args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
-
-
 class AskCommandGroup(GPTCommandGroup):
     """Ask Command Group."""
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader):
-        _load_ask_command(loader)
+        with CommandGroup(loader, "", "easy_gpt._ask#{}") as group:
+            group.command("ask", "_ask", is_preview=True)
 
     @staticmethod
     def load_arguments(loader: CLICommandsLoader):
-        _load_ask_args(loader)
+        with ArgumentsContext(loader, "ask") as args:
+            args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
+            args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
