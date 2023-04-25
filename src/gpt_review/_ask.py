@@ -2,6 +2,7 @@
 import logging
 import os
 import time
+from typing_extensions import override
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
@@ -14,16 +15,174 @@ from azure.keyvault.secrets import SecretClient
 
 from openai.error import RateLimitError
 
+from llama_index import (
+    GPTSimpleVectorIndex,
+    LangchainEmbedding,
+    ServiceContext,
+    LLMPredictor,
+    SimpleDirectoryReader,
+)
+
+from langchain.llms import AzureOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+
+from llama_index import LLMPredictor
+
+from langchain.chains.conversation.memory import ConversationBufferMemory
+
+
+from llama_index.langchain_helpers.agents import (
+    LlamaToolkit,
+    create_llama_chat_agent,
+    IndexToolConfig,
+)
 
 from gpt_review._command import GPTCommandGroup
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, max_tokens=100):
+def _ask(question, doc=None, max_tokens=100):
     """Ask GPT a question."""
-    response = _call_gpt(prompt=question[0], max_tokens=max_tokens)
+
+    if doc:
+        response = _ask_doc(question, doc)
+    else:
+        response = _request_goal(question[0], max_tokens)
     return {"response": response}
+
+
+def _ask_doc(question, doc):
+    """Ask GPT a question."""
+    documents = SimpleDirectoryReader(input_files=[doc]).load_data()
+    index = _document_indexer(documents)
+
+    return index.query(question[0]).response  # type: ignore
+
+
+def _document_indexer(documents):
+    """
+    Create a document indexer.
+
+    Args:
+        documents (List[Document]): The documents to index.
+        azure (bool): Whether to use Azure OpenAI.
+
+    Returns:
+        GPTSimpleVectorIndex: The document indexer.
+    """
+    if os.getenv("AZURE_OPENAI_API_KEY"):
+        _load_azure_openai_context()
+
+        os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
+        llm = AzureOpenAIChat(  # type: ignore
+            deployment_name="gpt-35-turbo",  # "gpt-35-turbo", # "text-davinci-003",
+            model_kwargs={
+                "api_key": openai.api_key,
+                "api_base": openai.api_base,
+                "api_type": "azure",
+                "api_version": "2023-03-15-preview",
+            },
+            max_retries=10,
+        )
+        llm_predictor = LLMPredictor(llm=llm)
+
+        embedding_llm = LangchainEmbedding(
+            OpenAIEmbeddings(
+                document_model_name="text-embedding-ada-002",
+                query_model_name="text-embedding-ada-002",
+            ),  # type: ignore
+            embed_batch_size=1,
+        )
+
+        service_context = ServiceContext.from_defaults(
+            llm_predictor=llm_predictor,
+            embed_model=embedding_llm,
+        )
+        return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
+
+    return GPTSimpleVectorIndex.from_documents(documents)
+
+
+def _llama_agent_chain(index, question):
+    """Ask GPT a question using llama_index."""
+    # Load indices from disk
+    _load_azure_openai_context()
+
+    os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
+    index_set = {"doc": index}
+
+    index_configs = []
+    for y in ["doc"]:
+        tool_config = IndexToolConfig(
+            index=index_set[y],
+            name=f"Vector Index {y}",
+            description=f"Document to use to answer questions {y}",
+            index_query_kwargs={"similarity_top_k": 3},
+            tool_kwargs={"return_direct": True, "return_sources": True},
+        )
+        index_configs.append(tool_config)
+
+    toolkit = LlamaToolkit(index_configs=index_configs)
+    memory = ConversationBufferMemory(memory_key="chat_history")
+    llm = AzureOpenAIChat(  # type: ignore
+        deployment_name="gpt-35-turbo",
+        model_kwargs={
+            "api_key": openai.api_key,
+            "api_base": openai.api_base,
+            "api_type": "azure",
+            "api_version": "2023-03-15-preview",
+        },
+        max_retries=10,
+    )
+
+    agent_chain = create_llama_chat_agent(toolkit, llm, memory=memory, verbose=True)
+    return agent_chain.run(input=str(question))
+
+
+class AzureOpenAIChat(AzureOpenAI):
+    """Azure OpenAI Chat API."""
+
+    temperature: float = 0.3
+
+    @property
+    @override
+    def _default_params(self):
+        """Get the default parameters for calling OpenAI API."""
+        normal_params = {
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            "n": self.n,
+            "request_timeout": self.request_timeout,
+            "logit_bias": self.logit_bias,
+        }
+        return {**normal_params, **self.model_kwargs}
+
+
+def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
+    """
+    Request a goal from GPT-4.
+
+    Args:
+        git_diff (str): The git diff to split.
+        goal (str): The goal to request from GPT-4.
+
+    Returns:
+        response (str): The response from GPT-4.
+    """
+    goal = goal or ""
+    prompt = f"""
+{goal}
+
+{git_diff}
+"""
+
+    response = _call_gpt(prompt, max_tokens=max_tokens)
+    logging.info(response)
+    return response
 
 
 def _load_azure_openai_context():
@@ -39,7 +198,8 @@ def _load_azure_openai_context():
         openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
     else:
         secret_client = SecretClient(
-            vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
+            vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT),
+            credential=DefaultAzureCredential(),
         )
 
         openai.api_base = secret_client.get_secret("azure-open-ai").value
@@ -75,7 +235,14 @@ def _call_gpt(
 
     if len(prompt) > 32767:
         return _batch_large_changes(
-            prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages
+            prompt,
+            temperature,
+            max_tokens,
+            top_p,
+            frequency_penalty,
+            presence_penalty,
+            retry,
+            messages,
         )
 
     messages = messages or [{"role": "user", "content": prompt}]
@@ -98,7 +265,15 @@ def _call_gpt(
         if retry < 5:
             logging.warning("Call to GPT failed due to rate limit, retry attempt: %s", retry)
             time.sleep(retry * 5)
-            return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
+            return _call_gpt(
+                prompt,
+                temperature,
+                max_tokens,
+                top_p,
+                frequency_penalty,
+                presence_penalty,
+                retry + 1,
+            )
         raise RateLimitError("Retry limit exceeded") from error
 
 
@@ -129,12 +304,8 @@ def _batch_large_changes(
                 retry=retry,
                 messages=messages,
             )
-        prompt = f"""
-"Summarize the large file batches"
 
-{output}
-"""
-        return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages)
+        return _request_goal(output, "Summarize the large file batches")
     except RateLimitError:
         logging.warning("Prompt too long, truncating")
         prompt = prompt[:32767]
@@ -167,7 +338,7 @@ class AskCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader):
-        with CommandGroup(loader, "", "gpt_review._ask#{}") as group:
+        with CommandGroup(loader, "", "easy_gpt._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
     @staticmethod
@@ -175,3 +346,9 @@ class AskCommandGroup(GPTCommandGroup):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
+            args.argument(
+                "doc",
+                type=str,
+                help="Ask question about document.",
+                default=None,
+            )
