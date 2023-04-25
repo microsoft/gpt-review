@@ -1,5 +1,4 @@
 import pytest
-import yaml
 from collections import namedtuple
 
 
