@@ -1,0 +1,30 @@
+name: Python CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [created]
+  workflow_dispatch:
+
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
+  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+
+jobs:
+  validation:
+    uses: microsoft/action-python/.github/workflows/validation.yml@0.3.23
+    with:
+      workdir: '.'
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+
+  publish:
+    uses: microsoft/action-python/.github/workflows/publish.yml@0.3.23
+    with:
+      workdir: '.'
+    secrets:
+      PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}

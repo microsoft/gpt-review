@@ -3,7 +3,7 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [project]
-name =  "action-gpt"
+name =  "easy-gpt"
 authors = [
     {name = "Daniel Ciborowski", email = "dciborow@microsoft.com"},
 ]
@@ -22,8 +22,15 @@ classifiers = [
 requires-python = ">=3.7"
 dynamic = ["version"]
 dependencies = [
+  'azure-identity',
+  'azure-keyvault-secrets',
+  'llama-index',
+  'httpx',
+  'GitPython',
+  'knack',
   'openai',
-  'requests'
+  'requests',
+  "pyyaml",
 ]
 
 [project.optional-dependencies]
@@ -39,13 +46,16 @@ test = [
     "pre-commit==2.17.0",
     "pylint==2.17.0",
     "pylint_junit",
-    "pytest-cov==3.0.0",
-    "pytest-mock<3.10.1",
+    "pytest-cov>=3.0.0",
+    "pytest-mock",
     "pytest-runner",
-    "pytest==7.2.2",
+    "pytest>=7.2.2",
     "pytest-github-actions-annotate-failures",
     "shellcheck-py==0.9.0.2"
 ]
+
+[project.scripts]
+gpt = "easy_gpt.main:__main__"
 
 [project.urls]
 Documentation = "https://github.com/dciborow/action-gpt/tree/main#readme"
@@ -53,7 +63,7 @@ Source = "https://github.com/dciborow/action-gpt"
 Tracker = "https://github.com/dciborow/action-gpt/issues"
 
 [tool.flit.module]
-name = "review"
+name = "easy_gpt"
 
 [tool.bandit]
 exclude_dirs = ["build","dist","tests","scripts"]
@@ -112,12 +122,12 @@ executionEnvironments = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration'"
+# addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration'"
 pythonpath = [
   "src"
 ]
 testpaths = "tests"
-junit_family = "xunit2"
+# junit_family = "xunit2"
 markers = [
     "integration: marks as integration test",
     "notebooks: marks as notebook test",
@@ -125,6 +135,7 @@ markers = [
     "spark: marks tests which need Spark",
     "slow: marks tests as slow",
     "unit: fast offline tests",
+    "cli: test installed CLI",
 ]
 
 [tool.tox]
