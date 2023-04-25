@@ -15,9 +15,11 @@ env:
 
 jobs:
   validation:
-    uses: microsoft/action-python/.github/workflows/validation.yml@0.3.21
+    uses: microsoft/action-python/.github/workflows/validation.yml@0.3.22
     with:
       workdir: '.'
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   publish:
     uses: microsoft/action-python/.github/workflows/publish.yml@0.3.21
