@@ -14,8 +14,7 @@ from azure.keyvault.secrets import SecretClient
 
 from openai.error import RateLimitError
 
-
-from easy_gpt._command import GPTCommandGroup
+from ask_gpt._command import GPTCommandGroup
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 

@@ -5,8 +5,8 @@ import sys
 
 from knack import CLI, CLICommandsLoader
 
-from easy_gpt import __version__
-from easy_gpt._ask import AskCommandGroup
+from ask_gpt import __version__
+from ask_gpt._ask import AskCommandGroup
 
 CLI_NAME = "gpt"
 
