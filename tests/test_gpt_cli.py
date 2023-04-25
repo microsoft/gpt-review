@@ -18,8 +18,8 @@ ARGS = [
 
 
 @pytest.mark.parametrize("command", ARGS)
-@pytest.mark.integration
-def test_int_gpt_cli(command):
+@pytest.mark.cli
+def test_cli_gpt_cli(command):
     """Test gpt commands from installed CLI"""
 
     command_array = f"gpt {command}".split(" ")
@@ -42,6 +42,13 @@ def gpt_cli_test(command):
     else:
         exit_code = cli()
         assert exit_code == 0
+
+
+@pytest.mark.parametrize("command", ARGS)
+@pytest.mark.integration
+def test_int_gpt_cli(command):
+    """Test gpt commands from installed CLI"""
+    gpt_cli_test(command)
 
 
 @pytest.mark.parametrize(

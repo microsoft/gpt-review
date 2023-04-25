@@ -135,6 +135,7 @@ markers = [
     "spark: marks tests which need Spark",
     "slow: marks tests as slow",
     "unit: fast offline tests",
+    "cli: test installed CLI",
 ]
 
 [tool.tox]
