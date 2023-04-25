@@ -41,6 +41,9 @@ def mock_openai(monkeypatch):
     Mock OpenAI Functions with monkeypatch
     - aopenai.ChatCompletion.create
     """
+    monkeypatch.setenv("OPENAI_API_KEY", "MOCK")
+    monkeypatch.setenv("AZURE_OPENAI_API", "MOCK")
+    monkeypatch.setenv("AZURE_OPENAI_API_KEY", "MOCK")
 
     class MockResponse:
         def __init__(self):
