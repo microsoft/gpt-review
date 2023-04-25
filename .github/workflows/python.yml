@@ -15,12 +15,12 @@ env:
 
 jobs:
   validation:
-    uses: microsoft/action-python/.github/workflows/validation.yml@0.3.20
+    uses: microsoft/action-python/.github/workflows/validation.yml@0.3.21
     with:
       workdir: '.'
 
   publish:
-    uses: microsoft/action-python/.github/workflows/publish.yml@0.3.20
+    uses: microsoft/action-python/.github/workflows/publish.yml@0.3.21
     with:
       workdir: '.'
     secrets:
