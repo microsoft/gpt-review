@@ -22,7 +22,7 @@ DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 def _ask(question, max_tokens=100):
     """Ask GPT a question."""
-    response = _request_goal(question[0], max_tokens)
+    response = _call_gpt(prompt=question[0], max_tokens=max_tokens)
     return {"response": response}
 
 
