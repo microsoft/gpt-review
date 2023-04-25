@@ -8,6 +8,11 @@ on:
     types: [created]
   workflow_dispatch:
 
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
+  AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+
 jobs:
   validation:
     uses: microsoft/action-python/.github/workflows/validation.yml@0.3.20
