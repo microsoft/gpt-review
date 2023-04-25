@@ -11,7 +11,7 @@ ARGS = [
     "--help",
     "ask --help",
     "ask how are you",
-    """ask --doc PRInsights.docx "can you summarize what PR Insights is" --output tsv""",
+    "ask --doc review.py what does this file do?",
     # "git --help",
     # "git status",
 ]
@@ -20,7 +20,7 @@ ARGS = [
 @pytest.mark.parametrize("command", ARGS)
 @pytest.mark.integration
 def test_int_gpt_cli(command):
-    """Test gpt --version"""
+    """Test gpt commands from installed CLI"""
 
     command_array = f"gpt {command}".split(" ")
     result = subprocess.run(
