@@ -1,4 +1,4 @@
-name: 'action-gpt'
+name: 'ask-gpt'
 description: 'Review your PRs with a GPT Model from Azure Open AI'
 branding:
   icon: 'eye'
@@ -131,7 +131,7 @@ runs:
         run: |
           source .env/bin/activate
 
-          curl --request GET --url https://raw.githubusercontent.com/dciborow/action-gpt/$ACTION_REF/review.py > review.py
+          curl --request GET --url https://raw.githubusercontent.com/microsoft/ask-gpt/$ACTION_REF/review.py > review.py
 
           python review.py
         env:
