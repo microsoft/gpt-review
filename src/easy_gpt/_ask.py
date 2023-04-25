@@ -14,16 +14,6 @@ from azure.keyvault.secrets import SecretClient
 
 from openai.error import RateLimitError
 
-from llama_index import (
-    GPTSimpleVectorIndex,
-    LangchainEmbedding,
-    PromptHelper,
-    ServiceContext,
-    LLMPredictor,
-)
-
-from langchain.llms import AzureOpenAI
-from langchain.embeddings import OpenAIEmbeddings
 
 from easy_gpt._command import GPTCommandGroup
 
@@ -32,59 +22,8 @@ DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 def _ask(question, max_tokens=100):
     """Ask GPT a question."""
-
-    # documents = SimpleDirectoryReader(".").load_data()
-    # index = GPTSimpleVectorIndex.from_documents(documents)
-    # response = index.query(question[0]).response
-
     response = _request_goal(question[0], max_tokens)
     return {"response": response}
-
-
-def _document_indexer(documents):
-    """
-    Create a document indexer.
-
-    Args:
-        documents (List[Document]): The documents to index.
-        azure (bool): Whether to use Azure OpenAI.
-
-    Returns:
-        GPTSimpleVectorIndex: The document indexer.
-    """
-    if os.getenv("AZURE_OPENAI_API_KEY"):
-        _load_azure_openai_context()
-
-        os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
-        llm = AzureOpenAI(  # type: ignore
-            deployment_name="text-davinci-003",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
-        llm_predictor = LLMPredictor(llm=llm)
-
-        embedding_llm = LangchainEmbedding(
-            OpenAIEmbeddings(
-                document_model_name="text-embedding-ada-002",
-                query_model_name="text-embedding-ada-002",
-            ),  # type: ignore
-            embed_batch_size=1,
-        )
-
-        prompt_helper = PromptHelper(max_input_size=500, num_output=1, max_chunk_overlap=20)
-        service_context = ServiceContext.from_defaults(
-            llm_predictor=llm_predictor,
-            embed_model=embedding_llm,
-            prompt_helper=prompt_helper,
-        )
-        return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
-
-    return GPTSimpleVectorIndex.from_documents(documents)
 
 
 def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
