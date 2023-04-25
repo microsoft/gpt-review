@@ -3,7 +3,7 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [project]
-name =  "ask-gpt"
+name =  "gpt-review"
 authors = [
     {name = "Daniel Ciborowski", email = "dciborow@microsoft.com"},
 ]
@@ -55,7 +55,7 @@ test = [
 ]
 
 [project.scripts]
-gpt = "ask_gpt.main:__main__"
+gpt = "review_gpt.main:__main__"
 
 [project.urls]
 Documentation = "https://github.com/dciborow/action-gpt/tree/main#readme"
@@ -63,7 +63,7 @@ Source = "https://github.com/dciborow/action-gpt"
 Tracker = "https://github.com/dciborow/action-gpt/issues"
 
 [tool.flit.module]
-name = "ask_gpt"
+name = "review_gpt"
 
 [tool.bandit]
 exclude_dirs = ["build","dist","tests","scripts"]
