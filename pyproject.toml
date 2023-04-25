@@ -3,7 +3,7 @@ requires = ["flit"]
 build-backend = "flit.buildapi"
 
 [project]
-name =  "easy-gpt"
+name =  "gpt-review"
 authors = [
     {name = "Daniel Ciborowski", email = "dciborow@microsoft.com"},
 ]
@@ -55,7 +55,7 @@ test = [
 ]
 
 [project.scripts]
-gpt = "easy_gpt.main:__main__"
+gpt = "gpt_review.main:__main__"
 
 [project.urls]
 Documentation = "https://github.com/dciborow/action-gpt/tree/main#readme"
@@ -63,7 +63,7 @@ Source = "https://github.com/dciborow/action-gpt"
 Tracker = "https://github.com/dciborow/action-gpt/issues"
 
 [tool.flit.module]
-name = "easy_gpt"
+name = "gpt_review"
 
 [tool.bandit]
 exclude_dirs = ["build","dist","tests","scripts"]
@@ -319,3 +319,9 @@ min-public-methods=2
 allow-wildcard-with-all="no"
 analyse-fallback-blocks="no"
 deprecated-modules="optparse,tkinter.tix"
+
+[tool.pylint.'EXCEPTIONS']
+overgeneral-exceptions= [
+    "BaseException",
+    "Exception"
+]
