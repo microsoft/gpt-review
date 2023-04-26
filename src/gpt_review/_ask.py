@@ -26,7 +26,6 @@ from llama_index import (
 from langchain.llms import AzureOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 
-from llama_index import LLMPredictor
 
 from langchain.chains.conversation.memory import ConversationBufferMemory
 
