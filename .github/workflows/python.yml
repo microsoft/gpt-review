@@ -3,8 +3,6 @@ on:
   push:
     branches: [ main ]
   pull_request_target:
-    branches-ignore: [ main ]
-  pull_request:
     branches: [ main ]
   release:
     types: [created]
