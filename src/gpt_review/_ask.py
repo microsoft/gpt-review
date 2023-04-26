@@ -8,13 +8,12 @@ from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 
 import openai
-
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-
-
 from openai.error import RateLimitError
-
+from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.llms import AzureOpenAI
+from langchain.embeddings import OpenAIEmbeddings
 from llama_index import (
     GPTSimpleVectorIndex,
     LangchainEmbedding,
@@ -22,14 +21,6 @@ from llama_index import (
     LLMPredictor,
     SimpleDirectoryReader,
 )
-
-from langchain.llms import AzureOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-
-
-from langchain.chains.conversation.memory import ConversationBufferMemory
-
-
 from llama_index.langchain_helpers.agents import (
     LlamaToolkit,
     create_llama_chat_agent,
@@ -41,19 +32,19 @@ from gpt_review._command import GPTCommandGroup
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, doc=None, max_tokens=100):
+def _ask(question, file=None, max_tokens=100):
     """Ask GPT a question."""
 
-    if doc:
-        response = _ask_doc(question, doc)
+    if file:
+        response = _ask_doc(question, file)
     else:
         response = _request_goal(question[0], max_tokens)
     return {"response": response}
 
 
-def _ask_doc(question, doc):
+def _ask_doc(question, file):
     """Ask GPT a question."""
-    documents = SimpleDirectoryReader(input_files=[doc]).load_data()
+    documents = SimpleDirectoryReader(input_files=[file]).load_data()
     index = _document_indexer(documents)
 
     return index.query(question[0]).response  # type: ignore
@@ -74,7 +65,7 @@ def _document_indexer(documents):
         _load_azure_openai_context()
 
         os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
-        llm = AzureOpenAIChat(  # type: ignore
+        llm = AzureGPT35Turbo(  # type: ignore
             deployment_name="gpt-35-turbo",  # "gpt-35-turbo", # "text-davinci-003",
             model_kwargs={
                 "api_key": openai.api_key,
@@ -124,7 +115,7 @@ def _llama_agent_chain(index, question):
 
     toolkit = LlamaToolkit(index_configs=index_configs)
     memory = ConversationBufferMemory(memory_key="chat_history")
-    llm = AzureOpenAIChat(  # type: ignore
+    llm = AzureGPT35Turbo(  # type: ignore
         deployment_name="gpt-35-turbo",
         model_kwargs={
             "api_key": openai.api_key,
@@ -139,15 +130,16 @@ def _llama_agent_chain(index, question):
     return agent_chain.run(input=str(question))
 
 
-class AzureOpenAIChat(AzureOpenAI):
+class AzureGPT35Turbo(AzureOpenAI):
     """Azure OpenAI Chat API."""
-
-    temperature: float = 0.3
 
     @property
     @override
     def _default_params(self):
-        """Get the default parameters for calling OpenAI API."""
+        """
+        Get the default parameters for calling OpenAI API.
+        gpt-35-turbo does not support best_of, logprobs, or echo.
+        """
         normal_params = {
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
@@ -344,10 +336,10 @@ class AskCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
-            args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
             args.argument(
-                "doc",
+                "file",
                 type=str,
-                help="Ask question about document.",
+                help="Ask question about file.",
                 default=None,
             )
+            args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
