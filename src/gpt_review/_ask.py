@@ -15,14 +15,14 @@ from azure.keyvault.secrets import SecretClient
 from openai.error import RateLimitError
 
 
-from gpt_review._command import GPTCommandGroup
+from easy_gpt._command import GPTCommandGroup
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, max_tokens=100):
+def _ask(question, max_tokens=100, temperature=0.7):
     """Ask GPT a question."""
-    response = _call_gpt(prompt=question[0], max_tokens=max_tokens)
+    response = _call_gpt(prompt=question[0], max_tokens=max_tokens, temperature=temperature)
     return {"response": response}
 
 
@@ -167,11 +167,13 @@ class AskCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader):
-        with CommandGroup(loader, "", "gpt_review._ask#{}") as group:
+        with CommandGroup(loader, "", "easy_gpt._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
+    # TODO add additional args for the ask command
     @staticmethod
     def load_arguments(loader: CLICommandsLoader):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
+            args.argument("temperature", type=float, help="Sets the level of creativity/randomness.")
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")

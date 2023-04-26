@@ -1,10 +1,10 @@
-"""Pytest for ask_gpt/main.py"""
+"""Pytest for easy_gpt/main.py"""
 import os
 import pytest
 import subprocess
 import sys
 
-from gpt_review._gpt_cli import cli
+from easy_gpt._gpt_cli import cli
 
 ROOT_COMMANDS = [
     "--version",
@@ -14,6 +14,9 @@ ROOT_COMMANDS = [
 ASK_COMMANDS = [
     "ask --help",
     "ask how are you",
+    "ask how are you --max-tokens=5",
+    "ask how are you --temperature 1",
+    "ask how are you --max-tokens=5 --temperature 0.1",
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
