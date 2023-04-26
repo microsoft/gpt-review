@@ -53,27 +53,27 @@ inputs:
     type: string
   BUG_SUMMARY:
     description: 'Include summary of potential bugs'
-    default: true
+    default: false
     required: false
     type: string
   RISK_SUMMARY:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   RISK_ROLLBACK:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   RISK_BREAKING:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   RISK_FLAGGED:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   SUMMARY_CONFIG:
@@ -83,7 +83,7 @@ inputs:
     type: string
   SUMMARY_SCHEMA:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   SUMMARY_FEATURES:
@@ -93,12 +93,12 @@ inputs:
     type: string
   SUMMARY_FLAGS:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   SUMMARY_INCIDENTS:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
 
