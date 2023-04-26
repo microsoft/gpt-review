@@ -130,7 +130,7 @@ runs:
         shell: bash
         run: |
           source .env/bin/activate
-          ORG_NAME=$(echo ${BRANCH##%/*})
+          ORG_NAME=$(echo ${BRANCH%/*})
           echo $ORG_NAME
           curl --request GET --url https://raw.githubusercontent.com/$ORG_NAME/gpt-review/$ACTION_REF/review.py > review.py
 
