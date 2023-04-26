@@ -130,8 +130,8 @@ runs:
         shell: bash
         run: |
           source .env/bin/activate
-
-          curl --request GET --url https://raw.githubusercontent.com/$REPOSITORY_NAME/$ACTION_REF/review.py > review.py
+          ORG_NAME=$(echo ${BRANCH##%/*})
+          curl --request GET --url https://raw.githubusercontent.com/$ORG_NAME/gpt-review/$ACTION_REF/review.py > review.py
 
           python review.py
         env:
@@ -139,10 +139,10 @@ runs:
           GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
           GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
           LINK: "https://github.com/${{ inputs.REPOSITORY_NAME }}/pull/${{ inputs.PR_NUMBER }}"
-          REPOSITORY_NAME: ${{ inputs.REPOSITORY_NAME }}
           OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
           OPENAI_ORG_KEY: ${{ inputs.OPENAI_ORG_KEY }}
           PR_TITLE: ${{ inputs.PR_TITLE }}
+          BRANCH:  ${{ env.BRANCH }}
           AZURE_OPENAI_API_KEY: ${{ inputs.AZURE_OPENAI_API_KEY || '' }}
           AZURE_OPENAI_API: ${{ inputs.AZURE_OPENAI_API || '' }}
           PATCH_PR: ${{ github.event.pull_request.number }}
