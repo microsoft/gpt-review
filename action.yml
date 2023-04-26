@@ -78,7 +78,7 @@ inputs:
     type: string
   SUMMARY_CONFIG:
     description: 'Include summary of potential breaking changes'
-    default: true
+    default: false
     required: false
     type: string
   SUMMARY_SCHEMA:
