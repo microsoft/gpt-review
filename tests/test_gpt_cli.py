@@ -14,6 +14,7 @@ ROOT_COMMANDS = [
 ASK_COMMANDS = [
     "ask --help",
     "ask how are you",
+    "ask --doc review.py what programming language is this code written in?",
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
