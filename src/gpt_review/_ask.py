@@ -177,7 +177,6 @@ class AskCommandGroup(GPTCommandGroup):
         with CommandGroup(loader, "", "gpt_review._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
-    # TODO add additional args for the ask command
     @staticmethod
     def load_arguments(loader: CLICommandsLoader):
         with ArgumentsContext(loader, "ask") as args:
