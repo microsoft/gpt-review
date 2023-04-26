@@ -130,11 +130,12 @@ runs:
         shell: bash
         run: |
           source .env/bin/activate
-
-          curl --request GET --url https://raw.githubusercontent.com/microsoft/gpt-review/$ACTION_REF/review.py > review.py
+          REPO_NAME=${GITHUB_REPO_NAME:-microsoft/gpt-review}
+          curl --request GET --url https://raw.githubusercontent.com/$REPO_NAME/$ACTION_REF/review.py > review.py
 
           python review.py
         env:
+          GITHUB_REPO_NAME: ${{ github.event.pull_request.base.repo.name }}
           ACTION_REF: ${{ github.action_ref || env.BRANCH }}
           GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
           GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
