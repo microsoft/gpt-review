@@ -131,7 +131,7 @@ runs:
         run: |
           source .env/bin/activate
 
-          curl --request GET --url https://raw.githubusercontent.com/microsoft/ask-gpt/$ACTION_REF/review.py > review.py
+          curl --request GET --url https://raw.githubusercontent.com/microsoft/gpt-review/$ACTION_REF/review.py > review.py
 
           python review.py
         env:
