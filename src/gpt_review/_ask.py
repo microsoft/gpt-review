@@ -20,9 +20,16 @@ from gpt_review._command import GPTCommandGroup
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, max_tokens=100, temperature=0.7):
+def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
     """Ask GPT a question."""
-    response = _call_gpt(prompt=question[0], max_tokens=max_tokens, temperature=temperature)
+    response = _call_gpt(
+        prompt=question[0],
+        max_tokens=max_tokens,
+        temperature=temperature,
+        top_p=top_p,
+        frequency_penalty=frequency_penalty,
+        presence_penalty=presence_penalty,
+    )
     return {"response": response}
 
 
@@ -177,3 +184,18 @@ class AskCommandGroup(GPTCommandGroup):
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
             args.argument("temperature", type=float, help="Sets the level of creativity/randomness.")
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
+            args.argument(
+                "top_p",
+                type=float,
+                help="Also sets the level of creativity/randomness. Adjust temperature or top p but not both.",
+            )
+            args.argument(
+                "frequency_penalty",
+                type=float,
+                help="Reduce the chance of repeating a token based on current frequency in the text.",
+            )
+            args.argument(
+                "presence_penalty",
+                type=float,
+                help="Reduce the chance of repeating any token that has appeared in the text so far.",
+            )

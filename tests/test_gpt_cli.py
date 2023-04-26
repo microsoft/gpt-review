@@ -16,7 +16,14 @@ ASK_COMMANDS = [
     "ask how are you",
     "ask how are you --max-tokens=5",
     "ask how are you --temperature 1",
+    "ask how are you --top-p 0.7",
+    "ask how are you --frequency-penalty 1",
+    "ask how are you --presence-penalty 0.7",
     "ask how are you --max-tokens=5 --temperature 0.1",
+    "ask how are you --max-tokens=5 --top-p 0.7",
+    "ask how are you --frequency-penalty 1 --presence-penalty 0.7",
+    "ask how are you --max-tokens=5 --temperature 0.1 --frequency-penalty 1 --presence-penalty 0.7",
+    "ask how are you --max-tokens=5 --top-p 0.7 --frequency-penalty 1 --presence-penalty 0.7",
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
