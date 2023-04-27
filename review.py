@@ -10,6 +10,9 @@ import yaml
 
 from openai.error import RateLimitError, InvalidRequestError
 
+SUMMARIZE_PROMPT = "Summarize the following file changed in a pull request submitted by a developer on GitHub, focusing on major modifications, additions, deletions, and any significant updates within the files. Do not include the file name in the summary and list the summary with bullet points"
+TEST_COVERAGE_PROMPT = "You are an experienced software developer. Generate unit test cases for the code submitted in the pull request, ensuring comprehensive coverage of all functions, methods, and scenarios to validate the correctness and reliability of the implementation."
+BUGS_PROMPT = "Provide a concise summary of the bug found in the code, describing its characteristics, location, and potential effects on the overall functionality and performance of the application. Present the potential issues and errors first, following by the most important findings, in your summary"
 
 CHECKS = {
     "SUMMARY_CHECKS": [
@@ -220,7 +223,7 @@ ${responses}
 
 def call_gpt4(
     prompt: str,
-    temperature=0.10,
+    temperature=0.00,
     max_tokens=500,
     top_p=1,
     frequency_penalty=0.5,
@@ -357,10 +360,9 @@ def summarize_test_coverage(git_diff):
         prompt = _analyze_test_coverage_bicep(files)
     else:
         prompt = f"""
-Are the changes tested?
-```
+{TEST_COVERAGE_PROMPT}
+
 {git_diff}
-```
 """
 
     return call_gpt(prompt, temperature=0.0, max_tokens=1500)
@@ -377,9 +379,8 @@ def summarize_file(diff):
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
     prompt = f"""
-Summarize the changes to the file {git_file.file_name}.
-- Do not include the file name in the summary.
-- list the summary with bullet points
+{SUMMARIZE_PROMPT}
+
 {diff}
 """
     response = call_gpt(prompt, temperature=0.0)
@@ -399,12 +400,14 @@ def summarize_bugs_in_pr(git_diff):
     Returns:
         response (str): The response from GPT-4.
     """
-    gpt4_big_prompot = f"""
-Summarize bugs that may be introduced.
+
+    gpt4_big_prompt = f"""
+
+{BUGS_PROMPT}
 
 {git_diff}
 """
-    response = call_gpt(gpt4_big_prompot)
+    response = call_gpt(gpt4_big_prompt)
     logging.info(response)
     return response
 
