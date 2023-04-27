@@ -42,25 +42,14 @@ jobs:
     - run: |
         pip install pytest pytest-cov
         pip install .
-        pytest --cov=src --cov-report=xml --cov-fail-under 0 
+    
+    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 
     - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
-  coverage-int:
-    runs-on: ubuntu-latest
-    env:
-      OS: 'ubuntu-latest'
-      PYTHON: '3.11'
-    steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.11'
-    - run: |
-        pip install pytest pytest-cov
-        pip install .
-        pytest --cov=src --cov-report=xml --cov-fail-under 0 -m "integration"
+
+    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 -m "integration"
     - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
