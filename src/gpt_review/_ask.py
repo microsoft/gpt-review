@@ -5,6 +5,7 @@ import time
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
+from knack.util import CLIError
 
 import openai
 
@@ -18,6 +19,26 @@ from openai.error import RateLimitError
 from gpt_review._command import GPTCommandGroup
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
+
+
+def validate_parameter_range(namespace):
+    """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and
+    frequency_penalty and presence_penalty are in [0,2]"""
+    if namespace.max_tokens is not None:
+        if namespace.max_tokens < 1 or namespace.max_tokens > 4000:
+            raise CLIError("--max_tokens must be in the range [1,4000]")
+    if namespace.temperature is not None:
+        if namespace.temperature < 0 or namespace.temperature > 1:
+            raise CLIError("--temperature must be in the range [0,1]")
+    if namespace.top_p is not None:
+        if namespace.top_p < 0 or namespace.top_p > 1:
+            raise CLIError("--top_p must be in the range [0,1]")
+    if namespace.frequency_penalty is not None:
+        if namespace.frequency_penalty < 0 or namespace.frequency_penalty > 2:
+            raise CLIError("--frequency_penalty must be in the range [0,2]")
+    if namespace.presence_penalty is not None:
+        if namespace.presence_penalty < 0 or namespace.presence_penalty > 2:
+            raise CLIError("--presence_penalty must be in the range [0,2]")
 
 
 def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
@@ -181,20 +202,34 @@ class AskCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
-            args.argument("temperature", type=float, help="Sets the level of creativity/randomness.")
-            args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
+            args.argument(
+                "temperature",
+                type=float,
+                help="Sets the level of creativity/randomness.",
+                validator=validate_parameter_range,
+                options_list=["--temperature", "-t"],
+            )
+            args.argument(
+                "max_tokens",
+                type=int,
+                help="The maximum number of tokens to generate.",
+                validator=validate_parameter_range,
+            )
             args.argument(
                 "top_p",
                 type=float,
                 help="Also sets the level of creativity/randomness. Adjust temperature or top p but not both.",
+                validator=validate_parameter_range,
             )
             args.argument(
                 "frequency_penalty",
                 type=float,
                 help="Reduce the chance of repeating a token based on current frequency in the text.",
+                validator=validate_parameter_range,
             )
             args.argument(
                 "presence_penalty",
                 type=float,
                 help="Reduce the chance of repeating any token that has appeared in the text so far.",
+                validator=validate_parameter_range,
             )
