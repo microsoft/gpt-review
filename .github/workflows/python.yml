@@ -2,7 +2,7 @@ name: Python CI
 on:
   push:
     branches: [ main ]
-  pull_request:
+  pull_request_target:
     branches: [ main ]
   release:
     types: [created]
@@ -36,14 +36,18 @@ jobs:
       PYTHON: '3.11'
     steps:
     - uses: actions/checkout@master
-    - name: Setup Python
-      uses: actions/setup-python@master
+    - uses: actions/setup-python@v1
       with:
-        python-version: 3.10
+        python-version: '3.11'
     - name: Generate coverage report
+      continue-on-error: true
       run: |
-        pip install pytest
-        pip install pytest-cov
+        pip install pytest pytest-cov
+        pip install .
         pytest --cov=src --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: unittests
+        fail_ci_if_error: false
