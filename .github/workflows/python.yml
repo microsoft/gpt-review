@@ -29,7 +29,7 @@ jobs:
       PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
 
-  coverage:
+  coverage-unit:
     runs-on: ubuntu-latest
     env:
       OS: 'ubuntu-latest'
@@ -39,15 +39,29 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.11'
-    - name: Generate coverage report
-      continue-on-error: true
-      run: |
+    - run: |
         pip install pytest pytest-cov
         pip install .
-        pytest --cov=src --cov-report=xml --cov-fail-under 0
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+        pytest --cov=src --cov-report=xml --cov-fail-under 0 
+    - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
-        fail_ci_if_error: false
+  coverage-int:
+    runs-on: ubuntu-latest
+    env:
+      OS: 'ubuntu-latest'
+      PYTHON: '3.11'
+    steps:
+    - uses: actions/checkout@master
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.11'
+    - run: |
+        pip install pytest pytest-cov
+        pip install .
+        pytest --cov=src --cov-report=xml --cov-fail-under 0 -m "integration"
+    - uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: integration
