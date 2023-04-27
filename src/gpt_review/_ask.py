@@ -21,6 +21,7 @@ from llama_index import (
     LLMPredictor,
     SimpleDirectoryReader,
 )
+from llama_index.indices.base import BaseGPTIndex
 from llama_index.langchain_helpers.agents import (
     LlamaToolkit,
     create_llama_chat_agent,
@@ -32,8 +33,18 @@ from gpt_review._command import GPTCommandGroup
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, files=None, max_tokens=100):
-    """Ask GPT a question."""
+def _ask(question, files=None, max_tokens=100) -> dict:
+    """
+    Ask GPT a question.
+
+    Args:
+        question (str): The question to ask.
+        files (List[str]): The files to search.
+        max_tokens (int): The maximum number of tokens to use.
+
+    Returns:
+        Dict[str, str]: The response.
+    """
 
     question = " ".join(question)
 
@@ -47,15 +58,24 @@ def _ask(question, files=None, max_tokens=100):
     return {"response": response}
 
 
-def _ask_doc(question, files):
-    """Ask GPT a question."""
+def _ask_doc(question, files) -> str:
+    """
+    Ask GPT a question.
+
+    Args:
+        question (str): The question to ask.
+        files (List[str]): The files to search.
+
+    Returns:
+        Dict[str, str]: The response.
+    """
     documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
     return index.query(question).response  # type: ignore
 
 
-def _document_indexer(documents):
+def _document_indexer(documents) -> BaseGPTIndex:
     """
     Create a document indexer.
 
@@ -99,7 +119,16 @@ def _document_indexer(documents):
 
 
 def _llama_agent_chain(index, question):
-    """Ask GPT a question using llama_index."""
+    """
+    Ask GPT a question using llama_index.
+
+    Args:
+        index (str): The index to use.
+        question (str): The question to ask.
+
+    Returns:
+        Dict[str, str]: The response.
+    """
     # Load indices from disk
     _load_azure_openai_context()
 
@@ -107,11 +136,11 @@ def _llama_agent_chain(index, question):
     index_set = {"doc": index}
 
     index_configs = []
-    for y in ["doc"]:
+    for doc in ["doc"]:
         tool_config = IndexToolConfig(
-            index=index_set[y],
-            name=f"Vector Index {y}",
-            description=f"Document to use to answer questions {y}",
+            index=index_set[doc],
+            name=f"Vector Index {doc}",
+            description=f"Document to use to answer questions {doc}",
             index_query_kwargs={"similarity_top_k": 3},
             tool_kwargs={"return_direct": True, "return_sources": True},
         )
@@ -180,7 +209,7 @@ def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
     return response
 
 
-def _load_azure_openai_context():
+def _load_azure_openai_context() -> None:
     """
     Load the Azure OpenAI context.
 
@@ -334,12 +363,12 @@ class AskCommandGroup(GPTCommandGroup):
     """Ask Command Group."""
 
     @staticmethod
-    def load_command_table(loader: CLICommandsLoader):
+    def load_command_table(loader: CLICommandsLoader) -> None:
         with CommandGroup(loader, "", "gpt_review._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
     @staticmethod
-    def load_arguments(loader: CLICommandsLoader):
+    def load_arguments(loader: CLICommandsLoader) -> None:
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
             args.argument(
