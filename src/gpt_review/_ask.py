@@ -26,19 +26,19 @@ def validate_parameter_range(namespace):
     frequency_penalty and presence_penalty are in [0,2]"""
     if namespace.max_tokens is not None:
         if namespace.max_tokens < 1 or namespace.max_tokens > 4000:
-            raise CLIError("--max_tokens must be in the range [1,4000]")
+            raise CLIError("--max_tokens must be an integer between 1 and 4000")
     if namespace.temperature is not None:
         if namespace.temperature < 0 or namespace.temperature > 1:
-            raise CLIError("--temperature must be in the range [0,1]")
+            raise CLIError("--temperature must be a float between 0 and 1")
     if namespace.top_p is not None:
         if namespace.top_p < 0 or namespace.top_p > 1:
-            raise CLIError("--top_p must be in the range [0,1]")
+            raise CLIError("--top-p must be a float between 0 and 1")
     if namespace.frequency_penalty is not None:
         if namespace.frequency_penalty < 0 or namespace.frequency_penalty > 2:
-            raise CLIError("--frequency_penalty must be in the range [0,2]")
+            raise CLIError("--frequency-penalty must be a float between 0 and 2")
     if namespace.presence_penalty is not None:
         if namespace.presence_penalty < 0 or namespace.presence_penalty > 2:
-            raise CLIError("--presence_penalty must be in the range [0,2]")
+            raise CLIError("--presence-penalty must be a float between 0 and 2")
 
 
 def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
