@@ -1,4 +1,5 @@
 # gpt-review
+[![codecov](https://codecov.io/gh/microsoft/gpt-review/branch/main/graph/badge.svg)](https://codecov.io/gh/microsoft/gpt-review)[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 A Python based CLI and GitHub Action to use Open AI or Azure Open AI models to review contents of pull requests.
 
