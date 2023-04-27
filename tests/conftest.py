@@ -16,6 +16,14 @@ def mock_openai(monkeypatch):
         def __init__(self):
             self.choices = [namedtuple("mockMessage", "message")(*[namedtuple("mockContent", "content")(*[["test"]])])]
 
+    class MockQueryResponse:
+        def __init__(self):
+            self.response = "test"
+
+    class MockIndex:
+        def query(self, question):
+            return MockQueryResponse()
+
     def mock_create(
         engine,
         messages,
@@ -27,4 +35,8 @@ def mock_openai(monkeypatch):
     ):
         return MockResponse()
 
+    def from_documents(documents, service_context=None):
+        return MockIndex()
+
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
+    monkeypatch.setattr("llama_index.GPTSimpleVectorIndex.from_documents", from_documents)

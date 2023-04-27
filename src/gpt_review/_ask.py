@@ -32,22 +32,27 @@ from gpt_review._command import GPTCommandGroup
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask(question, file=None, max_tokens=100):
+def _ask(question, files=None, max_tokens=100):
     """Ask GPT a question."""
 
-    if file:
-        response = _ask_doc(question, file)
+    question = " ".join(question)
+
+    if isinstance(files, str):
+        files = [files]
+
+    if files:
+        response = _ask_doc(question, files)
     else:
-        response = _request_goal(question[0], max_tokens)
+        response = _request_goal(question, max_tokens)
     return {"response": response}
 
 
-def _ask_doc(question, file):
+def _ask_doc(question, files):
     """Ask GPT a question."""
-    documents = SimpleDirectoryReader(input_files=[file]).load_data()
+    documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
-    return index.query(question[0]).response  # type: ignore
+    return index.query(question).response  # type: ignore
 
 
 def _document_indexer(documents):
@@ -61,6 +66,7 @@ def _document_indexer(documents):
     Returns:
         GPTSimpleVectorIndex: The document indexer.
     """
+    service_context = None
     if os.getenv("AZURE_OPENAI_API_KEY"):
         _load_azure_openai_context()
 
@@ -89,9 +95,7 @@ def _document_indexer(documents):
             llm_predictor=llm_predictor,
             embed_model=embedding_llm,
         )
-        return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
-
-    return GPTSimpleVectorIndex.from_documents(documents)
+    return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
 
 
 def _llama_agent_chain(index, question):
@@ -279,9 +283,11 @@ def _batch_large_changes(
     messages=None,
 ) -> str:
     """Placeholder for batching large changes to GPT-4."""
+    output = ""
+
     try:
         logging.warning("Prompt too long, batching")
-        output = ""
+
         for i in range(0, len(prompt), 32767):
             logging.debug("Batching %s to %s", i, i + 32767)
             batch = prompt[i : i + 32767]
@@ -337,9 +343,10 @@ class AskCommandGroup(GPTCommandGroup):
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
             args.argument(
-                "file",
+                "files",
                 type=str,
-                help="Ask question about file.",
+                help="Ask question about a file. Can be used multiple times.",
                 default=None,
+                action='append',
             )
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
