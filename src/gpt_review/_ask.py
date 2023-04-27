@@ -376,6 +376,6 @@ class AskCommandGroup(GPTCommandGroup):
                 type=str,
                 help="Ask question about a file. Can be used multiple times.",
                 default=None,
-                action='append',
+                action="append",
             )
             args.argument("max_tokens", type=int, help="The maximum number of tokens to generate.")
