@@ -18,8 +18,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Bicep version
-      description: The version of the review-gpt CLI you used when the bug happened.
+      label: CLI version
+      description: The version of the CLI you used when the bug happened.
       placeholder: "0.4.1008"
     validations:
       required: true
