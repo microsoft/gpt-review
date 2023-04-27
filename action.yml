@@ -131,7 +131,6 @@ runs:
         run: |
           source .env/bin/activate
 
-          ORG_NAME=$(echo ${BRANCH%/*})
           curl --request GET --url https://raw.githubusercontent.com/deepika087/gpt-review/anadeepi/prompttuning/review.py > review.py
 
           python review.py
