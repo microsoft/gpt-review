@@ -15,42 +15,16 @@ env:
 
 jobs:
   validation:
-    uses: microsoft/action-python/.github/workflows/validation.yml@0.3.23
+    uses: microsoft/action-python/.github/workflows/validation.yml@dciborow-patch-2
     with:
       workdir: '.'
     secrets:
       AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
 
   publish:
-    uses: microsoft/action-python/.github/workflows/publish.yml@0.3.23
+    uses: microsoft/action-python/.github/workflows/publish.yml@dciborow-patch-2
     with:
       workdir: '.'
     secrets:
       PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       TEST_PYPI_PASSWORD: ${{ secrets.TEST_PYPI_PASSWORD  }}
-
-  coverage-unit:
-    runs-on: ubuntu-latest
-    env:
-      OS: 'ubuntu-latest'
-      PYTHON: '3.11'
-    steps:
-    - uses: actions/checkout@master
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.11'
-    - run: |
-        pip install pytest pytest-cov
-        pip install .
-    
-    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 
-    - uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        flags: unittests
-
-    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 -m "integration"
-    - uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        flags: integration
