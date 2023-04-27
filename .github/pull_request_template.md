@@ -1,13 +1,13 @@
 ## Description
 
-<!-- prefix the PR title with feat: to increment the minor version, or fix: to increment the patch version -->
+<!-- Prefix the PR title with 'feat:' to increment the minor version, or 'fix:' to increment the patch version -->
 
-<!--What are the changes in this PR? What is the effect? etc.-->
-<!-- Update documentation if any changes are made to existing features or APIs -->
+<!-- Describe what changes this PR introduces and their effects -->
+<!-- Update documentation if there are any changes to existing features or APIs -->
 
 ## Testing
 
-<!-- Describe how you have tested your changes or how reviewers can test your changes -->
+<!-- Describe how you tested your changes and how reviewers can test them -->
 <!-- Ensure all code can be tested offline (unmarked tests) and online (marked as 'integration') -->
 
 ## Additional context
