@@ -19,7 +19,7 @@ body:
     id: version
     attributes:
       label: review-gpt CLI version
-      description: The version of the CLI you used when the bug happened.
+      description: The version of the review-gpt CLI you used when the bug happened.
       placeholder: "0.4.1008"
     validations:
       required: true
