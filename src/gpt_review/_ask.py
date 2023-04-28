@@ -2,7 +2,7 @@
 import logging
 import os
 import time
-from typing import List
+from typing import Dict
 from typing_extensions import override
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
