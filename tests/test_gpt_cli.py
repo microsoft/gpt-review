@@ -6,18 +6,7 @@ import subprocess
 import sys
 
 from gpt_review._gpt_cli import cli
-from gpt_review.constants import (
-    MAX_TOKENS_MIN,
-    MAX_TOKENS_MAX,
-    TEMPERATURE_MIN,
-    TEMPERATURE_MAX,
-    TOP_P_MIN,
-    TOP_P_MAX,
-    FREQUENCY_PENALTY_MIN,
-    FREQUENCY_PENALTY_MAX,
-    PRESENCE_PENALTY_MIN,
-    PRESENCE_PENALTY_MAX,
-)
+import gpt_review.constants as C
 
 
 @dataclass
@@ -35,7 +24,7 @@ ROOT_COMMANDS = [
 ASK_COMMANDS = [
     CLICase("ask --help"),
     CLICase("ask how are you"),
-    CLICase("ask how are you --max-tokens=5"),
+    CLICase(f"ask how are you --max-tokens={C.MAX_TOKENS_DEFAULT}"),
     CLICase(
         "ask how are you --max-tokens",
         """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
@@ -63,49 +52,55 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
         2,
     ),
     CLICase(
-        f"ask how are you --max-tokens {MAX_TOKENS_MIN-1}",
-        f"ERROR: --max-tokens must be a(n) int between {MAX_TOKENS_MIN} and {MAX_TOKENS_MAX}\n",
+        f"ask how are you --max-tokens {C.MAX_TOKENS_MIN-1}",
+        f"ERROR: --max-tokens must be a(n) int between {C.MAX_TOKENS_MIN} and {C.MAX_TOKENS_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --temperature 1"),
+    CLICase(f"ask how are you --temperature {C.TEMPERATURE_DEFAULT}"),
     CLICase(
-        f"ask how are you --temperature {TEMPERATURE_MAX+8}",
-        f"ERROR: --temperature must be a(n) float between {TEMPERATURE_MIN} and {TEMPERATURE_MAX}\n",
+        f"ask how are you --temperature {C.TEMPERATURE_MAX+8}",
+        f"ERROR: --temperature must be a(n) float between {C.TEMPERATURE_MIN} and {C.TEMPERATURE_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --top-p 0.7"),
+    CLICase(f"ask how are you --top-p {C.TOP_P_DEFAULT}"),
     CLICase(
-        f"ask how are you --top-p {TOP_P_MAX+3.5}",
-        f"ERROR: --top-p must be a(n) float between {TOP_P_MIN} and {TOP_P_MAX}\n",
+        f"ask how are you --top-p {C.TOP_P_MAX+3.5}",
+        f"ERROR: --top-p must be a(n) float between {C.TOP_P_MIN} and {C.TOP_P_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --frequency-penalty 1"),
+    CLICase(f"ask how are you --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT}"),
     CLICase(
-        f"ask how are you --frequency-penalty {FREQUENCY_PENALTY_MAX+2}",
-        f"ERROR: --frequency-penalty must be a(n) float between {FREQUENCY_PENALTY_MIN} and {FREQUENCY_PENALTY_MAX}\n",
+        f"ask how are you --frequency-penalty {C.FREQUENCY_PENALTY_MAX+2}",
+        f"ERROR: --frequency-penalty must be a(n) float between {C.FREQUENCY_PENALTY_MIN} and {C.FREQUENCY_PENALTY_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --presence-penalty 0.7"),
+    CLICase(f"ask how are you --presence-penalty {C.PRESENCE_PENALTY_DEFAULT}"),
     CLICase(
-        f"ask how are you --presence-penalty {PRESENCE_PENALTY_MAX+7.7}",
-        f"ERROR: --presence-penalty must be a(n) float between {PRESENCE_PENALTY_MIN} and {PRESENCE_PENALTY_MAX}\n",
+        f"ask how are you --presence-penalty {C.PRESENCE_PENALTY_MAX+7.7}",
+        f"ERROR: --presence-penalty must be a(n) float between {C.PRESENCE_PENALTY_MIN} and {C.PRESENCE_PENALTY_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --max-tokens=5 --temperature 0.1"),
-    CLICase("ask how are you --max-tokens=5 --top-p 0.7"),
+    CLICase(f"ask how are you --max-tokens={C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT}"),
+    CLICase(f"ask how are you --max-tokens={C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT}"),
     CLICase(
-        f"ask how are you --max-tokens {MAX_TOKENS_MAX+1} --top-p 0.7",
-        f"ERROR: --max-tokens must be a(n) int between {MAX_TOKENS_MIN} and {MAX_TOKENS_MAX}\n",
+        f"ask how are you --max-tokens {C.MAX_TOKENS_MAX+1} --top-p {C.TOP_P_DEFAULT}",
+        f"ERROR: --max-tokens must be a(n) int between {C.MAX_TOKENS_MIN} and {C.MAX_TOKENS_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --frequency-penalty 1 --presence-penalty 0.7"),
     CLICase(
-        f"ask how are you --frequency-penalty {FREQUENCY_PENALTY_MAX+3} --presence-penalty {PRESENCE_PENALTY_MAX+7.7}",
-        f"ERROR: --frequency-penalty must be a(n) float between {FREQUENCY_PENALTY_MIN} and {FREQUENCY_PENALTY_MAX}\n",
+        f"ask how are you --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.PRESENCE_PENALTY_DEFAULT}"
+    ),
+    CLICase(
+        f"ask how are you --frequency-penalty {C.FREQUENCY_PENALTY_MAX+3} --presence-penalty {C.PRESENCE_PENALTY_MAX+7.7}",
+        f"ERROR: --frequency-penalty must be a(n) float between {C.FREQUENCY_PENALTY_MIN} and {C.FREQUENCY_PENALTY_MAX}\n",
         1,
     ),
-    CLICase("ask how are you --max-tokens=5 --temperature 0.1 --frequency-penalty 1 --presence-penalty 0.7"),
-    CLICase("ask how are you --max-tokens=5 --top-p 0.7 --frequency-penalty 1 --presence-penalty 0.7"),
+    CLICase(
+        f"ask how are you --max-tokens={C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"
+    ),
+    CLICase(
+        f"""ask how are you --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
+    ),
     CLICase("ask --files review.py --files review.py what programming language is this code written in?"),
 ]
 
