@@ -379,7 +379,12 @@ def _batch_large_changes(
                 messages=messages,
             )
 
-        return _request_goal(output, "Summarize the large file batches")
+        prompt = f"""
+"Summarize the large file batches"
+
+{output}
+"""
+        return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages)
     except RateLimitError:
         logging.warning("Prompt too long, truncating")
         prompt = prompt[:32767]
