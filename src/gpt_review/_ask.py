@@ -48,12 +48,25 @@ def validate_parameter_range(namespace):
 
 
 def _range_validation(param, name, min_value, max_value):
+    """Validates that the given parameter is within the allowed range"""
     if param is not None and (param < min_value or param > max_value):
         raise CLIError(f"--{name} must be a(n) {type(param).__name__} between {min_value} and {max_value}")
 
 
 def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
-    """Ask GPT a question."""
+    """Ask GPT a question.
+
+    Args:
+        question (str): The questin to ask GPT.
+        max_tokens (int): The maximum number of tokens to generate.
+        temperature (float): This value determines the level of randomness.
+        top_p (float): This value also determines the level or randomness.
+        frequency_penalty (float): The chance of repeating a token based on current frequency in the text.
+        presence_penalty (float): The chance of repeating any token that has appeared in the text so far.
+
+    Yields:
+        dict[str, str]: The response from GPT.
+    """
     response = _call_gpt(
         prompt=question[0],
         max_tokens=max_tokens,

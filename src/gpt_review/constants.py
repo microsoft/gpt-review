@@ -1,4 +1,4 @@
-"""Constants"""
+"""Contains the constants for the mininum and maximum values of the parameters"""
 
 MIN_MAX_TOKENS_VALUE = 1
 MAX_MAX_TOKENS_VALUE = 4000
