@@ -22,23 +22,18 @@ DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
 def validate_parameter_range(namespace):
-    """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and
-    frequency_penalty and presence_penalty are in [0,2]"""
-    if namespace.max_tokens is not None:
-        if namespace.max_tokens < 1 or namespace.max_tokens > 4000:
-            raise CLIError("--max_tokens must be an integer between 1 and 4000")
-    if namespace.temperature is not None:
-        if namespace.temperature < 0 or namespace.temperature > 1:
-            raise CLIError("--temperature must be a float between 0 and 1")
-    if namespace.top_p is not None:
-        if namespace.top_p < 0 or namespace.top_p > 1:
-            raise CLIError("--top-p must be a float between 0 and 1")
-    if namespace.frequency_penalty is not None:
-        if namespace.frequency_penalty < 0 or namespace.frequency_penalty > 2:
-            raise CLIError("--frequency-penalty must be a float between 0 and 2")
-    if namespace.presence_penalty is not None:
-        if namespace.presence_penalty < 0 or namespace.presence_penalty > 2:
-            raise CLIError("--presence-penalty must be a float between 0 and 2")
+    """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
+    _range_validation(namespace.max_tokens, "max-tokens", 1, 4000)
+    _range_validation(namespace.temperature, "temperature", 0, 1)
+    _range_validation(namespace.top_p, "top-p", 0, 1)
+    _range_validation(namespace.frequency_penalty, "frequency-penalty", 0, 2)
+    _range_validation(namespace.presence_penalty, "presence-penalty", 0, 2)
+
+
+def _range_validation(param, name, min_value, max_value):
+    if param and (param < min_value or param > max_value):
+        raise CLIError("--%s must be a %s greater than %s and %s", name, type(param), min_value, max_value)
+
 
 
 def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
