@@ -109,51 +109,6 @@ def _document_indexer(documents) -> BaseGPTIndex:
     return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
 
 
-def _llama_agent_chain(index, question) -> str:
-    """
-    Ask GPT a question using llama_index.
-
-    Args:
-        index (str): The index to use.
-        question (str): The question to ask.
-
-    Returns:
-        Dict[str, str]: The response.
-    """
-    # Load indices from disk
-    _load_azure_openai_context()
-
-    os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
-    index_set = {"doc": index}
-
-    index_configs = []
-    for doc in ["doc"]:
-        tool_config = IndexToolConfig(
-            index=index_set[doc],
-            name=f"Vector Index {doc}",
-            description=f"Document to use to answer questions {doc}",
-            index_query_kwargs={"similarity_top_k": 3},
-            tool_kwargs={"return_direct": True, "return_sources": True},
-        )
-        index_configs.append(tool_config)
-
-    toolkit = LlamaToolkit(index_configs=index_configs)
-    memory = ConversationBufferMemory(memory_key="chat_history")
-    llm = AzureGPT35Turbo(  # type: ignore
-        deployment_name="gpt-35-turbo",
-        model_kwargs={
-            "api_key": openai.api_key,
-            "api_base": openai.api_base,
-            "api_type": "azure",
-            "api_version": "2023-03-15-preview",
-        },
-        max_retries=10,
-    )
-
-    agent_chain = create_llama_chat_agent(toolkit, llm, memory=memory, verbose=True)
-    return agent_chain.run(input=str(question))
-
-
 class AzureGPT35Turbo(AzureOpenAI):
     """Azure OpenAI Chat API."""
 
@@ -175,29 +130,6 @@ class AzureGPT35Turbo(AzureOpenAI):
             "logit_bias": self.logit_bias,
         }
         return {**normal_params, **self.model_kwargs}
-
-
-def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
-    """
-    Request a goal from GPT-4.
-
-    Args:
-        git_diff (str): The git diff to split.
-        goal (str): The goal to request from GPT-4.
-
-    Returns:
-        response (str): The response from GPT-4.
-    """
-    goal = goal or ""
-    prompt = f"""
-{goal}
-
-{git_diff}
-"""
-
-    response = _call_gpt(prompt, max_tokens=max_tokens)
-    logging.info(response)
-    return response
 
 
 def validate_parameter_range(namespace) -> None:
