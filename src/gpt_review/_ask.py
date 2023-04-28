@@ -243,7 +243,7 @@ def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty
 
     if files:
         if isinstance(files, str):
-          files = [files]
+            files = [files]
 
         response = _ask_doc(question, files)
     else:
