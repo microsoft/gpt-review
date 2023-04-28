@@ -2,6 +2,7 @@
 import logging
 import os
 import time
+from typing import Dict
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
@@ -18,14 +19,19 @@ from openai.error import RateLimitError
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review.constants import (
+    MAX_TOKENS_DEFAULT,
     MAX_TOKENS_MIN,
     MAX_TOKENS_MAX,
+    TEMPERATURE_DEFAULT,
     TEMPERATURE_MIN,
     TEMPERATURE_MAX,
+    TOP_P_DEFAULT,
     TOP_P_MIN,
     TOP_P_MAX,
+    FREQUENCY_PENALTY_DEFAULT,
     FREQUENCY_PENALTY_MIN,
     FREQUENCY_PENALTY_MAX,
+    PRESENCE_PENALTY_DEFAULT,
     PRESENCE_PENALTY_MIN,
     PRESENCE_PENALTY_MAX,
 )
@@ -59,7 +65,14 @@ def _range_validation(param, name, min_value, max_value) -> None:
         raise CLIError(f"--{name} must be a(n) {type(param).__name__} between {min_value} and {max_value}")
 
 
-def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
+def _ask(
+    question,
+    max_tokens=MAX_TOKENS_DEFAULT,
+    temperature=TEMPERATURE_DEFAULT,
+    top_p=TOP_P_DEFAULT,
+    frequency_penalty=FREQUENCY_PENALTY_DEFAULT,
+    presence_penalty=PRESENCE_PENALTY_DEFAULT,
+) -> Dict[str, str]:
     """Ask GPT a question.
 
     Args:
