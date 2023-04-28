@@ -2,12 +2,13 @@
 import logging
 import os
 import time
+from typing import Dict
+from typing_extensions import override
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 from knack.util import CLIError
 
-# import constants
 import openai
 
 from azure.identity import DefaultAzureCredential
@@ -17,18 +18,7 @@ from azure.keyvault.secrets import SecretClient
 from openai.error import RateLimitError
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review.constants import (
-    MAX_TOKENS_MIN,
-    MAX_TOKENS_MAX,
-    TEMPERATURE_MIN,
-    TEMPERATURE_MAX,
-    TOP_P_MIN,
-    TOP_P_MAX,
-    FREQUENCY_PENALTY_MIN,
-    FREQUENCY_PENALTY_MAX,
-    PRESENCE_PENALTY_MIN,
-    PRESENCE_PENALTY_MAX,
-)
+import gpt_review.constants as C
 
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
@@ -36,11 +26,13 @@ DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 def validate_parameter_range(namespace) -> None:
     """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
-    _range_validation(namespace.max_tokens, "max-tokens", MAX_TOKENS_MIN, MAX_TOKENS_MAX)
-    _range_validation(namespace.temperature, "temperature", TEMPERATURE_MIN, TEMPERATURE_MAX)
-    _range_validation(namespace.top_p, "top-p", TOP_P_MIN, TOP_P_MAX)
-    _range_validation(namespace.frequency_penalty, "frequency-penalty", FREQUENCY_PENALTY_MIN, FREQUENCY_PENALTY_MAX)
-    _range_validation(namespace.presence_penalty, "presence-penalty", PRESENCE_PENALTY_MIN, PRESENCE_PENALTY_MAX)
+    _range_validation(namespace.max_tokens, "max-tokens", C.MAX_TOKENS_MIN, C.MAX_TOKENS_MAX)
+    _range_validation(namespace.temperature, "temperature", C.TEMPERATURE_MIN, C.TEMPERATURE_MAX)
+    _range_validation(namespace.top_p, "top-p", C.TOP_P_MIN, C.TOP_P_MAX)
+    _range_validation(
+        namespace.frequency_penalty, "frequency-penalty", C.FREQUENCY_PENALTY_MIN, C.FREQUENCY_PENALTY_MAX
+    )
+    _range_validation(namespace.presence_penalty, "presence-penalty", C.PRESENCE_PENALTY_MIN, C.PRESENCE_PENALTY_MAX)
 
 
 def _range_validation(param, name, min_value, max_value) -> None:
@@ -59,7 +51,14 @@ def _range_validation(param, name, min_value, max_value) -> None:
         raise CLIError(f"--{name} must be a(n) {type(param).__name__} between {min_value} and {max_value}")
 
 
-def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
+def _ask(
+    question,
+    max_tokens=C.MAX_TOKENS_DEFAULT,
+    temperature=C.TEMPERATURE_DEFAULT,
+    top_p=C.TOP_P_DEFAULT,
+    frequency_penalty=C.FREQUENCY_PENALTY_DEFAULT,
+    presence_penalty=C.PRESENCE_PENALTY_DEFAULT,
+) -> Dict[str, str]:
     """Ask GPT a question.
 
     Args:
