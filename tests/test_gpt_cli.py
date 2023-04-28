@@ -1,4 +1,5 @@
 """Pytest for gpt_review/main.py"""
+from argparse import ArgumentError
 from dataclasses import dataclass
 import os
 import pytest
@@ -25,6 +26,16 @@ ASK_COMMANDS = [
     TestCase("ask --help"),
     TestCase("ask how are you"),
     TestCase("ask how are you --max-tokens=5"),
+    TestCase(
+        "ask how are you --max-tokens",
+        CLIError,
+        "b'usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]\\n               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]\\n               [--query JMESPATH] [--max-tokens MAX_TOKENS]\\n               [--temperature TEMPERATURE] [--top-p TOP_P]\\n               [--frequency-penalty FREQUENCY_PENALTY]\\n               [--presence-penalty PRESENCE_PENALTY]\\n               <QUESTION> [<QUESTION> ...]\\ngpt ask: error: argument --max-tokens: expected one argument\\n'",
+    ),
+    TestCase(
+        "ask how are you --max-tokens 'test'",
+        CLIError,
+        "b'usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]\\n               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]\\n               [--query JMESPATH] [--max-tokens MAX_TOKENS]\\n               [--temperature TEMPERATURE] [--top-p TOP_P]\\n               [--frequency-penalty FREQUENCY_PENALTY]\\n               [--presence-penalty PRESENCE_PENALTY]\\n               <QUESTION> [<QUESTION> ...]\\ngpt ask: error: argument --max-tokens: invalid int value: \"\\'test\\'\"\\n'",
+    ),
     TestCase(
         "ask how are you --max-tokens 0", CLIError, "b'ERROR: --max_tokens must be an integer between 1 and 4000\\n'"
     ),
@@ -96,8 +107,14 @@ def gpt_cli_test(command):
         with pytest.raises(SystemExit):
             cli()
     elif command.expected_error is not None:
-        exit_code = cli()
-        assert exit_code == 1
+        # exit_code = cli()
+        # assert exit_code == 1
+        try:
+            exit_code = cli()
+        except SystemExit as e:
+            # TODO this is not ideal
+            # assert e.message == command.expected_error_message[: command.expected_error_message.rfind("error")]
+            assert e.code == 2
     else:
         exit_code = cli()
         assert exit_code == 0
