@@ -14,7 +14,6 @@ import openai
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from openai.error import RateLimitError
-from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms import AzureOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from llama_index import (
@@ -25,11 +24,6 @@ from llama_index import (
     SimpleDirectoryReader,
 )
 from llama_index.indices.base import BaseGPTIndex
-from llama_index.langchain_helpers.agents import (
-    LlamaToolkit,
-    create_llama_chat_agent,
-    IndexToolConfig,
-)
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review.constants import (
