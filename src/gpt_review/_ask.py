@@ -199,7 +199,6 @@ def _request_goal(git_diff, goal=None, max_tokens=500) -> str:
     return response
 
 
-=======
 def validate_parameter_range(namespace) -> None:
     """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
     _range_validation(namespace.max_tokens, "max-tokens", MAX_TOKENS_MIN, MAX_TOKENS_MAX)
@@ -257,6 +256,7 @@ def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty
         )
     return {"response": response}
 
+
 def _load_azure_openai_context() -> None:
     """
     Load the Azure OpenAI context.
@@ -270,8 +270,7 @@ def _load_azure_openai_context() -> None:
         openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
     else:
         secret_client = SecretClient(
-            vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT),
-            credential=DefaultAzureCredential(),
+            vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
 
         openai.api_base = secret_client.get_secret("azure-open-ai").value
@@ -307,14 +306,7 @@ def _call_gpt(
 
     if len(prompt) > 32767:
         return _batch_large_changes(
-            prompt,
-            temperature,
-            max_tokens,
-            top_p,
-            frequency_penalty,
-            presence_penalty,
-            retry,
-            messages,
+            prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages
         )
 
     messages = messages or [{"role": "user", "content": prompt}]
@@ -337,15 +329,7 @@ def _call_gpt(
         if retry < 5:
             logging.warning("Call to GPT failed due to rate limit, retry attempt: %s", retry)
             time.sleep(retry * 5)
-            return _call_gpt(
-                prompt,
-                temperature,
-                max_tokens,
-                top_p,
-                frequency_penalty,
-                presence_penalty,
-                retry + 1,
-            )
+            return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
 
 
@@ -360,11 +344,9 @@ def _batch_large_changes(
     messages=None,
 ) -> str:
     """Placeholder for batching large changes to GPT-4."""
-    output = ""
-
     try:
         logging.warning("Prompt too long, batching")
-
+        output = ""
         for i in range(0, len(prompt), 32767):
             logging.debug("Batching %s to %s", i, i + 32767)
             batch = prompt[i : i + 32767]
@@ -378,7 +360,6 @@ def _batch_large_changes(
                 retry=retry,
                 messages=messages,
             )
-
         prompt = f"""
 "Summarize the large file batches"
 
