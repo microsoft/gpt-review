@@ -2,6 +2,7 @@
 import logging
 import os
 import time
+from typing import List
 from typing_extensions import override
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
@@ -48,12 +49,12 @@ from gpt_review.constants import (
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask_doc(question, files) -> str:
+def _ask_doc(question: List[str], files: List[str]) -> str:
     """
     Ask GPT a question.
 
     Args:
-        question (str): The question to ask.
+        question (List[str]): The question to ask.
         files (List[str]): The files to search.
 
     Returns:
@@ -62,7 +63,7 @@ def _ask_doc(question, files) -> str:
     documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
-    return index.query(question).response  # type: ignore
+    return index.query(" ".join(question)).response  # type: ignore
 
 
 def _document_indexer(documents) -> BaseGPTIndex:
@@ -239,9 +240,6 @@ def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty
     Yields:
         dict[str, str]: The response from GPT.
     """
-    if isinstance(files, str):
-        files = [files]
-
     if files:
         response = _ask_doc(question, files)
     else:
