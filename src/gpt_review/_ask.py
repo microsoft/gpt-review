@@ -60,7 +60,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
         GPTSimpleVectorIndex: The document indexer.
     """
     service_context = None
-    if os.getenv("AZURE_OPENAI_API_KEY"):
+    if not os.getenv("OPENAI_API_KEY"):
         _load_azure_openai_context()
 
         os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
