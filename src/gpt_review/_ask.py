@@ -7,6 +7,7 @@ from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 from knack.util import CLIError
 
+# import constants
 import openai
 
 from azure.identity import DefaultAzureCredential
@@ -15,25 +16,40 @@ from azure.keyvault.secrets import SecretClient
 
 from openai.error import RateLimitError
 
-
 from gpt_review._command import GPTCommandGroup
+from gpt_review.constants import (
+    MIN_MAX_TOKENS_VALUE,
+    MAX_MAX_TOKENS_VALUE,
+    MIN_TEMPERATURE_VALUE,
+    MAX_TEMPERATURE_VALUE,
+    MIN_TOP_P_VALUE,
+    MAX_TOP_P_VALUE,
+    MIN_FREQUENCY_PENALTY_VALUE,
+    MAX_FREQUENCY_PENALTY_VALUE,
+    MIN_PRESENCE_PENALTY_VALUE,
+    MAX_PRESENCE_PENALTY_VALUE,
+)
+
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
 def validate_parameter_range(namespace):
     """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
-    _range_validation(namespace.max_tokens, "max-tokens", 1, 4000)
-    _range_validation(namespace.temperature, "temperature", 0, 1)
-    _range_validation(namespace.top_p, "top-p", 0, 1)
-    _range_validation(namespace.frequency_penalty, "frequency-penalty", 0, 2)
-    _range_validation(namespace.presence_penalty, "presence-penalty", 0, 2)
+    _range_validation(namespace.max_tokens, "max-tokens", MIN_MAX_TOKENS_VALUE, MAX_MAX_TOKENS_VALUE)
+    _range_validation(namespace.temperature, "temperature", MIN_TEMPERATURE_VALUE, MAX_TEMPERATURE_VALUE)
+    _range_validation(namespace.top_p, "top-p", MIN_TOP_P_VALUE, MAX_TOP_P_VALUE)
+    _range_validation(
+        namespace.frequency_penalty, "frequency-penalty", MIN_FREQUENCY_PENALTY_VALUE, MAX_FREQUENCY_PENALTY_VALUE
+    )
+    _range_validation(
+        namespace.presence_penalty, "presence-penalty", MIN_PRESENCE_PENALTY_VALUE, MAX_PRESENCE_PENALTY_VALUE
+    )
 
 
 def _range_validation(param, name, min_value, max_value):
-    if param and (param < min_value or param > max_value):
-        raise CLIError("--%s must be a %s greater than %s and %s", name, type(param), min_value, max_value)
-
+    if param is not None and (param < min_value or param > max_value):
+        raise CLIError(f"--{name} must be a(n) {type(param).__name__} between {min_value} and {max_value}")
 
 
 def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty=0.5, presence_penalty=0):
