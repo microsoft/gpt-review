@@ -52,6 +52,8 @@ def _document_indexer(documents) -> BaseGPTIndex:
     """
     Create a document indexer.
 
+    Deployment names include: "gpt-35-turbo", "text-davinci-003"
+
     Args:
         documents (List[Document]): The documents to index.
         azure (bool): Whether to use Azure OpenAI.
@@ -59,35 +61,32 @@ def _document_indexer(documents) -> BaseGPTIndex:
     Returns:
         GPTSimpleVectorIndex: The document indexer.
     """
-    service_context = None
-    if os.getenv("AZURE_OPENAI_API_KEY"):
-        _load_azure_openai_context()
+    _load_azure_openai_context()
 
-        os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
-        llm = AzureGPT35Turbo(  # type: ignore
-            deployment_name="gpt-35-turbo",  # "gpt-35-turbo", # "text-davinci-003",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
-        llm_predictor = LLMPredictor(llm=llm)
+    llm = AzureGPT35Turbo(  # type: ignore
+        deployment_name="gpt-35-turbo",
+        model_kwargs={
+            "api_key": openai.api_key,
+            "api_base": openai.api_base,
+            "api_type": "azure",
+            "api_version": "2023-03-15-preview",
+        },
+        max_retries=10,
+    )
+    llm_predictor = LLMPredictor(llm=llm)
 
-        embedding_llm = LangchainEmbedding(
-            OpenAIEmbeddings(
-                document_model_name="text-embedding-ada-002",
-                query_model_name="text-embedding-ada-002",
-            ),  # type: ignore
-            embed_batch_size=1,
-        )
+    embedding_llm = LangchainEmbedding(
+        OpenAIEmbeddings(
+            document_model_name="text-embedding-ada-002",
+            query_model_name="text-embedding-ada-002",
+        ),  # type: ignore
+        embed_batch_size=1,
+    )
 
-        service_context = ServiceContext.from_defaults(
-            llm_predictor=llm_predictor,
-            embed_model=embedding_llm,
-        )
+    service_context = ServiceContext.from_defaults(
+        llm_predictor=llm_predictor,
+        embed_model=embedding_llm,
+    )
     return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
 
 
