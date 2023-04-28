@@ -48,7 +48,17 @@ def validate_parameter_range(namespace):
 
 
 def _range_validation(param, name, min_value, max_value):
-    """Validates that the given parameter is within the allowed range"""
+    """Validates that the given parameter is within the allowed range
+
+    Args:
+        param (int or float): The parameter value to validate.
+        name (str): The name of the parameter.
+        min_value (int or float): The minimum allowed value for the parameter.
+        max_value (int or float): The maximum allowed value for the parameter.
+
+    Raises:
+        CLIError: If the parameter is not within the allowed range.
+    """
     if param is not None and (param < min_value or param > max_value):
         raise CLIError(f"--{name} must be a(n) {type(param).__name__} between {min_value} and {max_value}")
 

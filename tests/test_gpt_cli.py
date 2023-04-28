@@ -131,12 +131,11 @@ def gpt_cli_test(command):
         with pytest.raises(SystemExit):
             cli()
     elif command.expected_error:
-        # exit_code = cli()
-        # assert exit_code == 1
+        # TODO
         try:
             exit_code = cli()
+            assert exit_code == 1
         except SystemExit as e:
-            # TODO this is not ideal
             # assert e.message == command.expected_error_message[: command.expected_error_message.rfind("error")]
             assert e.code == 2
     else:
@@ -147,7 +146,7 @@ def gpt_cli_test(command):
 @pytest.mark.parametrize("command", ARGS)
 @pytest.mark.integration
 def test_int_gpt_cli(command):
-    """Test gpt commands from installed CLI"""
+    """Test gpt commands from CLI file"""
     gpt_cli_test(command)
 
 

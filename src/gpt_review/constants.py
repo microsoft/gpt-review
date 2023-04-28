@@ -1,4 +1,4 @@
-"""Contains the constants for the mininum and maximum values of the parameters"""
+"""Contains constants for minimum and maximum values of various parameters used in GPT Review."""
 
 MIN_MAX_TOKENS_VALUE = 1
 MAX_MAX_TOKENS_VALUE = 4000
