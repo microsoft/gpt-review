@@ -31,7 +31,5 @@
         "-c",
         "pyproject.toml"
     ],
-    "python.analysis.inlayHints.functionReturnTypes": true,
-    "python.analysis.pylanceLspClientEnabled": true,
-    "python.analysis.enableSyncServer": false
+    "python.analysis.inlayHints.functionReturnTypes": true
 }
