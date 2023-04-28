@@ -108,7 +108,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
     return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
 
 
-def _llama_agent_chain(index, question):
+def _llama_agent_chain(index, question) -> str:
     """
     Ask GPT a question using llama_index.
 
@@ -239,11 +239,10 @@ def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty
     Yields:
         dict[str, str]: The response from GPT.
     """
+    if isinstance(files, str):
+        files = [files]
 
     if files:
-        if isinstance(files, str):
-            files = [files]
-
         response = _ask_doc(question, files)
     else:
         response = _call_gpt(
