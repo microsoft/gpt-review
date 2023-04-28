@@ -3,7 +3,7 @@ from collections import namedtuple
 
 
 @pytest.fixture
-def mock_openai(monkeypatch):
+def mock_openai(monkeypatch) -> None:
     """
     Mock OpenAI Functions with monkeypatch
     - aopenai.ChatCompletion.create
@@ -13,7 +13,7 @@ def mock_openai(monkeypatch):
     monkeypatch.setenv("AZURE_OPENAI_API_KEY", "MOCK")
 
     class MockResponse:
-        def __init__(self):
+        def __init__(self) -> None:
             self.choices = [namedtuple("mockMessage", "message")(*[namedtuple("mockContent", "content")(*[["test"]])])]
 
     def mock_create(
@@ -24,7 +24,7 @@ def mock_openai(monkeypatch):
         top_p,
         frequency_penalty,
         presence_penalty,
-    ):
+    ) -> MockResponse:
         return MockResponse()
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)

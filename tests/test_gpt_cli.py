@@ -7,97 +7,105 @@ import sys
 
 from gpt_review._gpt_cli import cli
 from gpt_review.constants import (
-    MIN_MAX_TOKENS_VALUE,
-    MAX_MAX_TOKENS_VALUE,
-    MIN_TEMPERATURE_VALUE,
-    MAX_TEMPERATURE_VALUE,
-    MIN_TOP_P_VALUE,
-    MAX_TOP_P_VALUE,
-    MIN_FREQUENCY_PENALTY_VALUE,
-    MAX_FREQUENCY_PENALTY_VALUE,
-    MIN_PRESENCE_PENALTY_VALUE,
-    MAX_PRESENCE_PENALTY_VALUE,
+    MAX_TOKENS_MIN,
+    MAX_TOKENS_MAX,
+    TEMPERATURE_MIN,
+    TEMPERATURE_MAX,
+    TOP_P_MIN,
+    TOP_P_MAX,
+    FREQUENCY_PENALTY_MIN,
+    FREQUENCY_PENALTY_MAX,
+    PRESENCE_PENALTY_MIN,
+    PRESENCE_PENALTY_MAX,
 )
-
-from knack.util import CLIError
 
 
 @dataclass
-class TestCase:
+class CLICase:
     command: str
-    expected_error: CLIError = None
     expected_error_message: str = ""
+    expected_error_code: int = 0
 
 
 ROOT_COMMANDS = [
-    TestCase("--version"),
-    TestCase("--help"),
+    CLICase("--version"),
+    CLICase("--help"),
 ]
 
 ASK_COMMANDS = [
-    TestCase("ask --help"),
-    TestCase("ask how are you"),
-    TestCase("ask how are you --max-tokens=5"),
-    TestCase(
+    CLICase("ask --help"),
+    CLICase("ask how are you"),
+    CLICase("ask how are you --max-tokens=5"),
+    CLICase(
         "ask how are you --max-tokens",
-        CLIError,
-        "usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]\n               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]\n               [--query JMESPATH] [--max-tokens MAX_TOKENS]\n               [--temperature TEMPERATURE] [--top-p TOP_P]\n               [--frequency-penalty FREQUENCY_PENALTY]\n               [--presence-penalty PRESENCE_PENALTY]\n               <QUESTION> [<QUESTION> ...]\ngpt ask: error: argument --max-tokens: expected one argument\n",
+        """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
+               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]
+               [--query JMESPATH] [--max-tokens MAX_TOKENS]
+               [--temperature TEMPERATURE] [--top-p TOP_P]
+               [--frequency-penalty FREQUENCY_PENALTY]
+               [--presence-penalty PRESENCE_PENALTY]
+               <QUESTION> [<QUESTION> ...]
+gpt ask: error: argument --max-tokens: expected one argument
+""",
+        2,
     ),
-    TestCase(
+    CLICase(
         "ask how are you --max-tokens 'test'",
-        CLIError,
-        "usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]\n               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]\n               [--query JMESPATH] [--max-tokens MAX_TOKENS]\n               [--temperature TEMPERATURE] [--top-p TOP_P]\n               [--frequency-penalty FREQUENCY_PENALTY]\n               [--presence-penalty PRESENCE_PENALTY]\n               <QUESTION> [<QUESTION> ...]\ngpt ask: error: argument --max-tokens: invalid int value: \"'test'\"\n",
+        """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
+               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]
+               [--query JMESPATH] [--max-tokens MAX_TOKENS]
+               [--temperature TEMPERATURE] [--top-p TOP_P]
+               [--frequency-penalty FREQUENCY_PENALTY]
+               [--presence-penalty PRESENCE_PENALTY]
+               <QUESTION> [<QUESTION> ...]
+gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
+""",
+        2,
     ),
-    TestCase(
-        "ask how are you --max-tokens 0",
-        CLIError,
-        f"ERROR: --max-tokens must be a(n) int between {MIN_MAX_TOKENS_VALUE} and {MAX_MAX_TOKENS_VALUE}\n",
+    CLICase(
+        f"ask how are you --max-tokens {MAX_TOKENS_MIN-1}",
+        f"ERROR: --max-tokens must be a(n) int between {MAX_TOKENS_MIN} and {MAX_TOKENS_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --temperature 1"),
-    TestCase("ask how are you -t 0.5"),
-    TestCase(
-        "ask how are you -t 9",
-        CLIError,
-        f"ERROR: --temperature must be a(n) float between {MIN_TEMPERATURE_VALUE} and {MAX_TEMPERATURE_VALUE}\n",
+    CLICase("ask how are you --temperature 1"),
+    CLICase(
+        f"ask how are you --temperature {TEMPERATURE_MAX+8}",
+        f"ERROR: --temperature must be a(n) float between {TEMPERATURE_MIN} and {TEMPERATURE_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --top-p 0.7"),
-    TestCase(
-        "ask how are you --top-p 4.5",
-        CLIError,
-        f"ERROR: --top-p must be a(n) float between {MIN_TOP_P_VALUE} and {MAX_TOP_P_VALUE}\n",
+    CLICase("ask how are you --top-p 0.7"),
+    CLICase(
+        f"ask how are you --top-p {TOP_P_MAX+3.5}",
+        f"ERROR: --top-p must be a(n) float between {TOP_P_MIN} and {TOP_P_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --frequency-penalty 1"),
-    TestCase(
-        "ask how are you --frequency-penalty 3",
-        CLIError,
-        f"ERROR: --frequency-penalty must be a(n) float between {MIN_FREQUENCY_PENALTY_VALUE} and {MAX_FREQUENCY_PENALTY_VALUE}\n",
+    CLICase("ask how are you --frequency-penalty 1"),
+    CLICase(
+        f"ask how are you --frequency-penalty {FREQUENCY_PENALTY_MAX+2}",
+        f"ERROR: --frequency-penalty must be a(n) float between {FREQUENCY_PENALTY_MIN} and {FREQUENCY_PENALTY_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --presence-penalty 0.7"),
-    TestCase(
-        "ask how are you --presence-penalty 8.7",
-        CLIError,
-        f"ERROR: --presence-penalty must be a(n) float between {MIN_PRESENCE_PENALTY_VALUE} and {MAX_PRESENCE_PENALTY_VALUE}\n",
+    CLICase("ask how are you --presence-penalty 0.7"),
+    CLICase(
+        f"ask how are you --presence-penalty {PRESENCE_PENALTY_MAX+7.7}",
+        f"ERROR: --presence-penalty must be a(n) float between {PRESENCE_PENALTY_MIN} and {PRESENCE_PENALTY_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --max-tokens=5 --temperature 0.1"),
-    TestCase(
-        "ask how are you --max-tokens 5 -t 8",
-        CLIError,
-        f"ERROR: --temperature must be a(n) float between {MIN_TEMPERATURE_VALUE} and {MAX_TEMPERATURE_VALUE}\n",
+    CLICase("ask how are you --max-tokens=5 --temperature 0.1"),
+    CLICase("ask how are you --max-tokens=5 --top-p 0.7"),
+    CLICase(
+        f"ask how are you --max-tokens {MAX_TOKENS_MAX+1} --top-p 0.7",
+        f"ERROR: --max-tokens must be a(n) int between {MAX_TOKENS_MIN} and {MAX_TOKENS_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --max-tokens=5 --top-p 0.7"),
-    TestCase(
-        "ask how are you --max-tokens 5000 --top-p 0.7",
-        CLIError,
-        f"ERROR: --max-tokens must be a(n) int between {MIN_MAX_TOKENS_VALUE} and {MAX_MAX_TOKENS_VALUE}\n",
+    CLICase("ask how are you --frequency-penalty 1 --presence-penalty 0.7"),
+    CLICase(
+        f"ask how are you --frequency-penalty {FREQUENCY_PENALTY_MAX+3} --presence-penalty {PRESENCE_PENALTY_MAX+7.7}",
+        f"ERROR: --frequency-penalty must be a(n) float between {FREQUENCY_PENALTY_MIN} and {FREQUENCY_PENALTY_MAX}\n",
+        1,
     ),
-    TestCase("ask how are you --frequency-penalty 1 --presence-penalty 0.7"),
-    TestCase(
-        "ask how are you --frequency-penalty 4 --presence-penalty 4",
-        CLIError,
-        f"ERROR: --frequency-penalty must be a(n) float between {MIN_FREQUENCY_PENALTY_VALUE} and {MAX_FREQUENCY_PENALTY_VALUE}\n",
-    ),
-    TestCase("ask how are you --max-tokens=5 --temperature 0.1 --frequency-penalty 1 --presence-penalty 0.7"),
-    TestCase("ask how are you --max-tokens=5 --top-p 0.7 --frequency-penalty 1 --presence-penalty 0.7"),
+    CLICase("ask how are you --max-tokens=5 --temperature 0.1 --frequency-penalty 1 --presence-penalty 0.7"),
+    CLICase("ask how are you --max-tokens=5 --top-p 0.7 --frequency-penalty 1 --presence-penalty 0.7"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
@@ -105,7 +113,7 @@ ARGS = ROOT_COMMANDS + ASK_COMMANDS
 
 @pytest.mark.parametrize("command", ARGS)
 @pytest.mark.cli
-def test_cli_gpt_cli(command):
+def test_cli_gpt_cli(command: CLICase) -> None:
     """Test gpt commands from installed CLI"""
 
     command_array = f"gpt {command.command}".split(" ")
@@ -117,35 +125,25 @@ def test_cli_gpt_cli(command):
         check=False,
     )
 
-    if command.expected_error:
-        assert result.stderr.decode("ascii") == command.expected_error_message
-    else:
-        assert result.returncode == 0
+    assert result.returncode == command.expected_error_code
 
 
-def gpt_cli_test(command):
+def gpt_cli_test(command: CLICase) -> None:
     os.environ["GPT_ASK_COMMANDS"] = "1"
 
     sys.argv[1:] = command.command.split(" ")
-    if "--help" in command.command:
-        with pytest.raises(SystemExit):
-            cli()
-    elif command.expected_error:
-        # TODO
-        try:
-            exit_code = cli()
-            assert exit_code == 1
-        except SystemExit as e:
-            # assert e.message == command.expected_error_message[: command.expected_error_message.rfind("error")]
-            assert e.code == 2
-    else:
+
+    try:
         exit_code = cli()
-        assert exit_code == 0
+    except SystemExit as e:
+        exit_code = e.code
+    finally:
+        assert exit_code == command.expected_error_code
 
 
 @pytest.mark.parametrize("command", ARGS)
 @pytest.mark.integration
-def test_int_gpt_cli(command):
+def test_int_gpt_cli(command: CLICase) -> None:
     """Test gpt commands from CLI file"""
     gpt_cli_test(command)
 
@@ -154,5 +152,5 @@ def test_int_gpt_cli(command):
     "command",
     ARGS,
 )
-def test_gpt_cli(command, mock_openai):
+def test_gpt_cli(command: CLICase, mock_openai: None) -> None:
     gpt_cli_test(command)

@@ -18,36 +18,32 @@ from openai.error import RateLimitError
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review.constants import (
-    MIN_MAX_TOKENS_VALUE,
-    MAX_MAX_TOKENS_VALUE,
-    MIN_TEMPERATURE_VALUE,
-    MAX_TEMPERATURE_VALUE,
-    MIN_TOP_P_VALUE,
-    MAX_TOP_P_VALUE,
-    MIN_FREQUENCY_PENALTY_VALUE,
-    MAX_FREQUENCY_PENALTY_VALUE,
-    MIN_PRESENCE_PENALTY_VALUE,
-    MAX_PRESENCE_PENALTY_VALUE,
+    MAX_TOKENS_MIN,
+    MAX_TOKENS_MAX,
+    TEMPERATURE_MIN,
+    TEMPERATURE_MAX,
+    TOP_P_MIN,
+    TOP_P_MAX,
+    FREQUENCY_PENALTY_MIN,
+    FREQUENCY_PENALTY_MAX,
+    PRESENCE_PENALTY_MIN,
+    PRESENCE_PENALTY_MAX,
 )
 
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def validate_parameter_range(namespace):
+def validate_parameter_range(namespace) -> None:
     """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
-    _range_validation(namespace.max_tokens, "max-tokens", MIN_MAX_TOKENS_VALUE, MAX_MAX_TOKENS_VALUE)
-    _range_validation(namespace.temperature, "temperature", MIN_TEMPERATURE_VALUE, MAX_TEMPERATURE_VALUE)
-    _range_validation(namespace.top_p, "top-p", MIN_TOP_P_VALUE, MAX_TOP_P_VALUE)
-    _range_validation(
-        namespace.frequency_penalty, "frequency-penalty", MIN_FREQUENCY_PENALTY_VALUE, MAX_FREQUENCY_PENALTY_VALUE
-    )
-    _range_validation(
-        namespace.presence_penalty, "presence-penalty", MIN_PRESENCE_PENALTY_VALUE, MAX_PRESENCE_PENALTY_VALUE
-    )
+    _range_validation(namespace.max_tokens, "max-tokens", MAX_TOKENS_MIN, MAX_TOKENS_MAX)
+    _range_validation(namespace.temperature, "temperature", TEMPERATURE_MIN, TEMPERATURE_MAX)
+    _range_validation(namespace.top_p, "top-p", TOP_P_MIN, TOP_P_MAX)
+    _range_validation(namespace.frequency_penalty, "frequency-penalty", FREQUENCY_PENALTY_MIN, FREQUENCY_PENALTY_MAX)
+    _range_validation(namespace.presence_penalty, "presence-penalty", PRESENCE_PENALTY_MIN, PRESENCE_PENALTY_MAX)
 
 
-def _range_validation(param, name, min_value, max_value):
+def _range_validation(param, name, min_value, max_value) -> None:
     """Validates that the given parameter is within the allowed range
 
     Args:
@@ -88,7 +84,7 @@ def _ask(question, max_tokens=100, temperature=0.7, top_p=0.5, frequency_penalty
     return {"response": response}
 
 
-def _load_azure_openai_context():
+def _load_azure_openai_context() -> None:
     """
     Load the Azure OpenAI context.
 
@@ -112,7 +108,7 @@ def _call_gpt(
     prompt: str,
     temperature=0.10,
     max_tokens=500,
-    top_p=1,
+    top_p=1.0,
     frequency_penalty=0.5,
     presence_penalty=0.0,
     retry=0,
@@ -228,12 +224,12 @@ class AskCommandGroup(GPTCommandGroup):
     """Ask Command Group."""
 
     @staticmethod
-    def load_command_table(loader: CLICommandsLoader):
+    def load_command_table(loader: CLICommandsLoader) -> None:
         with CommandGroup(loader, "", "gpt_review._ask#{}") as group:
             group.command("ask", "_ask", is_preview=True)
 
     @staticmethod
-    def load_arguments(loader: CLICommandsLoader):
+    def load_arguments(loader: CLICommandsLoader) -> None:
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
             args.argument(
@@ -241,7 +237,6 @@ class AskCommandGroup(GPTCommandGroup):
                 type=float,
                 help="Sets the level of creativity/randomness.",
                 validator=validate_parameter_range,
-                options_list=["--temperature", "-t"],
             )
             args.argument(
                 "max_tokens",
