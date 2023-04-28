@@ -25,11 +25,5 @@
     ],
     "isort.args": [
         "--settings-path=pyproject.toml"
-    ],
-    "python.linting.banditEnabled": true,
-    "python.linting.banditArgs": [
-        "-c",
-        "pyproject.toml"
-    ],
-    "python.analysis.inlayHints.functionReturnTypes": true
+    ]
 }

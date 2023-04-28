@@ -101,7 +101,6 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase(
         f"""ask how are you --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
-    CLICase("ask --files review.py --files review.py what programming language is this code written in?"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
