@@ -61,19 +61,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
     Returns:
         GPTSimpleVectorIndex: The document indexer.
     """
-    openai.api_type = "azure"
-    openai.api_version = "2023-03-15-preview"
-
-    if os.getenv("AZURE_OPENAI_API"):
-        os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")
-        os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
-    else:
-        secret_client = SecretClient(
-            vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
-        )
-
-        os.environ["OPENAI_API_BASE"] = secret_client.get_secret("azure-open-ai").value
-        os.environ["OPENAI_API_KEY"] = secret_client.get_secret("azure-openai-key").value
+    _load_azure_openai_context()
 
     llm = AzureGPT35Turbo(  # type: ignore
         deployment_name="gpt-35-turbo",
@@ -195,18 +183,35 @@ def _load_azure_openai_context() -> None:
 
     If the environment variables are not set, retrieve the values from Azure Key Vault.
     """
+    # openai.api_type = "azure"
+    # openai.api_version = "2023-03-15-preview"
+
+    # if os.getenv("AZURE_OPENAI_API"):
+    #     openai.api_base = os.getenv("AZURE_OPENAI_API")
+    #     openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
+    # else:
+    #     secret_client = SecretClient(
+    #         vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
+    #     )
+    #     openai.api_base = secret_client.get_secret("azure-open-ai").value
+    #     openai.api_key = secret_client.get_secret("azure-openai-key").value
     openai.api_type = "azure"
     openai.api_version = "2023-03-15-preview"
 
     if os.getenv("AZURE_OPENAI_API"):
-        openai.api_base = os.getenv("AZURE_OPENAI_API")
-        openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        api_base = os.getenv("AZURE_OPENAI_API")
+        api_key = os.getenv("AZURE_OPENAI_API_KEY")
     else:
         secret_client = SecretClient(
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
-        openai.api_base = secret_client.get_secret("azure-open-ai").value
-        openai.api_key = secret_client.get_secret("azure-openai-key").value
+        api_base = secret_client.get_secret("azure-open-ai").value
+        api_key = secret_client.get_secret("azure-openai-key").value
+
+    os.environ["OPENAI_API_BASE"] = api_base
+    openai.api_base = api_base
+    os.environ["OPENAI_API_KEY"] = api_key
+    openai.api_key = api_key
 
 
 def _call_gpt(
