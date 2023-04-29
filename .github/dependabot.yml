@@ -11,6 +11,9 @@ updates:
     interval: daily
     time: "13:00"
   open-pull-requests-limit: 10
+  assignees:
+  - dciborow
+  - danay1999
   commit-message:
     prefix: "fix: "
   allow:
