@@ -66,14 +66,14 @@ def _document_indexer(documents) -> BaseGPTIndex:
 
     if os.getenv("AZURE_OPENAI_API"):
         openai.api_base = os.getenv("AZURE_OPENAI_API")
-        os.environ['OPENAI_API_KEY'] = os.getenv("AZURE_OPENAI_API_KEY")
+        os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")
     else:
         secret_client = SecretClient(
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
 
         openai.api_base = secret_client.get_secret("azure-open-ai").value
-        os.environ['OPENAI_API_KEY'] = secret_client.get_secret("azure-openai-key").value
+        os.environ["OPENAI_API_KEY"] = secret_client.get_secret("azure-openai-key").value
 
     llm = AzureGPT35Turbo(  # type: ignore
         deployment_name="gpt-35-turbo",
@@ -205,7 +205,6 @@ def _load_azure_openai_context() -> None:
         secret_client = SecretClient(
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
-
         openai.api_base = secret_client.get_secret("azure-open-ai").value
         openai.api_key = secret_client.get_secret("azure-openai-key").value
 
