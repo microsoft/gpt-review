@@ -191,19 +191,14 @@ def _load_azure_openai_context() -> None:
     openai.api_version = "2023-03-15-preview"
 
     if os.getenv("AZURE_OPENAI_API"):
-        api_base = os.getenv("AZURE_OPENAI_API")
-        api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
+        openai.api_key = os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")  # type: ignore
     else:
         secret_client = SecretClient(
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
-        api_base = secret_client.get_secret("azure-open-ai").value
-        api_key = secret_client.get_secret("azure-openai-key").value
-
-    os.environ["OPENAI_API_BASE"] = api_base  # type: ignore
-    openai.api_base = api_base
-    os.environ["OPENAI_API_KEY"] = api_key  # type: ignore
-    openai.api_key = api_key
+        openai.api_base = os.environ["OPENAI_API_BASE"] = secret_client.get_secret("azure-open-ai").value  # type: ignore
+        openai.api_key = os.environ["OPENAI_API_KEY"] = secret_client.get_secret("azure-openai-key").value  # type: ignore
 
 
 def _call_gpt(
