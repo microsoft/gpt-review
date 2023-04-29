@@ -99,7 +99,7 @@ jobs:
         cache: 'pip' # caching pip dependencies
     - run: |
         pip install pytest pytest-cov
-        pip install .
+        pip install -e .
     
     - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 
     - uses: codecov/codecov-action@v3
