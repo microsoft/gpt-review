@@ -41,3 +41,23 @@ def mock_openai(monkeypatch) -> None:
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTSimpleVectorIndex.from_documents", from_documents)
+
+
+@pytest.fixture
+def mock_github(monkeypatch) -> None:
+    """
+    Mock GitHub Functions with monkeypatch
+    - requests.get
+    """
+
+    class MockResponse:
+        def __init__(self) -> None:
+            self.text = "diff --git a/README.md b/README.md"
+
+        def json(self) -> dict:
+            return {"test": "test"}
+
+    def mock_get(url, headers, timeout) -> MockResponse:
+        return MockResponse()
+
+    monkeypatch.setattr("requests.get", mock_get)

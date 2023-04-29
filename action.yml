@@ -119,7 +119,8 @@ runs:
           python -m pip install \
             requests \
             openai \
-            pyyaml
+            pyyaml \
+            gpt-review
 
       - name: Set env.BRANCH
         shell: bash
@@ -130,7 +131,7 @@ runs:
         shell: bash
         run: |
           source .env/bin/activate
-          
+
           ORG_NAME=$(echo ${BRANCH%/*})
           curl --request GET --url https://raw.githubusercontent.com/$ORG_NAME/gpt-review/$ACTION_REF/review.py > review.py
 

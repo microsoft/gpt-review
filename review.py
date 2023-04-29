@@ -10,6 +10,8 @@ import yaml
 
 from openai.error import RateLimitError, InvalidRequestError
 
+from gpt_review._github import _get_pr_diff
+
 
 CHECKS = {
     "SUMMARY_CHECKS": [
@@ -319,7 +321,7 @@ def split_diff(git_diff):
     return git_diff.split(f"{diff} {git}")[1:]  # Use formated string to prevent splitting
 
 
-def _analyze_test_coverage_bicep(files):
+def _analyze_test_coverage_bicep(files) -> str:
     main_file = files["main.bicep"].diff
     test_file = files["main.test.bicep"].diff if "main.test.bicep" in files else ""
 
@@ -337,7 +339,7 @@ def _analyze_test_coverage_bicep(files):
     """
 
 
-def summarize_test_coverage(git_diff):
+def summarize_test_coverage(git_diff) -> str:
     """Summarize the test coverage of a git diff.
 
     Args:
@@ -366,7 +368,7 @@ Are the changes tested?
     return call_gpt(prompt, temperature=0.0, max_tokens=1500)
 
 
-def summarize_file(diff):
+def summarize_file(diff) -> str:
     """Summarize a file in a git diff.
 
     Args:
@@ -389,7 +391,7 @@ Summarize the changes to the file {git_file.file_name}.
 """
 
 
-def summarize_bugs_in_pr(git_diff):
+def summarize_bugs_in_pr(git_diff) -> str:
     """
     Summarize bugs that may be introduced.
 
@@ -409,7 +411,7 @@ Summarize bugs that may be introduced.
     return response
 
 
-def request_goal(git_diff, goal):
+def request_goal(git_diff, goal) -> str:
     """
     Request a goal from GPT-4.
 
@@ -431,7 +433,7 @@ def request_goal(git_diff, goal):
     return response
 
 
-def summarize_files(git_diff):
+def summarize_files(git_diff) -> str:
     """Summarize git files."""
     summary = """
 # Summary by GPT-4
@@ -470,7 +472,7 @@ def summarize_files(git_diff):
     return summary
 
 
-def summarize_pr(git_diff):
+def summarize_pr(git_diff) -> str:
     """
     Summarize a PR.
 
@@ -490,7 +492,7 @@ def summarize_pr(git_diff):
     return text
 
 
-def summarize_risk(git_diff):
+def summarize_risk(git_diff) -> str:
     """
     Summarize potential risks.
 
@@ -510,7 +512,7 @@ def summarize_risk(git_diff):
     return text
 
 
-def pr_insight_checks(git_diff):
+def pr_insight_checks(git_diff) -> str:
     """
     Summarize potential risks.
 
@@ -530,7 +532,7 @@ def pr_insight_checks(git_diff):
     return text
 
 
-def process_yaml(git_diff, yaml_file: str):
+def process_yaml(git_diff, yaml_file: str) -> str:
     """
     Load YAML formatted string and create report.
 
@@ -564,7 +566,7 @@ def process_report(git_diff, report: dict, indent="#") -> str:
     )
 
 
-def check_goals(git_diff, checks, indent="###"):
+def check_goals(git_diff, checks, indent="###") -> str:
     """
     Check goals.
 
@@ -586,7 +588,7 @@ def check_goals(git_diff, checks, indent="###"):
     )
 
 
-def get_review(pr_patch):
+def get_review(pr_patch) -> None:
     """Get a review of a PR.
 
     Args:
@@ -605,7 +607,7 @@ def get_review(pr_patch):
         logging.warning("No PR to post too")
 
 
-def _post_pr_comment(review):
+def _post_pr_comment(review) -> None:
     git_commit_hash = os.getenv("GIT_COMMIT_HASH")
     data = {"body": review, "commit_id": git_commit_hash, "event": "COMMENT"}
     data = json.dumps(data)
@@ -655,28 +657,6 @@ def _post_pr_comment(review):
             timeout=10,
         )
         logging.info(response.json())
-
-
-def _get_pr_diff():
-    """
-    Replicate the logic from this command
-
-    PATCH_OUTPUT=$(curl --silent --request GET \
-        --url https://api.github.com/repos/$PATCH_REPO/pulls/$PATCH_PR \
-        --header "Accept: application/vnd.github.diff" \
-        --header "Authorization: Bearer $GITHUB_TOKEN")
-    """
-    patch_repo = os.getenv("PATCH_REPO")
-    patch_pr = os.getenv("PATCH_PR")
-    access_token = os.getenv("GITHUB_TOKEN")
-
-    headers = {
-        "Accept": "application/vnd.github.v3.diff",
-        "authorization": f"Bearer {access_token}",
-    }
-
-    response = requests.get(f"https://api.github.com/repos/{patch_repo}/pulls/{patch_pr}", headers=headers, timeout=10)
-    return response.text
 
 
 if __name__ == "__main__":
