@@ -52,6 +52,8 @@ def _document_indexer(documents) -> BaseGPTIndex:
     """
     Create a document indexer.
 
+    Deployment names include: "gpt-35-turbo", "text-davinci-003"
+
     Args:
         documents (List[Document]): The documents to index.
         azure (bool): Whether to use Azure OpenAI.
@@ -59,35 +61,32 @@ def _document_indexer(documents) -> BaseGPTIndex:
     Returns:
         GPTSimpleVectorIndex: The document indexer.
     """
-    service_context = None
-    if os.getenv("AZURE_OPENAI_API_KEY"):
-        _load_azure_openai_context()
+    _load_azure_openai_context()
 
-        os.environ["OPENAI_API_KEY"] = openai.api_key  # type: ignore
-        llm = AzureGPT35Turbo(  # type: ignore
-            deployment_name="gpt-35-turbo",  # "gpt-35-turbo", # "text-davinci-003",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
-        llm_predictor = LLMPredictor(llm=llm)
+    llm = AzureGPT35Turbo(  # type: ignore
+        deployment_name="gpt-35-turbo",
+        model_kwargs={
+            "api_key": openai.api_key,
+            "api_base": openai.api_base,
+            "api_type": "azure",
+            "api_version": "2023-03-15-preview",
+        },
+        max_retries=10,
+    )
+    llm_predictor = LLMPredictor(llm=llm)
 
-        embedding_llm = LangchainEmbedding(
-            OpenAIEmbeddings(
-                document_model_name="text-embedding-ada-002",
-                query_model_name="text-embedding-ada-002",
-            ),  # type: ignore
-            embed_batch_size=1,
-        )
+    embedding_llm = LangchainEmbedding(
+        OpenAIEmbeddings(
+            document_model_name="text-embedding-ada-002",
+            query_model_name="text-embedding-ada-002",
+        ),  # type: ignore
+        embed_batch_size=1,
+    )
 
-        service_context = ServiceContext.from_defaults(
-            llm_predictor=llm_predictor,
-            embed_model=embedding_llm,
-        )
+    service_context = ServiceContext.from_defaults(
+        llm_predictor=llm_predictor,
+        embed_model=embedding_llm,
+    )
     return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
 
 
@@ -183,19 +182,23 @@ def _load_azure_openai_context() -> None:
     Load the Azure OpenAI context.
 
     If the environment variables are not set, retrieve the values from Azure Key Vault.
+
+    Set both the environment variables and the openai package variables.
+    - Without setting the environment variables, the integration tests fail.
+    - Without setting the openai package variables, the cli tests fail.
     """
     openai.api_type = "azure"
     openai.api_version = "2023-03-15-preview"
+
     if os.getenv("AZURE_OPENAI_API"):
-        openai.api_base = os.getenv("AZURE_OPENAI_API")
-        openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
+        openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
+        openai.api_key = os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")  # type: ignore
     else:
-        secret_client = SecretClient(
+        kv_client = SecretClient(
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
-
-        openai.api_base = secret_client.get_secret("azure-open-ai").value
-        openai.api_key = secret_client.get_secret("azure-openai-key").value
+        openai.api_base = os.environ["OPENAI_API_BASE"] = kv_client.get_secret("azure-open-ai").value  # type: ignore
+        openai.api_key = os.environ["OPENAI_API_KEY"] = kv_client.get_secret("azure-openai-key").value  # type: ignore
 
 
 def _call_gpt(
