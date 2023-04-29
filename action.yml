@@ -122,20 +122,17 @@ runs:
             pyyaml \
             gpt-review
 
-      - name: Set env.BRANCH
-        shell: bash
-        if: ${{ github.action_ref == '' }}
-        run: echo "BRANCH=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF##*/}})" >> $GITHUB_ENV
-
       - name: Review PR and make comment
         shell: bash
         run: |
           source .env/bin/activate
 
-          ORG_NAME=$(echo ${BRANCH%/*})
-          curl --request GET --url https://raw.githubusercontent.com/$ORG_NAME/gpt-review/$ACTION_REF/review.py > review.py
+          python << EOF
+from gpt_review._github import get_pr_diff
+from gpt_review._review import get_review
 
-          python review.py
+get_review(get_pr_diff())
+EOF
         env:
           ACTION_REF: ${{ github.action_ref || env.BRANCH }}
           GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}

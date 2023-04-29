@@ -5,7 +5,7 @@ import os
 import requests
 
 
-def _get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
+def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
     """
     Replicate the logic from this command to get the PR diff:
 

@@ -24,7 +24,11 @@
 		"GitHub.copilot",
 		"GitHub.vscode-github-actions",
 		"ms-vscode.azurecli",
-		"ms-vscode.azure-account"
+		"ms-vscode.azure-account",
+		"zokugun.explicit-folding",
+		"MaxKless.git-squash-all",
+		"GitHub.copilot-labs",
+		"GitHub.codespaces"
 	],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",
