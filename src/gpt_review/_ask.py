@@ -228,11 +228,6 @@ def _call_gpt(
     """
     _load_azure_openai_context()
 
-    if len(prompt) > 32767:
-        return _batch_large_changes(
-            prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages
-        )
-
     messages = messages or [{"role": "user", "content": prompt}]
     try:
         engine = _get_engine(prompt)
@@ -255,54 +250,6 @@ def _call_gpt(
             time.sleep(retry * 5)
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
-
-
-def _batch_large_changes(
-    prompt: str,
-    temperature=0.10,
-    max_tokens=500,
-    top_p=1,
-    frequency_penalty=0.5,
-    presence_penalty=0.0,
-    retry=0,
-    messages=None,
-) -> str:
-    """Placeholder for batching large changes to GPT-4."""
-    try:
-        logging.warning("Prompt too long, batching")
-        output = ""
-        for i in range(0, len(prompt), 32767):
-            logging.debug("Batching %s to %s", i, i + 32767)
-            batch = prompt[i : i + 32767]
-            output += _call_gpt(
-                batch,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                retry=retry,
-                messages=messages,
-            )
-        prompt = f"""
-"Summarize the large file batches"
-
-{output}
-"""
-        return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages)
-    except RateLimitError:
-        logging.warning("Prompt too long, truncating")
-        prompt = prompt[:32767]
-        return _call_gpt(
-            prompt,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-            retry=retry,
-            messages=messages,
-        )
 
 
 def _get_engine(prompt: str) -> str:

@@ -1,16 +1,16 @@
 """Review GitHub PR using Open AI Models like Davinci-003, GPT-3 and GPT-4."""
 import logging
-import json
 import os
 import time
 import sys
-import requests
 import openai
 import yaml
 
 from openai.error import RateLimitError, InvalidRequestError
 
-from gpt_review._github import _get_pr_diff
+from gpt_review._ask import _ask
+from gpt_review._github import _get_pr_diff, _post_pr_comment
+from gpt_review._review import _request_goal
 
 
 CHECKS = {
@@ -273,40 +273,6 @@ def call_gpt4(
         raise RateLimitError("Retry limit exceeded") from error
 
 
-def call_gpt(
-    prompt: str = "",
-    temperature=0.10,
-    max_tokens=500,
-    top_p=1,
-    frequency_penalty=0.5,
-    presence_penalty=0.0,
-    messages=None,
-) -> str:
-    """Call GPT-3 or GPT-4 depending on the model.
-
-    Args:
-        prompt (str): The prompt to send to GPT-3 or GPT-4.
-        temperature (float): The temperature to use. Defaults to 0.10.
-        max_tokens (int): The maximum number of tokens to generate. Defaults to 500.
-        top_p (float): The top_p to use. Defaults to 1.
-        frequency_penalty (float): The frequency penalty to use. Defaults to 0.5.
-        presence_penalty (float): The presence penalty to use. Defaults to 0.0.
-
-    Returns:
-        str: The response from GPT-3 or GPT-4.
-    """
-    if os.getenv("AZURE_OPENAI_API_KEY"):
-        openai.api_type = "azure"
-        openai.api_base = os.getenv("AZURE_OPENAI_API")
-        openai.api_version = "2023-03-15-preview"
-        openai.api_key = os.getenv("AZURE_OPENAI_API_KEY")
-
-        return call_gpt4(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, messages=messages)
-
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    return call_gpt3(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty)
-
-
 def split_diff(git_diff):
     """Split a git diff into a list of files and their diff contents.
 
@@ -365,7 +331,7 @@ Are the changes tested?
 ```
 """
 
-    return call_gpt(prompt, temperature=0.0, max_tokens=1500)
+    return _ask(prompt, temperature=0.0, max_tokens=1500)["response"]
 
 
 def summarize_file(diff) -> str:
@@ -384,7 +350,7 @@ Summarize the changes to the file {git_file.file_name}.
 - list the summary with bullet points
 {diff}
 """
-    response = call_gpt(prompt, temperature=0.0)
+    response = _ask(prompt, temperature=0.0)
     return f"""
 ### {git_file.file_name}
 {response}
@@ -406,31 +372,9 @@ Summarize bugs that may be introduced.
 
 {git_diff}
 """
-    response = call_gpt(gpt4_big_prompot)
-    logging.info(response)
-    return response
-
-
-def request_goal(git_diff, goal) -> str:
-    """
-    Request a goal from GPT-4.
-
-    Args:
-        git_diff (str): The git diff to split.
-        goal (str): The goal to request from GPT-4.
-
-    Returns:
-        response (str): The response from GPT-4.
-    """
-    prompt = f"""
-{goal}
-
-{git_diff}
-"""
-
-    response = call_gpt(prompt)
-    logging.info(response)
-    return response
+    response = _ask(gpt4_big_prompot)
+    logging.info(response["response"])
+    return response["response"]
 
 
 def summarize_files(git_diff) -> str:
@@ -452,7 +396,7 @@ def summarize_files(git_diff) -> str:
 
         summary += f"""
 ### Summary of File Changes
-{request_goal(file_summary, goal="Summarize the changes to the files.")}
+{_request_goal(file_summary, goal="Summarize the changes to the files.")}
 """
 
     if os.getenv("TEST_SUMMARY", "true").lower() == "true":
@@ -485,7 +429,7 @@ def summarize_pr(git_diff) -> str:
     text = ""
     if os.getenv("FULL_SUMMARY", "true").lower() == "true":
         text += f"""
-{request_goal(git_diff, goal="")}
+{_request_goal(git_diff, goal="")}
 """
 
         text += check_goals(git_diff, CHECKS["SUMMARY_CHECKS"])
@@ -558,7 +502,7 @@ def process_report(git_diff, report: dict, indent="#") -> str:
         f"""
 {indent} {key}
 
-{request_goal(git_diff, goal=record)}
+{_request_goal(git_diff, goal=record)}
 """
         if isinstance(record, str)
         else process_report(git_diff, record, indent=f"{indent}#")
@@ -581,7 +525,7 @@ def check_goals(git_diff, checks, indent="###") -> str:
         f"""
 {indent} {check["header"]}
 
-{request_goal(git_diff, goal=check["goal"])}
+{_request_goal(git_diff, goal=check["goal"])}
 """
         for check in checks
         if os.getenv(check["flag"], "true").lower() == "true"
@@ -605,58 +549,6 @@ def get_review(pr_patch) -> None:
         _post_pr_comment(review)
     else:
         logging.warning("No PR to post too")
-
-
-def _post_pr_comment(review) -> None:
-    git_commit_hash = os.getenv("GIT_COMMIT_HASH")
-    data = {"body": review, "commit_id": git_commit_hash, "event": "COMMENT"}
-    data = json.dumps(data)
-
-    pr_link = os.getenv("LINK")
-    if not isinstance(pr_link, str):
-        raise ValueError("PR link not found, set the LINK environment variable.")
-    owner = pr_link.split("/")[-4]
-    repo = pr_link.split("/")[-3]
-    pr_number = pr_link.split("/")[-1]
-
-    access_token = os.getenv("GITHUB_TOKEN")
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "authorization": f"Bearer {access_token}",
-    }
-    response = requests.get(
-        f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews", headers=headers, timeout=10
-    )
-    comments = response.json()
-
-    for comment in comments:
-        if (
-            "user" in comment
-            and comment["user"]["login"] == "github-actions[bot]"
-            and "body" in comment
-            and "Summary by GPT-4" in comment["body"]
-        ):
-            review_id = comment["id"]
-            data = {"body": review}
-            data = json.dumps(data)
-
-            response = requests.put(
-                f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews/{review_id}",
-                headers=headers,
-                data=data,
-                timeout=10,
-            )
-            logging.info(response.json())
-            break
-    else:
-        # https://api.github.com/repos/OWNER/REPO/pulls/PULL_NUMBER/reviews
-        response = requests.post(
-            f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews",
-            headers=headers,
-            data=data,
-            timeout=10,
-        )
-        logging.info(response.json())
 
 
 if __name__ == "__main__":
