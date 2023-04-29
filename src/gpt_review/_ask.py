@@ -182,6 +182,10 @@ def _load_azure_openai_context() -> None:
     Load the Azure OpenAI context.
 
     If the environment variables are not set, retrieve the values from Azure Key Vault.
+
+    Set both the environment variables and the openai package variables.
+    - Without setting the environment variables, the integration tests fail.
+    - Without setting the openai package variables, the cli tests fail.
     """
     openai.api_type = "azure"
     openai.api_version = "2023-03-15-preview"
