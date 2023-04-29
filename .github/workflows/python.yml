@@ -33,7 +33,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.3.15
+        uses: microsoft/action-python@0.4.0
         with:
           ${{ matrix.tools }}: true
           args: ${{ matrix.args }}
@@ -51,9 +51,10 @@ jobs:
       - uses: actions/setup-python@v4.6.0
         with:
           python-version: '3.11.3'
+          cache: 'pip' # caching pip dependencies
 
       - name: Publish Snapshot to TestPyPi
-        uses: microsoft/action-python@0.3.21
+        uses: microsoft/action-python@0.4.0
         continue-on-error: true
         if: ${{ github.event_name == 'pull_request' }}
         with:
@@ -65,7 +66,7 @@ jobs:
           python_version: '3.11.3'
 
       - name: Publish RC to PyPi
-        uses: microsoft/action-python@0.3.21
+        uses: microsoft/action-python@0.4.0
         if: ${{ github.event_name == 'push' }}
         with:
           pypi_publish: true
@@ -75,7 +76,7 @@ jobs:
           python_version: '3.11.3'
 
       - name: Publish Release to PyPi
-        uses: microsoft/action-python@0.3.21
+        uses: microsoft/action-python@0.4.0
         if: ${{ github.event_name == 'release' }}
         with:
           pypi_publish: true
@@ -90,9 +91,12 @@ jobs:
       PYTHON: '3.11'
     steps:
     - uses: actions/checkout@master
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
     - uses: actions/setup-python@v1
       with:
         python-version: '3.11'
+        cache: 'pip' # caching pip dependencies
     - run: |
         pip install pytest pytest-cov
         pip install .
