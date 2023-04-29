@@ -27,7 +27,7 @@ def _get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
     return response.text
 
 
-def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None):
+def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None) -> Response:
     """
     Replicate the logic from this command to post a PR comment:
 
