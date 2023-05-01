@@ -9,10 +9,28 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 2
-      - uses: ./ # dciborow/action-gpt@0.0.3
-        continue-on-error: true
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
         with:
+          python-version: 3.11
+
+      - run: |
+          sudo apt-get update
+          python3 -m venv .env
+          source .env/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install gpt-review
+
+      - run: |
+          source .env/bin/activate
+
+          pip install -e .
+          gpt github review \
+            --access-token $GITHUB_TOKEN \
+            --pull-request $PATCH_PR \
+            --repository $PATCH_REPO
+        env:
           GIT_COMMIT_HASH: ${{ github.event.pull_request.head.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
