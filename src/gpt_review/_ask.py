@@ -31,7 +31,7 @@ import gpt_review.constants as C
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask_doc(question: List[str], files: List[str]) -> str:
+def _ask_doc(question: str, files: List[str]) -> str:
     """
     Ask GPT a question.
 
@@ -45,7 +45,7 @@ def _ask_doc(question: List[str], files: List[str]) -> str:
     documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
-    return index.query(" ".join(question)).response  # type: ignore
+    return index.query(question).response  # type: ignore
 
 
 def _document_indexer(documents) -> BaseGPTIndex:
@@ -114,7 +114,20 @@ class AzureGPT35Turbo(AzureOpenAI):
 
 
 def validate_parameter_range(namespace) -> None:
-    """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
+    """
+    Validate the following parameters:
+    - max_tokens is in [1,4000]
+    - temperature is in [0,1]
+    - top_p is in [0,1]
+    - frequency_penalty is in [0,2]
+    - presence_penalty is in [0,2]
+
+    Args:
+        namespace (argparse.Namespace): The namespace to validate.
+
+    Raises:
+        CLIError: If the parameter is not within the allowed range.
+    """
     _range_validation(namespace.max_tokens, "max-tokens", C.MAX_TOKENS_MIN, C.MAX_TOKENS_MAX)
     _range_validation(namespace.temperature, "temperature", C.TEMPERATURE_MIN, C.TEMPERATURE_MAX)
     _range_validation(namespace.top_p, "top-p", C.TOP_P_MIN, C.TOP_P_MAX)
@@ -148,31 +161,22 @@ def _ask(
     frequency_penalty=C.FREQUENCY_PENALTY_DEFAULT,
     presence_penalty=C.PRESENCE_PENALTY_DEFAULT,
     files=None,
+    fast: bool = False,
 ) -> Dict[str, str]:
-    """Ask GPT a question.
-
-    Args:
-        question (str): The questin to ask GPT.
-        max_tokens (int): The maximum number of tokens to generate.
-        temperature (float): This value determines the level of randomness.
-        top_p (float): This value also determines the level or randomness.
-        frequency_penalty (float): The chance of repeating a token based on current frequency in the text.
-        presence_penalty (float): The chance of repeating any token that has appeared in the text so far.
-        files (List[str]): The files to search.
-
-    Yields:
-        dict[str, str]: The response from GPT.
-    """
+    """Ask GPT a question."""
+    if isinstance(question, list):
+        question = " ".join(question)
     if files:
         response = _ask_doc(question, files)
     else:
         response = _call_gpt(
-            prompt=question[0],
+            prompt=question,
             max_tokens=max_tokens,
             temperature=temperature,
             top_p=top_p,
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
+            fast=fast,
         )
     return {"response": response}
 
@@ -210,6 +214,7 @@ def _call_gpt(
     presence_penalty=0.0,
     retry=0,
     messages=None,
+    fast: bool = False,
 ) -> str:
     """
     Call GPT-4 with the given prompt.
@@ -222,20 +227,17 @@ def _call_gpt(
         frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
         presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
         retry (int, optional): The number of times to retry the request. Defaults to 0.
+        messages (List[Dict[str, str]], optional): The messages to send to GPT-4. Defaults to None.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
 
     Returns:
         str: The response from GPT-4.
     """
     _load_azure_openai_context()
 
-    if len(prompt) > 32767:
-        return _batch_large_changes(
-            prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages
-        )
-
     messages = messages or [{"role": "user", "content": prompt}]
     try:
-        engine = _get_engine(prompt)
+        engine = _get_engine(prompt, fast)
         logging.info("Model Selected based on prompt size: %s", engine)
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
@@ -257,64 +259,18 @@ def _call_gpt(
         raise RateLimitError("Retry limit exceeded") from error
 
 
-def _batch_large_changes(
-    prompt: str,
-    temperature=0.10,
-    max_tokens=500,
-    top_p=1,
-    frequency_penalty=0.5,
-    presence_penalty=0.0,
-    retry=0,
-    messages=None,
-) -> str:
-    """Placeholder for batching large changes to GPT-4."""
-    try:
-        logging.warning("Prompt too long, batching")
-        output = ""
-        for i in range(0, len(prompt), 32767):
-            logging.debug("Batching %s to %s", i, i + 32767)
-            batch = prompt[i : i + 32767]
-            output += _call_gpt(
-                batch,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-                retry=retry,
-                messages=messages,
-            )
-        prompt = f"""
-"Summarize the large file batches"
-
-{output}
-"""
-        return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry, messages)
-    except RateLimitError:
-        logging.warning("Prompt too long, truncating")
-        prompt = prompt[:32767]
-        return _call_gpt(
-            prompt,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-            retry=retry,
-            messages=messages,
-        )
-
-
-def _get_engine(prompt: str) -> str:
+def _get_engine(prompt: str, fast: bool = False) -> str:
     """
     Get the Engine based on the prompt length.
     - when greater then 8k use gpt-4-32k
-    - when greater then 4k use gpt-4
-    - use gpt-35-turbo for all small prompts
+    - otherwise use gpt-4
+    - enable fast to use gpt-35-turbo for small prompts
     """
     if len(prompt) > 8000:
         return "gpt-4-32k"
-    return "gpt-4" if len(prompt) > 4000 else "gpt-35-turbo"
+    if len(prompt) > 4000:
+        return "gpt-4"
+    return "gpt-35-turbo" if fast else "gpt-4"
 
 
 class AskCommandGroup(GPTCommandGroup):
@@ -329,6 +285,12 @@ class AskCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader) -> None:
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
+            args.argument(
+                "fast",
+                help="Use gpt-35-turbo for prompts < 4000 tokens.",
+                default=False,
+                action="store_true",
+            )
             args.argument(
                 "temperature",
                 type=float,
