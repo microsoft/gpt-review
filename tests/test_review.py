@@ -1,6 +1,6 @@
 import pytest
 
-from gpt_review._github import get_review
+from gpt_review._github import _GitHubClient
 
 
 def test_get_review(mock_openai) -> None:
@@ -14,7 +14,7 @@ def test_int_get_review() -> None:
 
 def get_review_test() -> None:
     """Test get_review."""
-    get_review(
+    _GitHubClient.post_pr_summary(
         """
 diff --git a/README.md b/README.md
 index 6d0d0a7..b2b0b0a 100644

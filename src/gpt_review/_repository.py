@@ -1,6 +1,5 @@
 """Abstract class for a repository client."""
 from abc import abstractmethod
-import requests
 
 
 class _RepositoryClient:
