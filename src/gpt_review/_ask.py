@@ -114,7 +114,20 @@ class AzureGPT35Turbo(AzureOpenAI):
 
 
 def validate_parameter_range(namespace) -> None:
-    """Validate that max_tokens is in [1,4000], temperature and top_p are in [0,1], and frequency_penalty and presence_penalty are in [0,2]"""
+    """
+    Validate the following parameters:
+    - max_tokens is in [1,4000]
+    - temperature is in [0,1]
+    - top_p is in [0,1]
+    - frequency_penalty is in [0,2]
+    - presence_penalty is in [0,2]
+
+    Args:
+        namespace (argparse.Namespace): The namespace to validate.
+
+    Raises:
+        CLIError: If the parameter is not within the allowed range.
+    """
     _range_validation(namespace.max_tokens, "max-tokens", C.MAX_TOKENS_MIN, C.MAX_TOKENS_MAX)
     _range_validation(namespace.temperature, "temperature", C.TEMPERATURE_MIN, C.TEMPERATURE_MAX)
     _range_validation(namespace.top_p, "top-p", C.TOP_P_MIN, C.TOP_P_MAX)
@@ -149,20 +162,7 @@ def _ask(
     presence_penalty=C.PRESENCE_PENALTY_DEFAULT,
     files=None,
 ) -> Dict[str, str]:
-    """Ask GPT a question.
-
-    Args:
-        question (str): The questin to ask GPT.
-        max_tokens (int): The maximum number of tokens to generate.
-        temperature (float): This value determines the level of randomness.
-        top_p (float): This value also determines the level or randomness.
-        frequency_penalty (float): The chance of repeating a token based on current frequency in the text.
-        presence_penalty (float): The chance of repeating any token that has appeared in the text so far.
-        files (List[str]): The files to search.
-
-    Yields:
-        dict[str, str]: The response from GPT.
-    """
+    """Ask GPT a question."""
     if files:
         response = _ask_doc(question, files)
     else:

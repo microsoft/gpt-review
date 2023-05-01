@@ -28,7 +28,8 @@
 		"zokugun.explicit-folding",
 		"MaxKless.git-squash-all",
 		"GitHub.copilot-labs",
-		"GitHub.codespaces"
+		"GitHub.codespaces",
+		"charliermarsh.ruff"
 	],
       "settings": {
         "python.defaultInterpreterPath": "/usr/local/bin/python",

@@ -3,7 +3,6 @@ import logging
 import os
 
 from gpt_review._ask import _ask
-from gpt_review._github import _post_pr_comment
 
 CHECKS = {
     "SUMMARY_CHECKS": [
@@ -301,25 +300,6 @@ def summarize_files(git_diff) -> str:
     return summary
 
 
-def get_review(pr_patch) -> None:
-    """Get a review of a PR.
-
-    Args:
-        pr_patch (str): The patch of the PR.
-
-    Returns:
-        str: The review of the PR.
-    """
-
-    review = summarize_files(pr_patch)
-    print(review)
-
-    if os.getenv("LINK"):
-        _post_pr_comment(review)
-    else:
-        logging.warning("No PR to post too")
-
-
 def pr_insight_checks(git_diff) -> str:
     """
     Summarize potential risks.
@@ -338,3 +318,4 @@ def pr_insight_checks(git_diff) -> str:
 """
         text += check_goals(git_diff, CHECKS["PR_INSIGHT_CHECKS"])
     return text
+

@@ -2,7 +2,15 @@
 import logging
 import json
 import os
+from typing import Dict
+
 import requests
+from knack.arguments import ArgumentsContext
+from knack import CLICommandsLoader
+from knack.commands import CommandGroup
+
+from gpt_review._command import GPTCommandGroup
+from gpt_review._review import summarize_files
 
 
 def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
@@ -85,3 +93,59 @@ def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None)
         )
     logging.info(response.json())
     return response
+
+
+def get_review(pr_patch) -> None:
+    """Get a review of a PR.
+    Args:
+        pr_patch (str): The patch of the PR.
+    Returns:
+        str: The review of the PR.
+    """
+
+    review = summarize_files(pr_patch)
+    print(review)
+
+    if os.getenv("LINK"):
+        _post_pr_comment(review)
+    else:
+        logging.warning("No PR to post too")
+
+
+def _github_review(repo=None, pull_request=None, access_token=None) -> Dict[str, str]:
+    """Review GitHub PR with Open AI, and post response as a comment."""
+    diff = get_pr_diff(repo, pull_request, access_token)
+    get_review(diff)
+    return {"response": "Review posted as a comment."}
+
+
+class GitHubCommandGroup(GPTCommandGroup):
+    """Ask Command Group."""
+
+    @staticmethod
+    def load_command_table(loader: CLICommandsLoader) -> None:
+        with CommandGroup(loader, "github", "gpt_review._github#{}") as group:
+            group.command("review", "_github_review", is_preview=True)
+
+    @staticmethod
+    def load_arguments(loader: CLICommandsLoader) -> None:
+        """Add patch_repo, patch_pr, and access_token arguments."""
+        with ArgumentsContext(loader, "github") as args:
+            args.argument(
+                "access_token",
+                type=str,
+                help="The GitHub access token. Set or use GITHUB_TOKEN environment variable.",
+                default=None,
+            )
+            args.argument(
+                "pull_request",
+                type=str,
+                help="The PR number. Set or use PATCH_PR environment variable.",
+                default=None,
+            )
+            args.argument(
+                "repo",
+                type=str,
+                help="The repo of the PR. Set or use PATCH_REPO environment variable.",
+                default=None,
+            )
