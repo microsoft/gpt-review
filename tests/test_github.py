@@ -14,11 +14,12 @@ def post_pr_comment_test() -> None:
     response = _post_pr_comment(
         "test",
         git_commit_hash="a9da0c1e65f1102bc2ae16abed7b6a66400a5bde",
-        link="https://github.com/dciborow/gpt-review/pull/1",
+        link="https://github.com/microsoft/gpt-review/pull/1",
     )
     assert response
 
 
+@pytest.mark.skip(reason="Creds for action missing on build server")
 @pytest.mark.integration
 def test_int_pr_diff() -> None:
     """Integration Test for GitHub API diff call."""
@@ -30,6 +31,7 @@ def test_pr_diff(mock_github) -> None:
     get_pr_diff_test("diff --git a/README.md b/README.md")
 
 
+@pytest.mark.skip(reason="Creds for action missing on build server")
 @pytest.mark.integration
 def test_int_pr_comment() -> None:
     """Integration Test for GitHub API comment call."""
