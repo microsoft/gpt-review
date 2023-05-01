@@ -167,7 +167,7 @@ def _ask(
         response = _ask_doc(question, files)
     else:
         response = _call_gpt(
-            prompt=question[0],
+            prompt=question,
             max_tokens=max_tokens,
             temperature=temperature,
             top_p=top_p,
