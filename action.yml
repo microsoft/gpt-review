@@ -128,11 +128,11 @@ runs:
           source .env/bin/activate
 
           python << EOF
-from gpt_review._github import get_pr_diff
-from gpt_review._review import get_review
+          from gpt_review._github import get_pr_diff
+          from gpt_review._review import get_review
 
-get_review(get_pr_diff())
-EOF
+          get_review(get_pr_diff())
+          EOF
         env:
           ACTION_REF: ${{ github.action_ref || env.BRANCH }}
           GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
