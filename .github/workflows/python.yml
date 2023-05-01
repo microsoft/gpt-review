@@ -32,6 +32,10 @@ jobs:
         continue-on-error: true
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.11.3'
+          cache: 'pip' # caching pip dependencies
       - name: ${{ matrix.tools }}
         uses: microsoft/action-python@0.4.0
         with:
