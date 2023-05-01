@@ -109,7 +109,6 @@ runs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-          cache: pip
       - name: Install
         shell: bash
         run: |
