@@ -254,7 +254,7 @@ def _call_gpt(
     except RateLimitError as error:
         if retry < 5:
             logging.warning("Call to GPT failed due to rate limit, retry attempt: %s", retry)
-            time.sleep(retry * 5)
+            time.sleep(retry * 10)
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
 
