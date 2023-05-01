@@ -40,12 +40,7 @@ def _diff_sh() -> str:
 
 
 def _commit_sh(message: str) -> str:
-    return subprocess.run(
-        ["git", "commit", "-m", f"{message}"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=False,
-    ).stdout.decode("utf-8")
+    return Repo.init(_find_git_dir()).git.commit(message=message)
 
 
 def _commit_message() -> str:
