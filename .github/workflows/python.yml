@@ -72,7 +72,7 @@ jobs:
       - name: Publish Snapshot to TestPyPi
         uses: microsoft/action-python@0.4.0
         continue-on-error: true
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request_target' }}
         with:
           pypi_publish: true
           pypi_password: ${{ secrets.TEST_PYPI_PASSWORD  }}
