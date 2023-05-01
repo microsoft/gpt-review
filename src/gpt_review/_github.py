@@ -11,10 +11,10 @@ from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review._review import summarize_files
-from gpt_review._repository import RepositoryClient
+from gpt_review._repository import _RepositoryClient
 
 
-class GitHubClient(RepositoryClient):
+class _GitHubClient(_RepositoryClient):
     """GitHub client."""
 
     @staticmethod
@@ -109,7 +109,7 @@ class GitHubClient(RepositoryClient):
         return response
 
     @staticmethod
-    def get_review(pr_patch) -> None:
+    def post_pr_summary(pr_patch) -> None:
         """Get a review of a PR.
         Args:
             pr_patch (str): The patch of the PR.
@@ -120,15 +120,15 @@ class GitHubClient(RepositoryClient):
         logging.debug(review)
 
         if os.getenv("LINK"):
-            GitHubClient._post_pr_comment(review)
+            _GitHubClient._post_pr_comment(review)
         else:
             logging.warning("No PR to post too")
 
 
 def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment."""
-    diff = GitHubClient.get_pr_diff(repository, pull_request, access_token)
-    GitHubClient.get_review(diff)
+    diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
+    _GitHubClient.post_pr_summary(diff)
     return {"response": "Review posted as a comment."}
 
 

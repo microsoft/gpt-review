@@ -3,7 +3,7 @@ from abc import abstractmethod
 import requests
 
 
-class RepositoryClient:
+class _RepositoryClient:
     """Abstract class for a repository client."""
 
     @staticmethod
@@ -23,26 +23,13 @@ class RepositoryClient:
 
     @staticmethod
     @abstractmethod
-    def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None) -> requests.Response:
+    def post_pr_summary(pr_patch) -> None:
         """
-        Post a comment to a PR.
+        Post a summary to a PR.
 
-        Args:
-            review (str): The review.
-            git_commit_hash (str): The git commit hash.
-            link (str): The link to the PR.
-            access_token (str): The GitHub access token.
-
-        Returns:
-            requests.Response: The response.
-        """
-
-    @staticmethod
-    @abstractmethod
-    def get_review(pr_patch) -> None:
-        """Get a review of a PR.
         Args:
             pr_patch (str): The patch of the PR.
+
         Returns:
             str: The review of the PR.
         """
