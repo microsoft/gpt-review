@@ -48,15 +48,30 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: actions/setup-python@v4.6.0
+      - uses: actions/setup-python@v1
         with:
           python-version: '3.11.3'
-          cache: 'pip' # caching pip dependencies
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          dry_run: true
+          default_bump: false
+
+      - name: Set Configurations
+        if: steps.tag_version.outputs.release_type
+        shell: bash
+        env:
+          OLD_VERSION: ${{ steps.tag_version.outputs.previous_version }}
+          VERSION: ${{ steps.tag_version.outputs.new_version }}
+        run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?(.*))(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
 
       - name: Publish Snapshot to TestPyPi
         uses: microsoft/action-python@0.4.0
         continue-on-error: true
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request_target' }}
         with:
           pypi_publish: true
           pypi_password: ${{ secrets.TEST_PYPI_PASSWORD  }}
@@ -83,6 +98,14 @@ jobs:
           pypi_password: ${{ secrets.PYPI_PASSWORD }}
           workdir: '.'
           python_version: '3.11.3'
+
+      - uses: EndBug/add-and-commit@v9
+        if: ${{ github.event_name == 'release' }}
+        with:
+          message: Update Version to ${{ steps.tag_version.outputs.new_version }} [no ci]
+          committer_name: GitHub Actions
+          committer_email: actions@github.com
+          add: src/gpt_review/__init__.py
 
   coverage-unit:
     runs-on: ubuntu-latest

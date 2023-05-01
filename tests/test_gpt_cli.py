@@ -24,6 +24,7 @@ ROOT_COMMANDS = [
 ASK_COMMANDS = [
     CLICase("ask --help"),
     CLICase("ask how are you"),
+    CLICase("ask --fast how are you"),
     CLICase(f"ask how are you --max-tokens={C.MAX_TOKENS_DEFAULT}"),
     CLICase(
         "ask how are you --max-tokens",

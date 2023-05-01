@@ -2,7 +2,7 @@
 import logging
 import os
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 from typing_extensions import override
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
@@ -154,23 +154,24 @@ def _range_validation(param, name, min_value, max_value) -> None:
 
 
 def _ask(
-    question,
-    max_tokens=C.MAX_TOKENS_DEFAULT,
-    temperature=C.TEMPERATURE_DEFAULT,
-    top_p=C.TOP_P_DEFAULT,
-    frequency_penalty=C.FREQUENCY_PENALTY_DEFAULT,
-    presence_penalty=C.PRESENCE_PENALTY_DEFAULT,
-    files=None,
+    question: List[str],
+    max_tokens: int = C.MAX_TOKENS_DEFAULT,
+    temperature: float = C.TEMPERATURE_DEFAULT,
+    top_p: float = C.TOP_P_DEFAULT,
+    frequency_penalty: float = C.FREQUENCY_PENALTY_DEFAULT,
+    presence_penalty: float = C.PRESENCE_PENALTY_DEFAULT,
+    files: Optional[List[str]] = None,
     fast: bool = False,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
-    if isinstance(question, list):
-        question = " ".join(question)
+
+    prompt = " ".join(question)
+
     if files:
-        response = _ask_doc(question, files)
+        response = _ask_doc(prompt, files)
     else:
         response = _call_gpt(
-            prompt=question,
+            prompt=prompt,
             max_tokens=max_tokens,
             temperature=temperature,
             top_p=top_p,
@@ -254,7 +255,7 @@ def _call_gpt(
     except RateLimitError as error:
         if retry < 5:
             logging.warning("Call to GPT failed due to rate limit, retry attempt: %s", retry)
-            time.sleep(retry * 5)
+            time.sleep(retry * 10)
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
 
