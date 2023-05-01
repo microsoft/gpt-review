@@ -4,7 +4,7 @@ import os
 
 from gpt_review._ask import _ask
 
-CHECKS = {
+_CHECKS = {
     "SUMMARY_CHECKS": [
         {
             "flag": "SUMMARY_SUGGEST",
@@ -90,7 +90,7 @@ def _request_goal(git_diff, goal) -> str:
 {git_diff}
 """
 
-    response = _ask(prompt)
+    response = _ask([prompt])
     logging.info(response["response"])
     return response["response"]
 
@@ -133,7 +133,7 @@ def summarize_pr(git_diff) -> str:
 {_request_goal(git_diff, goal="")}
 """
 
-        text += check_goals(git_diff, CHECKS["SUMMARY_CHECKS"])
+        text += check_goals(git_diff, _CHECKS["SUMMARY_CHECKS"])
     return text
 
 
@@ -153,7 +153,7 @@ Summarize the changes to the file {git_file.file_name}.
 - list the summary with bullet points
 {diff}
 """
-    response = _ask(prompt, temperature=0.0)
+    response = _ask([prompt], temperature=0.0)
     return f"""
 ### {git_file.file_name}
 {response}
@@ -218,7 +218,7 @@ Are the changes tested?
 ```
 """
 
-    return _ask(prompt, temperature=0.0, max_tokens=1500)["response"]
+    return _ask([prompt], temperature=0.0, max_tokens=1500)["response"]
 
 
 def summarize_bugs_in_pr(git_diff) -> str:
@@ -236,7 +236,7 @@ Summarize bugs that may be introduced.
 
 {git_diff}
 """
-    response = _ask(gpt4_big_prompot)
+    response = _ask([gpt4_big_prompot])
     logging.info(response["response"])
     return response["response"]
 
@@ -257,7 +257,7 @@ def summarize_risk(git_diff) -> str:
 ## Potential Risks
 
 """
-        text += check_goals(git_diff, CHECKS["RISK_CHECKS"])
+        text += check_goals(git_diff, _CHECKS["RISK_CHECKS"])
     return text
 
 
@@ -316,5 +316,5 @@ def pr_insight_checks(git_diff) -> str:
 ## PR Insight Checks
 
 """
-        text += check_goals(git_diff, CHECKS["PR_INSIGHT_CHECKS"])
+        text += check_goals(git_diff, _CHECKS["PR_INSIGHT_CHECKS"])
     return text
