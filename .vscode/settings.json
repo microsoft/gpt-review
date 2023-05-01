@@ -31,5 +31,8 @@
         "-c",
         "pyproject.toml"
     ],
-    "python.analysis.inlayHints.functionReturnTypes": true
+    "python.analysis.inlayHints.functionReturnTypes": true,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUndefinedVariable": "none" // Covered by Ruff F821
+    }
 }
