@@ -112,9 +112,9 @@ def get_review(pr_patch) -> None:
         logging.warning("No PR to post too")
 
 
-def _github_review(repo=None, pull_request=None, access_token=None) -> Dict[str, str]:
+def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment."""
-    diff = get_pr_diff(repo, pull_request, access_token)
+    diff = get_pr_diff(repository, pull_request, access_token)
     get_review(diff)
     return {"response": "Review posted as a comment."}
 
@@ -142,10 +142,12 @@ class GitHubCommandGroup(GPTCommandGroup):
                 type=str,
                 help="The PR number. Set or use PATCH_PR environment variable.",
                 default=None,
+                options_list=("--pull-request", "-pr"),
             )
             args.argument(
-                "repo",
+                "repository",
                 type=str,
                 help="The repo of the PR. Set or use PATCH_REPO environment variable.",
                 default=None,
+                options_list=("--repository", "-r"),
             )
