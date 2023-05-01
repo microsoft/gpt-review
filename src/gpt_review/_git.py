@@ -20,23 +20,12 @@ def _find_git_dir(path="."):
     raise FileNotFoundError(".git directory not found")
 
 
-def _git_diff(rw_dir):
-    r = Repo.init(_find_git_dir())
-    r.git.commit(message="init")
-    return r.index.diff(None, cached=True)
-
-
 def _diff_sh() -> str:
     """
     Get the diff of the PR
     - run git commands via python
     """
-    return subprocess.run(
-        ["git", "--no-pager", "diff", "--cached"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        check=False,
-    ).stdout.decode("utf-8")
+    return Repo.init(_find_git_dir()).git.diff(None, cached=True)
 
 
 def _commit_sh(message: str) -> str:
