@@ -318,4 +318,3 @@ def pr_insight_checks(git_diff) -> str:
 """
         text += check_goals(git_diff, CHECKS["PR_INSIGHT_CHECKS"])
     return text
-
