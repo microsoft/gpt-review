@@ -161,6 +161,7 @@ def _ask(
     frequency_penalty=C.FREQUENCY_PENALTY_DEFAULT,
     presence_penalty=C.PRESENCE_PENALTY_DEFAULT,
     files=None,
+    fast: bool = False,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
     if isinstance(question, list):
@@ -175,6 +176,7 @@ def _ask(
             top_p=top_p,
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
+            fast=fast,
         )
     return {"response": response}
 
@@ -212,6 +214,7 @@ def _call_gpt(
     presence_penalty=0.0,
     retry=0,
     messages=None,
+    fast: bool = False,
 ) -> str:
     """
     Call GPT-4 with the given prompt.
@@ -224,6 +227,8 @@ def _call_gpt(
         frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
         presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
         retry (int, optional): The number of times to retry the request. Defaults to 0.
+        messages (List[Dict[str, str]], optional): The messages to send to GPT-4. Defaults to None.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
 
     Returns:
         str: The response from GPT-4.
@@ -232,7 +237,7 @@ def _call_gpt(
 
     messages = messages or [{"role": "user", "content": prompt}]
     try:
-        engine = _get_engine(prompt)
+        engine = _get_engine(prompt, fast)
         logging.info("Model Selected based on prompt size: %s", engine)
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
@@ -254,16 +259,18 @@ def _call_gpt(
         raise RateLimitError("Retry limit exceeded") from error
 
 
-def _get_engine(prompt: str) -> str:
+def _get_engine(prompt: str, fast: bool = False) -> str:
     """
     Get the Engine based on the prompt length.
     - when greater then 8k use gpt-4-32k
-    - when greater then 4k use gpt-4
-    - use gpt-35-turbo for all small prompts
+    - otherwise use gpt-4
+    - enable fast to use gpt-35-turbo for small prompts
     """
     if len(prompt) > 8000:
         return "gpt-4-32k"
-    return "gpt-4" if len(prompt) > 4000 else "gpt-35-turbo"
+    if len(prompt) > 4000:
+        return "gpt-4"
+    return "gpt-35-turbo" if fast else "gpt-4"
 
 
 class AskCommandGroup(GPTCommandGroup):
@@ -278,6 +285,12 @@ class AskCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader) -> None:
         with ArgumentsContext(loader, "ask") as args:
             args.positional("question", type=str, nargs="+", help="Provide a question to ask GPT.")
+            args.argument(
+                "fast",
+                help="Use gpt-35-turbo for prompts < 4000 tokens.",
+                default=False,
+                action="store_true",
+            )
             args.argument(
                 "temperature",
                 type=float,
