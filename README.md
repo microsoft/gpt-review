@@ -17,7 +17,7 @@ To use Azure OpenAI, set the environment variable `AZURE_OPENAI_API_URL` and `AZ
 
 
 ```bash
-pip install easy-gpt
+pip install gpt-review
 
 export OPENAI_API_KEY=<your key>
 

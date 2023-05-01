@@ -61,12 +61,18 @@ jobs:
           default_bump: false
 
       - name: Set Configurations
-        if: steps.tag_version.outputs.release_type
+        if: steps.tag_version.outputs.release_type && github.event_name != 'release'
         shell: bash
         env:
-          OLD_VERSION: ${{ steps.tag_version.outputs.previous_version }}
           VERSION: ${{ steps.tag_version.outputs.new_version }}
         run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?(.*))(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
+        
+      - name: Set Configurations
+        if: steps.tag_version.outputs.release_type && github.event_name == 'release'
+        shell: bash
+        env:
+          VERSION: ${{ steps.tag_version.outputs.previous_version }}
+        run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?.*)(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
 
       - name: Publish Snapshot to TestPyPi
         uses: microsoft/action-python@0.4.0
@@ -102,10 +108,11 @@ jobs:
       - uses: EndBug/add-and-commit@v9
         if: ${{ github.event_name == 'release' }}
         with:
-          message: Update Version to ${{ steps.tag_version.outputs.new_version }} [no ci]
+          message: Update Version to ${{ steps.tag_version.outputs.previous_version }} [no ci]
           committer_name: GitHub Actions
           committer_email: actions@github.com
           add: src/gpt_review/__init__.py
+          push: origin HEAD:main --force-with-lease
 
   coverage-unit:
     runs-on: ubuntu-latest
