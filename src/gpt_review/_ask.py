@@ -31,7 +31,7 @@ import gpt_review.constants as C
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask_doc(question: List[str], files: List[str]) -> str:
+def _ask_doc(question: str, files: List[str]) -> str:
     """
     Ask GPT a question.
 
@@ -45,7 +45,7 @@ def _ask_doc(question: List[str], files: List[str]) -> str:
     documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
-    return index.query(" ".join(question)).response  # type: ignore
+    return index.query(question).response  # type: ignore
 
 
 def _document_indexer(documents) -> BaseGPTIndex:
@@ -163,6 +163,8 @@ def _ask(
     files=None,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
+    if isinstance(question, list):
+        question = " ".join(question)
     if files:
         response = _ask_doc(question, files)
     else:
