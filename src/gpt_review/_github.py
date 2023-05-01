@@ -11,111 +11,124 @@ from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review._review import summarize_files
+from gpt_review._repository import RepositoryClient
 
 
-def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
-    """
-    Replicate the logic from this command to get the PR diff:
+class GitHubClient(RepositoryClient):
+    """GitHub client."""
 
-    PATCH_OUTPUT=$(curl --silent --request GET \
-        --url https://api.github.com/repos/$PATCH_REPO/pulls/$PATCH_PR \
-        --header "Accept: application/vnd.github.diff" \
-        --header "Authorization: Bearer $GITHUB_TOKEN")
-    """
-    patch_repo = patch_repo or os.getenv("PATCH_REPO")
-    patch_pr = patch_pr or os.getenv("PATCH_PR")
-    access_token = access_token or os.getenv("GITHUB_TOKEN")
+    @staticmethod
+    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
+        """
+        Get the diff of a PR.
 
-    headers = {
-        "Accept": "application/vnd.github.v3.diff",
-        "authorization": f"Bearer {access_token}",
-    }
+        Args:
+            patch_repo (str): The repo.
+            patch_pr (str): The PR.
+            access_token (str): The GitHub access token.
 
-    response = requests.get(f"https://api.github.com/repos/{patch_repo}/pulls/{patch_pr}", headers=headers, timeout=10)
-    return response.text
+        Returns:
+            str: The diff of the PR.
+        """
+        patch_repo = patch_repo or os.getenv("PATCH_REPO")
+        patch_pr = patch_pr or os.getenv("PATCH_PR")
+        access_token = access_token or os.getenv("GITHUB_TOKEN")
 
+        headers = {
+            "Accept": "application/vnd.github.v3.diff",
+            "authorization": f"Bearer {access_token}",
+        }
 
-def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None) -> requests.Response:
-    """
-    Replicate the logic from this command to post a PR comment:
+        response = requests.get(
+            f"https://api.github.com/repos/{patch_repo}/pulls/{patch_pr}", headers=headers, timeout=10
+        )
+        return response.text
 
-    curl --request POST \
-        --url https://api.github.com/repos/$OWNER/$REPO/pulls/$PULL_NUMBER/reviews \
-        --header 'Accept: application/vnd.github.v3+json' \
+    @staticmethod
+    def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None) -> requests.Response:
+        """
+        Post a comment to a PR.
 
-    """
-    git_commit_hash = git_commit_hash or os.getenv("GIT_COMMIT_HASH")
-    data = {"body": review, "commit_id": git_commit_hash, "event": "COMMENT"}
-    data = json.dumps(data)
+        Args:
+            review (str): The review.
+            git_commit_hash (str): The git commit hash.
+            link (str): The link to the PR.
+            access_token (str): The GitHub access token.
 
-    pr_link = link or os.getenv("LINK")
-    if not isinstance(pr_link, str):
-        raise ValueError("PR link not found, set the LINK environment variable.")
-    owner = pr_link.split("/")[-4]
-    repo = pr_link.split("/")[-3]
-    pr_number = pr_link.split("/")[-1]
+        Returns:
+            requests.Response: The response.
+        """
+        git_commit_hash = git_commit_hash or os.getenv("GIT_COMMIT_HASH")
+        data = {"body": review, "commit_id": git_commit_hash, "event": "COMMENT"}
+        data = json.dumps(data)
 
-    access_token = access_token or os.getenv("GITHUB_TOKEN")
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "authorization": f"Bearer {access_token}",
-    }
-    response = requests.get(
-        f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews", headers=headers, timeout=10
-    )
-    comments = response.json()
+        pr_link = link or os.getenv("LINK")
+        if not isinstance(pr_link, str):
+            raise ValueError("PR link not found, set the LINK environment variable.")
+        owner = pr_link.split("/")[-4]
+        repo = pr_link.split("/")[-3]
+        pr_number = pr_link.split("/")[-1]
 
-    for comment in comments:
-        if (
-            "user" in comment
-            and comment["user"]["login"] == "github-actions[bot]"
-            and "body" in comment
-            and "Summary by GPT-4" in comment["body"]
-        ):
-            review_id = comment["id"]
-            data = {"body": review}
-            data = json.dumps(data)
+        access_token = access_token or os.getenv("GITHUB_TOKEN")
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "authorization": f"Bearer {access_token}",
+        }
+        response = requests.get(
+            f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews", headers=headers, timeout=10
+        )
+        comments = response.json()
 
-            response = requests.put(
-                f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews/{review_id}",
+        for comment in comments:
+            if (
+                "user" in comment
+                and comment["user"]["login"] == "github-actions[bot]"
+                and "body" in comment
+                and "Summary by GPT-4" in comment["body"]
+            ):
+                review_id = comment["id"]
+                data = {"body": review}
+                data = json.dumps(data)
+
+                response = requests.put(
+                    f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews/{review_id}",
+                    headers=headers,
+                    data=data,
+                    timeout=10,
+                )
+                break
+        else:
+            # https://api.github.com/repos/OWNER/REPO/pulls/PULL_NUMBER/reviews
+            response = requests.post(
+                f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews",
                 headers=headers,
                 data=data,
                 timeout=10,
             )
-            break
-    else:
-        # https://api.github.com/repos/OWNER/REPO/pulls/PULL_NUMBER/reviews
-        response = requests.post(
-            f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/reviews",
-            headers=headers,
-            data=data,
-            timeout=10,
-        )
-    logging.info(response.json())
-    return response
+        logging.debug(response.json())
+        return response
 
+    @staticmethod
+    def get_review(pr_patch) -> None:
+        """Get a review of a PR.
+        Args:
+            pr_patch (str): The patch of the PR.
+        Returns:
+            str: The review of the PR.
+        """
+        review = summarize_files(pr_patch)
+        logging.debug(review)
 
-def get_review(pr_patch) -> None:
-    """Get a review of a PR.
-    Args:
-        pr_patch (str): The patch of the PR.
-    Returns:
-        str: The review of the PR.
-    """
-
-    review = summarize_files(pr_patch)
-    print(review)
-
-    if os.getenv("LINK"):
-        _post_pr_comment(review)
-    else:
-        logging.warning("No PR to post too")
+        if os.getenv("LINK"):
+            GitHubClient._post_pr_comment(review)
+        else:
+            logging.warning("No PR to post too")
 
 
 def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment."""
-    diff = get_pr_diff(repository, pull_request, access_token)
-    get_review(diff)
+    diff = GitHubClient.get_pr_diff(repository, pull_request, access_token)
+    GitHubClient.get_review(diff)
     return {"response": "Review posted as a comment."}
 
 
