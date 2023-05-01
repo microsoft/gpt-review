@@ -35,7 +35,7 @@ def _commit_message() -> str:
     """Commit the changes."""
 
     goal = """
-Create a short git commit message for these changes
+Create a short, single-line, git commit message for these changes
 """
     diff = _diff_sh()
     logging.debug("Diff: %s", diff)
