@@ -105,6 +105,7 @@ ignore = [
     "F401",
     "F501",
     "F821",
+    "W391", # Covered by Pylint trailing-newlines
 ]
 
 [tool.pyright]
