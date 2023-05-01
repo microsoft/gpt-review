@@ -63,5 +63,9 @@ def mock_github(monkeypatch) -> None:
     def mock_put(url, headers, timeout) -> MockResponse:
         return MockResponse()
 
+    def mock_post(url, headers, timeout) -> MockResponse:
+        return MockResponse()
+
     monkeypatch.setattr("requests.get", mock_get)
-    monkeypatch.setattr("requests.get", mock_put)
+    monkeypatch.setattr("requests.put", mock_put)
+    monkeypatch.setattr("requests.post", mock_post)
