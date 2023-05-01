@@ -61,11 +61,17 @@ jobs:
           default_bump: false
 
       - name: Set Configurations
-        if: steps.tag_version.outputs.release_type
+        if: steps.tag_version.outputs.release_type && github.event_name != 'release'
         shell: bash
         env:
-          OLD_VERSION: ${{ steps.tag_version.outputs.previous_version }}
           VERSION: ${{ steps.tag_version.outputs.new_version }}
+        run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?(.*))(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
+        
+      - name: Set Configurations
+        if: steps.tag_version.outputs.release_type && github.event_name == 'release'
+        shell: bash
+        env:
+          VERSION: ${{ steps.tag_version.outputs.previous_version }}
         run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?(.*))(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
 
       - name: Publish Snapshot to TestPyPi
