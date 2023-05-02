@@ -17,7 +17,6 @@
         "ms-python.pylint",
         "ms-python.isort",
         "ms-python.flake8",
-        "ms-python.pytest-xdist",
         "ms-python.black-formatter",
         "ms-vsliveshare.vsliveshare",
         "ryanluker.vscode-coverage-gutters",
