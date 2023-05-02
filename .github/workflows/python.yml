@@ -22,8 +22,10 @@ jobs:
         include:
           - tools: pytest
             args: -m not integration and not gpu
+            flags: unittests
           - tools: pytest
             args: -m integration
+            flags: integration
     steps:
       - uses: actions/checkout@v2
         with:
@@ -40,6 +42,7 @@ jobs:
           workdir: '.'
           testdir: 'tests'
           python_version: '3.11.3'
+          flags: ${{ matrix.flags }}
 
   publish:
     runs-on: ubuntu-latest
@@ -113,32 +116,3 @@ jobs:
           committer_email: actions@github.com
           add: src/gpt_review/__init__.py
           push: origin HEAD:main --force-with-lease
-
-  coverage-unit:
-    runs-on: ubuntu-latest
-    env:
-      OS: 'ubuntu-latest'
-      PYTHON: '3.11'
-    steps:
-    - uses: actions/checkout@master
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.11'
-        cache: 'pip' # caching pip dependencies
-    - run: |
-        pip install pytest pytest-cov pytest-xdist
-        pip install -e .
-
-    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0
-    - uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        flags: unittests
-
-    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 -m "integration"
-    - uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        flags: integration
