@@ -174,24 +174,6 @@ def split_diff(git_diff):
     return git_diff.split(f"{diff} {git}")[1:]  # Use formated string to prevent splitting
 
 
-def _analyze_test_coverage_bicep(files) -> str:
-    main_file = files["main.bicep"].diff
-    test_file = files["main.test.bicep"].diff if "main.test.bicep" in files else ""
-
-    return f"""
-    Are the changes in main.bicep tested in main.test.bicep?
-    If not, provide ideas how to test the changes, and create more tests in main.test.bicep.
-    main.bicep
-    ```
-    {main_file}
-    ```
-    main.test.bicep
-    ```
-    {test_file}
-    ```
-    """
-
-
 def summarize_test_coverage(git_diff) -> str:
     """Summarize the test coverage of a git diff.
 
@@ -208,14 +190,11 @@ def summarize_test_coverage(git_diff) -> str:
 
         files[git_file.file_name] = git_file
 
-    if "main.bicep" in files:
-        prompt = _analyze_test_coverage_bicep(files)
-    else:
-        prompt = f"""
-Are the changes tested?
+    prompt = f"""
 ```
 {git_diff}
 ```
+Have tests been included to cover the latest changes?
 """
 
     return _ask([prompt], temperature=0.0, max_tokens=1500)["response"]
@@ -298,23 +277,3 @@ def summarize_files(git_diff) -> str:
     summary += summarize_risk(git_diff)
 
     return summary
-
-
-def pr_insight_checks(git_diff) -> str:
-    """
-    Summarize potential risks.
-
-    Args:
-        git_diff (str): The git diff to split.
-
-    Returns:
-        response (str): The response from GPT-4.
-    """
-    text = ""
-    if os.getenv("PR_INSIGHTS", "true").lower() == "true":
-        text += """
-## PR Insight Checks
-
-"""
-        text += check_goals(git_diff, _CHECKS["PR_INSIGHT_CHECKS"])
-    return text
