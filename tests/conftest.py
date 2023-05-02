@@ -69,3 +69,23 @@ def mock_github(monkeypatch) -> None:
     monkeypatch.setattr("requests.get", mock_get)
     monkeypatch.setattr("requests.put", mock_put)
     monkeypatch.setattr("requests.post", mock_post)
+
+
+@pytest.fixture
+def mock_git_commit(monkeypatch) -> None:
+    """Mock git.commit with pytest monkey patch"""
+
+    class MockGit:
+        def __init__(self) -> None:
+            self.git = self
+
+        def commit(self, message) -> str:
+            return "test commit response"
+
+        def diff(self, message, cached) -> str:
+            return "test diff response"
+
+    def mock_init(cls):
+        return MockGit()
+
+    monkeypatch.setattr("git.repo.Repo.init", mock_init)

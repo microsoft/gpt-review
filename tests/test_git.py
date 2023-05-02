@@ -1,21 +1,21 @@
 """Test git functions."""
 import pytest
 
-from gpt_review._git import _commit_message
+from gpt_review._git import _commit
 
 
-def test_diff(mock_openai: None) -> None:
+def test_commit(mock_openai: None, mock_git_commit: None) -> None:
     """Test diff function."""
-    diff_test()
+    commit_test()
 
 
 @pytest.mark.integration
-def test_int_diff() -> None:
+def test_int_commit(mock_git_commit: None) -> None:
     """Test diff function."""
-    diff_test()
+    commit_test()
 
 
-def diff_test() -> None:
+def commit_test() -> None:
     """Test diff function."""
-    message = _commit_message()
+    message = _commit()
     assert message
