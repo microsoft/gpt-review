@@ -39,6 +39,14 @@ def mock_openai(monkeypatch) -> None:
     def from_documents(documents, service_context=None) -> MockIndex:
         return MockIndex()
 
+    class mock_openai_init:
+        def __init__(self) -> None:
+            self.api_type = "mock"
+            self.api_vesrion = "mock"
+            self.api_base = "mock"
+            self.api_key = "mock"
+
+    monkeypatch.setattr("openai.openai", mock_openai_init)
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTSimpleVectorIndex.from_documents", from_documents)
 

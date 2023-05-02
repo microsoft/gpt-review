@@ -164,6 +164,7 @@ def _ask(
     fast: bool = False,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
+    _load_azure_openai_context()
 
     prompt = " ".join(question)
 
@@ -234,8 +235,6 @@ def _call_gpt(
     Returns:
         str: The response from GPT-4.
     """
-    _load_azure_openai_context()
-
     messages = messages or [{"role": "user", "content": prompt}]
     try:
         engine = _get_engine(prompt, fast)
