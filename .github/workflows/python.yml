@@ -24,8 +24,6 @@ jobs:
             args: -m not integration and not gpu
           - tools: pytest
             args: -m integration
-          - tools: pytest-xdist
-            args: -n auto
     steps:
       - uses: actions/checkout@v2
         with:
