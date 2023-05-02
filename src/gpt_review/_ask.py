@@ -266,6 +266,8 @@ def _get_engine(prompt: str, fast: bool = False) -> str:
     - otherwise use gpt-4
     - enable fast to use gpt-35-turbo for small prompts
     """
+    if os.getenv("GPT3_ONLY"):
+        return "gpt-35-turbo"
     if len(prompt) > 8000:
         return "gpt-4-32k"
     if len(prompt) > 4000:
