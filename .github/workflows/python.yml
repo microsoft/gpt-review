@@ -130,7 +130,7 @@ jobs:
         python-version: '3.11'
         cache: 'pip' # caching pip dependencies
     - run: |
-        pip install pytest pytest-cov
+        pip install pytest pytest-cov pytest-xdist
         pip install -e .
 
     - run: pytest --cov=src --cov-report=xml --cov-fail-under 0
