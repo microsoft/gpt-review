@@ -1,0 +1,70 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+name: Create new release
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
+
+jobs:
+  CreateRelease:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT }}
+        
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: "v"
+          dry_run: true
+          default_bump: false
+
+      - name: Set Configurations
+        if: steps.tag_version.outputs.release_type
+        shell: bash
+        env:
+          OLD_VERSION: ${{ steps.tag_version.outputs.previous_version }}
+          VERSION: ${{ steps.tag_version.outputs.new_version }}
+        run: sed -ri "s/$OLD_VERSION/$VERSION/" "src/gpt_review/__init__.py" || exit 1
+
+      - uses: EndBug/add-and-commit@v9
+        if: steps.tag_version.outputs.release_type
+        with:
+          message: Update Version to ${{ steps.tag_version.outputs.new_version }} [no ci]
+          committer_name: GitHub Actions
+          committer_email: actions@github.com
+          add: "src/gpt_review/__init__.py"
+
+      - name: Setup Python
+        if: steps.tag_version.outputs.release_type
+        uses: actions/setup-python@v2.2.2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        if: steps.tag_version.outputs.release_type
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+          python setup.py sdist bdist_wheel
+
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        if: steps.tag_version.outputs.release_type
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          draft: true
+          automatic_release_tag: ${{ steps.tag_version.outputs.new_tag }}
+          prerelease: false
+          files: |
+            LICENSE.md
+            dist/*.tar.gz
+            dist/*.whl
