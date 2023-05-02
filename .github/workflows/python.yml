@@ -22,7 +22,7 @@ jobs:
         tools: ['black', 'bandit', 'pylint', 'flake8']
         include:
           - tools: pytest
-            args: -m not integration and not gpu
+            args: -m not integration and not cli
             flags: unittests
           - tools: pytest
             args: -m integration
