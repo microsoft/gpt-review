@@ -10,6 +10,8 @@
 
 A Python based CLI and GitHub Action to use Open AI or Azure Open AI models to review contents of pull requests.
 
+We currently require Python 3.11.
+
 ## How to use CLI:
 
 Install the package via `pip` and set the environment variables for your OpenAI API Key and Organization ID.
@@ -24,6 +26,15 @@ export OPENAI_API_KEY=<your key>
 export AZURE_OPENAI_API=<your azure api url>
 export AZURE_OPENAI_API_KEY=<your azure key>
 
+```
+
+### Powershell
+```pwsh
+python3.11 -m venv gpt
+.\gpt\Scripts\Activate.ps1
+
+pip install gpt-review
+gpt --version
 ```
 
 ## Developer Setup
