@@ -90,7 +90,7 @@ def _request_goal(git_diff, goal) -> str:
 {git_diff}
 """
 
-    response = _ask([prompt])
+    response = _ask([prompt], max_tokens=1500)
     logging.info(response["response"])
     return response["response"]
 
@@ -194,7 +194,7 @@ def summarize_test_coverage(git_diff) -> str:
 ```
 {git_diff}
 ```
-Have tests been included to cover the latest changes?
+Discuss if tests been included to cover the latest changes?
 """
 
     return _ask([prompt], temperature=0.0, max_tokens=1500)["response"]
