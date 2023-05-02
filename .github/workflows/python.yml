@@ -17,6 +17,7 @@ jobs:
   validation:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         tools: ['black', 'bandit', 'pylint', 'flake8']
         include:
