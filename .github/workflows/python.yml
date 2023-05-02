@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tools: ['black', 'bandit', 'pylint', 'flake8']
+        tools: ['black', 'bandit', 'pylint', 'flake8', 'xdist']
         include:
           - tools: pytest
             args: -m not integration and not gpu
@@ -123,8 +123,8 @@ jobs:
     - run: |
         pip install pytest pytest-cov
         pip install -e .
-    
-    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0 
+
+    - run: pytest --cov=src --cov-report=xml --cov-fail-under 0
     - uses: codecov/codecov-action@v3
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
