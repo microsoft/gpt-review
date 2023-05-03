@@ -77,8 +77,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
 
     embedding_llm = LangchainEmbedding(
         OpenAIEmbeddings(
-            document_model_name="text-embedding-ada-002",
-            query_model_name="text-embedding-ada-002",
+            model="text-embedding-ada-002",            
         ),  # type: ignore
         embed_batch_size=1,
     )
