@@ -25,6 +25,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
+          tag_prefix: 'v'
           default_bump: false
 
       - name: Set Configurations
