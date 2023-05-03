@@ -84,7 +84,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
 
     service_context = ServiceContext.from_defaults(
         llm_predictor=llm_predictor,
-        # embed_model=embedding_llm,
+        embed_model=embedding_llm,
     )
     return GPTVectorStoreIndex.from_documents(documents, service_context=service_context)
 
