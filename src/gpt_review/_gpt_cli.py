@@ -7,6 +7,8 @@ from knack import CLI, CLICommandsLoader
 
 from gpt_review import __version__
 from gpt_review._ask import AskCommandGroup
+from gpt_review._git import GitCommandGroup
+from gpt_review._github import GitHubCommandGroup
 
 CLI_NAME = "gpt"
 
@@ -23,10 +25,8 @@ class GPTCommandsLoader(CLICommandsLoader):
 
     _CommandGroups = [
         AskCommandGroup,
-    ]
-
-    _ArgumentGroups = [
-        AskCommandGroup,
+        GitHubCommandGroup,
+        GitCommandGroup,
     ]
 
     def load_command_table(self, args) -> OrderedDict:
@@ -35,7 +35,7 @@ class GPTCommandsLoader(CLICommandsLoader):
         return OrderedDict(self.command_table)
 
     def load_arguments(self, command) -> None:
-        for argument_group in self._ArgumentGroups:
+        for argument_group in self._CommandGroups:
             argument_group.load_arguments(self)
         super(GPTCommandsLoader, self).load_arguments(command)
 

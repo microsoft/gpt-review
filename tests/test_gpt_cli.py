@@ -102,28 +102,20 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase(
         f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
-    CLICase("ask --files review.py --files review.py what programming language is this code written in?"),
-    CLICase("ask --fast -f review.py what programming language is this code written in?"),
+    CLICase(
+        "ask --files src/gpt_review/main.py --files src/gpt_review/main.py what programming language is this code written in?"
+    ),
+    CLICase("git commit --help"),
+    # CLICase("git commit"),
+    CLICase("github review --help"),
+    CLICase("github review"),
+    CLICase(
+        "ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py what programming language is this code written in?"
+    ),
+    CLICase("ask --fast -f src/gpt_review/__init__.py what programming language is this code written in?"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
-
-
-@pytest.mark.parametrize("command", ARGS)
-@pytest.mark.cli
-def test_cli_gpt_cli(command: CLICase) -> None:
-    """Test gpt commands from installed CLI"""
-
-    command_array = f"gpt {command.command}".split(" ")
-
-    result = subprocess.run(
-        command_array,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-
-    assert result.returncode == command.expected_error_code
 
 
 def gpt_cli_test(command: CLICase) -> None:
@@ -152,3 +144,20 @@ def test_int_gpt_cli(command: CLICase) -> None:
 )
 def test_gpt_cli(command: CLICase, mock_openai: None) -> None:
     gpt_cli_test(command)
+
+
+@pytest.mark.parametrize("command", ARGS)
+@pytest.mark.cli
+def test_cli_gpt_cli(command: CLICase) -> None:
+    """Test gpt commands from installed CLI"""
+
+    command_array = f"gpt {command.command}".split(" ")
+
+    result = subprocess.run(
+        command_array,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert result.returncode == command.expected_error_code

@@ -44,3 +44,51 @@ def mock_openai(monkeypatch) -> None:
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
+
+
+@pytest.fixture
+def mock_github(monkeypatch) -> None:
+    """
+    Mock GitHub Functions with monkeypatch
+    - requests.get
+    """
+
+    class MockResponse:
+        def __init__(self) -> None:
+            self.text = "diff --git a/README.md b/README.md"
+
+        def json(self) -> dict:
+            return {"test": "test"}
+
+    def mock_get(url, headers, timeout) -> MockResponse:
+        return MockResponse()
+
+    def mock_put(url, headers, timeout) -> MockResponse:
+        return MockResponse()
+
+    def mock_post(url, headers, data, timeout) -> MockResponse:
+        return MockResponse()
+
+    monkeypatch.setattr("requests.get", mock_get)
+    monkeypatch.setattr("requests.put", mock_put)
+    monkeypatch.setattr("requests.post", mock_post)
+
+
+@pytest.fixture
+def mock_git_commit(monkeypatch) -> None:
+    """Mock git.commit with pytest monkey patch"""
+
+    class MockGit:
+        def __init__(self) -> None:
+            self.git = self
+
+        def commit(self, message) -> str:
+            return "test commit response"
+
+        def diff(self, message, cached) -> str:
+            return "test diff response"
+
+    def mock_init(cls):
+        return MockGit()
+
+    monkeypatch.setattr("git.repo.Repo.init", mock_init)

@@ -55,6 +55,7 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: '3.11.3'
+          cache: 'pip' # caching pip dependencies
 
       - name: Bump version and push tag
         id: tag_version

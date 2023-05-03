@@ -105,10 +105,10 @@ inputs:
 runs:
   using: "composite"
   steps:
-      - name: Set up Python 3.8
+      - name: Set up Python 3.11
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.11
       - name: Install
         shell: bash
         run: |
@@ -116,25 +116,17 @@ runs:
           python3 -m venv .env
           source .env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install \
-            requests \
-            openai \
-            pyyaml
-
-      - name: Set env.BRANCH
-        shell: bash
-        if: ${{ github.action_ref == '' }}
-        run: echo "BRANCH=$(echo ${GITHUB_HEAD_REF:-${GITHUB_REF##*/}})" >> $GITHUB_ENV
+          python -m pip install gpt-review
 
       - name: Review PR and make comment
         shell: bash
         run: |
           source .env/bin/activate
-          
-          ORG_NAME=$(echo ${BRANCH%/*})
-          curl --request GET --url https://raw.githubusercontent.com/$ORG_NAME/gpt-review/$ACTION_REF/review.py > review.py
 
-          python review.py
+          gpt github review \
+            --access-token $GITHUB_TOKEN \
+            --pull-request $PATCH_PR \
+            --repository $PATCH_REPO
         env:
           ACTION_REF: ${{ github.action_ref || env.BRANCH }}
           GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
