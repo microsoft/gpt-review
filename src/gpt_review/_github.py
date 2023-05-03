@@ -10,7 +10,7 @@ from knack import CLICommandsLoader
 from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review._review import summarize_files
+from gpt_review._review import _summarize_files
 from gpt_review._repository import _RepositoryClient
 
 
@@ -116,7 +116,7 @@ class _GitHubClient(_RepositoryClient):
         Returns:
             str: The review of the PR.
         """
-        review = summarize_files(pr_patch)
+        review = _summarize_files(pr_patch)
         logging.debug(review)
 
         if os.getenv("LINK"):

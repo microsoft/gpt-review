@@ -95,7 +95,7 @@ def _request_goal(git_diff, goal) -> str:
     return response["response"]
 
 
-def check_goals(git_diff, checks, indent="###") -> str:
+def _check_goals(git_diff, checks, indent="###") -> str:
     """
     Check goals.
 
@@ -117,7 +117,7 @@ def check_goals(git_diff, checks, indent="###") -> str:
     )
 
 
-def summarize_pr(git_diff) -> str:
+def _summarize_pr(git_diff) -> str:
     """
     Summarize a PR.
 
@@ -133,11 +133,11 @@ def summarize_pr(git_diff) -> str:
 {_request_goal(git_diff, goal="")}
 """
 
-        text += check_goals(git_diff, _CHECKS["SUMMARY_CHECKS"])
+        text += _check_goals(git_diff, _CHECKS["SUMMARY_CHECKS"])
     return text
 
 
-def summarize_file(diff) -> str:
+def _summarize_file(diff) -> str:
     """Summarize a file in a git diff.
 
     Args:
@@ -160,7 +160,7 @@ Summarize the changes to the file {git_file.file_name}.
 """
 
 
-def split_diff(git_diff):
+def _split_diff(git_diff):
     """Split a git diff into a list of files and their diff contents.
 
     Args:
@@ -174,7 +174,7 @@ def split_diff(git_diff):
     return git_diff.split(f"{diff} {git}")[1:]  # Use formated string to prevent splitting
 
 
-def summarize_test_coverage(git_diff) -> str:
+def _summarize_test_coverage(git_diff) -> str:
     """Summarize the test coverage of a git diff.
 
     Args:
@@ -184,7 +184,7 @@ def summarize_test_coverage(git_diff) -> str:
         str: The summary of the test coverage.
     """
     files = {}
-    for diff in split_diff(git_diff):
+    for diff in _split_diff(git_diff):
         path = diff.split(" b/")[0]
         git_file = GitFile(path.split("/")[len(path.split("/")) - 1], diff)
 
@@ -200,7 +200,7 @@ Discuss if tests been included to cover the latest changes?
     return _ask([prompt], temperature=0.0, max_tokens=1500)["response"]
 
 
-def summarize_bugs_in_pr(git_diff) -> str:
+def _summarize_bugs_in_pr(git_diff) -> str:
     """
     Summarize bugs that may be introduced.
 
@@ -220,7 +220,7 @@ Summarize bugs that may be introduced.
     return response["response"]
 
 
-def summarize_risk(git_diff) -> str:
+def _summarize_risk(git_diff) -> str:
     """
     Summarize potential risks.
 
@@ -236,24 +236,24 @@ def summarize_risk(git_diff) -> str:
 ## Potential Risks
 
 """
-        text += check_goals(git_diff, _CHECKS["RISK_CHECKS"])
+        text += _check_goals(git_diff, _CHECKS["RISK_CHECKS"])
     return text
 
 
-def summarize_files(git_diff) -> str:
+def _summarize_files(git_diff) -> str:
     """Summarize git files."""
     summary = """
 # Summary by GPT-4
 """
 
-    summary += summarize_pr(git_diff)
+    summary += _summarize_pr(git_diff)
 
     if os.getenv("FILE_SUMMARY", "true").lower() == "true":
         file_summary = """
 ## Changes
 
 """
-        file_summary += "".join(summarize_file(diff) for diff in split_diff(git_diff))
+        file_summary += "".join(_summarize_file(diff) for diff in _split_diff(git_diff))
         if os.getenv("FILE_SUMMARY_FULL", "true").lower() == "true":
             summary += file_summary
 
@@ -265,15 +265,15 @@ def summarize_files(git_diff) -> str:
     if os.getenv("TEST_SUMMARY", "true").lower() == "true":
         summary += f"""
 ## Test Coverage
-{summarize_test_coverage(git_diff)}
+{_summarize_test_coverage(git_diff)}
 """
 
     if os.getenv("BUG_SUMMARY", "true").lower() == "true":
         summary += f"""
 ## Potential Bugs
-{summarize_bugs_in_pr(git_diff)}
+{_summarize_bugs_in_pr(git_diff)}
 """
 
-    summary += summarize_risk(git_diff)
+    summary += _summarize_risk(git_diff)
 
     return summary
