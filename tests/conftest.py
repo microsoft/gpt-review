@@ -89,3 +89,8 @@ def mock_git_commit(monkeypatch) -> None:
         return MockGit()
 
     monkeypatch.setattr("git.repo.Repo.init", mock_init)
+
+
+@pytest.fixture
+def force_gpt_3(monkeypatch) -> None:
+    monkeypatch.setenv("GPT3_ONLY", "1")
