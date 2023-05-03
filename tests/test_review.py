@@ -8,7 +8,7 @@ def test_get_review(mock_openai) -> None:
 
 
 @pytest.mark.integration
-def test_int_get_review(force_gpt_3: None) -> None:
+def test_int_get_review() -> None:
     get_review_test()
 
 

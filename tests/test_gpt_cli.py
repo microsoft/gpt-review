@@ -133,7 +133,7 @@ def gpt_cli_test(command: CLICase) -> None:
 
 @pytest.mark.parametrize("command", ARGS)
 @pytest.mark.integration
-def test_int_gpt_cli(command: CLICase, force_gpt_3: None) -> None:
+def test_int_gpt_cli(command: CLICase) -> None:
     """Test gpt commands from CLI file"""
     gpt_cli_test(command)
 

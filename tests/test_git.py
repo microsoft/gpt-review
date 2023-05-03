@@ -16,6 +16,6 @@ def test_commit(mock_openai: None, mock_git_commit: None) -> None:
 
 
 @pytest.mark.integration
-def test_int_commit(mock_git_commit: None, force_gpt_3: None) -> None:
+def test_int_commit(mock_git_commit: None) -> None:
     """Integration test for commit function."""
     commit_test()
