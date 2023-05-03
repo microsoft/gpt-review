@@ -50,6 +50,7 @@ jobs:
           automatic_release_tag: "latest"
           draft: true
           title: ${{ steps.tag_version.outputs.new_tag }}
+          generate_release_notes: true
           prerelease: false
           files: |
             LICENSE.md
