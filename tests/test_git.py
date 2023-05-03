@@ -4,18 +4,18 @@ import pytest
 from gpt_review._git import _commit
 
 
+def commit_test() -> None:
+    """Test Case for commit wrapper."""
+    message = _commit()
+    assert message
+
+
 def test_commit(mock_openai: None, mock_git_commit: None) -> None:
-    """Test diff function."""
+    """Unit test for commit function."""
     commit_test()
 
 
 @pytest.mark.integration
 def test_int_commit(mock_git_commit: None, force_gpt_3: None) -> None:
-    """Test diff function."""
+    """Integration test for commit function."""
     commit_test()
-
-
-def commit_test() -> None:
-    """Test diff function."""
-    message = _commit()
-    assert message

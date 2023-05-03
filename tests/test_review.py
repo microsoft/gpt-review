@@ -14,27 +14,8 @@ def test_int_get_review(force_gpt_3: None) -> None:
 
 def get_review_test() -> None:
     """Test get_review."""
-    _GitHubClient.post_pr_summary(
-        """
-diff --git a/README.md b/README.md
-index 6d0d0a7..b2b0b0a 100644
---- a/README.md
-+++ b/README.md
-@@ -1,4 +1,4 @@
--# GPT Review
-+# GPT Review Test
-    GPT Review is a tool to help with code reviews.
-    It uses GPT-4 to summarize code changes and provide insights.
-    It is currently in alpha.
-diff --git a/src/gpt_review/_ask.py b/src/gpt_review/_ask.py
-index 6d0d0a7..b2b0b0a 100644
---- a/src/gpt_review/_ask.py
-+++ b/src/gpt_review/_ask.py
-@@ -1,4 +1,4 @@
--# GPT Review
-+# GPT Review Test
-    GPT Review is a tool to help with code reviews.
-    It uses GPT-4 to summarize code changes and provide insights.
-    It is currently in alpha.
-"""
-    )
+    # Load test data from moock.diff
+    with open("tests/mock.diff", "r") as f:
+        diff = f.read()
+
+        _GitHubClient.post_pr_summary(diff)
