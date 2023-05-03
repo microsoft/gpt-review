@@ -109,6 +109,8 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     # CLICase("git commit"),
     CLICase("github review --help"),
     CLICase("github review"),
+    CLICase("ask --files review.py --files review.py what programming language is this code written in?"),
+    CLICase("ask --fast -f review.py what programming language is this code written in?"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
