@@ -50,6 +50,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
 
+      - if: steps.tag_version.outputs.release_type
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flit
+
+          python -m flit build
+
       - uses: dciborow/action-github-releases@v1.0.1
         if: steps.tag_version.outputs.release_type
         with:
