@@ -47,6 +47,7 @@ jobs:
         if: steps.tag_version.outputs.release_type
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
           draft: true
           title: ${{ steps.tag_version.outputs.new_tag }}
           prerelease: false
