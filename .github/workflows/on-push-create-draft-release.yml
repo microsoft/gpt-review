@@ -43,6 +43,16 @@ jobs:
           committer_email: actions@github.com
           add: "src/gpt_review/__init__.py"
 
+      - name: Set Configurations
+        if: steps.tag_version.outputs.release_type
+        shell: bash
+        env:
+          TITLE: ${{ steps.tag_version.outputs.new_tag }}
+        run: |
+          hub release delete \
+            --include-drafts
+            latest || exit 0
+
       - uses: dciborow/action-github-releases@v1.0.1
         if: steps.tag_version.outputs.release_type
         with:
