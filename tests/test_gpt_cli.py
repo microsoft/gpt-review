@@ -111,10 +111,6 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase("github review"),
 ]
 
-INTEGRATION_TEST_COMMANDS = [
-    CLICase("ask --fast how are you"),
-]
-
 ARGS = ROOT_COMMANDS + ASK_COMMANDS
 
 
@@ -131,9 +127,9 @@ def gpt_cli_test(command: CLICase) -> None:
         assert exit_code == command.expected_error_code
 
 
-@pytest.mark.parametrize("command", INTEGRATION_TEST_COMMANDS)
+@pytest.mark.parametrize("command", ARGS)
 @pytest.mark.integration
-def test_int_gpt_cli(command: CLICase) -> None:
+def test_int_gpt_cli(command: CLICase, force_gpt_3: None) -> None:
     """Test gpt commands from CLI file"""
     gpt_cli_test(command)
 
