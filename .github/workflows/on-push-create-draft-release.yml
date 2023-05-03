@@ -60,6 +60,6 @@ jobs:
           generate_release_notes: true
           prerelease: false
           files: |
-            LICENSE.md
-            dist/*.tar.gz
-            dist/*.whl
+            LICENSE
+            **.tar.gz
+            **.whl
