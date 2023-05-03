@@ -16,7 +16,7 @@ from openai.error import RateLimitError
 from langchain.llms import AzureOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from llama_index import (
-    GPTSimpleVectorIndex,
+    GPTVectorStoreIndex,
     LangchainEmbedding,
     ServiceContext,
     LLMPredictor,
@@ -45,7 +45,7 @@ def _ask_doc(question: str, files: List[str]) -> str:
     documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
-    return index.query(question).response  # type: ignore
+    return index.as_query_engine().query(question).response  # type: ignore
 
 
 def _document_indexer(documents) -> BaseGPTIndex:
@@ -59,7 +59,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
         azure (bool): Whether to use Azure OpenAI.
 
     Returns:
-        GPTSimpleVectorIndex: The document indexer.
+        GPTVectorStoreIndex: The document indexer.
     """
     _load_azure_openai_context()
 
@@ -77,8 +77,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
 
     embedding_llm = LangchainEmbedding(
         OpenAIEmbeddings(
-            document_model_name="text-embedding-ada-002",
-            query_model_name="text-embedding-ada-002",
+            model="text-embedding-ada-002",
         ),  # type: ignore
         embed_batch_size=1,
     )
@@ -87,7 +86,7 @@ def _document_indexer(documents) -> BaseGPTIndex:
         llm_predictor=llm_predictor,
         embed_model=embedding_llm,
     )
-    return GPTSimpleVectorIndex.from_documents(documents, service_context=service_context)
+    return GPTVectorStoreIndex.from_documents(documents, service_context=service_context)
 
 
 class AzureGPT35Turbo(AzureOpenAI):
