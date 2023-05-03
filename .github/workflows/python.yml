@@ -36,7 +36,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.6.1
+        uses: microsoft/action-python@0.6.2
         with:
           ${{ matrix.tools }}: true
           args: ${{ matrix.args }}

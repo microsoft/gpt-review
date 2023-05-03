@@ -328,4 +328,5 @@ class AskCommandGroup(GPTCommandGroup):
                 help="Ask question about a file. Can be used multiple times.",
                 default=None,
                 action="append",
+                options_list=("--files", "-f"),
             )
