@@ -25,6 +25,9 @@ def mock_openai(monkeypatch) -> None:
             assert isinstance(question, str)
             return MockQueryResponse()
 
+        def as_query_engine(self):
+            return self
+
     def mock_create(
         engine,
         messages,
@@ -40,7 +43,7 @@ def mock_openai(monkeypatch) -> None:
         return MockIndex()
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
-    monkeypatch.setattr("llama_index.GPTSimpleVectorIndex.from_documents", from_documents)
+    monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
 
 
 @pytest.fixture

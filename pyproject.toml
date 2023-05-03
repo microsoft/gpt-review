@@ -24,7 +24,7 @@ dynamic = ["version"]
 dependencies = [
   'azure-identity',
   'azure-keyvault-secrets',
-  'llama-index<0.6.0',
+  'llama-index>=0.6.0,<=0.6.0',
   'httpx',
   'GitPython',
   'knack',
@@ -43,7 +43,7 @@ test = [
     "flake8-formatter_junit_xml",
     "flake8",
     "flake8-pyproject",
-    "pre-commit==3.2.2",
+    "pre-commit==3.3.1",
     "pylint==2.17.3",
     "pylint_junit",
     "pytest-cov>=3.0.0",
