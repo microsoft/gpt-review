@@ -42,3 +42,15 @@ jobs:
           committer_name: GitHub Actions
           committer_email: actions@github.com
           add: "src/gpt_review/__init__.py"
+
+      - uses: "dciborow/action-automatic-releases-2@v1.0.0"
+        if: steps.tag_version.outputs.release_type
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          draft: true
+          title: ${{ steps.tag_version.outputs.new_tag }}
+          prerelease: false
+          files: |
+            LICENSE.md
+            dist/*.tar.gz
+            dist/*.whl
