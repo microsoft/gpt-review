@@ -45,7 +45,7 @@ def _ask_doc(question: str, files: List[str]) -> str:
     documents = SimpleDirectoryReader(input_files=files).load_data()
     index = _document_indexer(documents)
 
-    return index.query(question).response  # type: ignore
+    return index.as_query_engine().query(question).response  # type: ignore
 
 
 def _document_indexer(documents) -> BaseGPTIndex:
