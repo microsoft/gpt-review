@@ -47,6 +47,8 @@ jobs:
         if: steps.tag_version.outputs.release_type
         shell: bash
         run: hub release delete latest || exit 0
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
 
       - uses: dciborow/action-github-releases@v1.0.1
         if: steps.tag_version.outputs.release_type
