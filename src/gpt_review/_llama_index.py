@@ -44,10 +44,10 @@ def _document_indexer(
     Returns:
         GPTVectorStoreIndex: The document indexer.
     """
-    llmType = AzureGPT35Turbo if fast else AzureChatOpenAI
-    llmName = "gpt-35-turbo" if fast else "gpt-4-32k" if large else "gpt-4"
-    llm = llmType(  # type: ignore
-        deployment_name=llmName,
+    llm_type = AzureGPT35Turbo if fast else AzureChatOpenAI
+    llm_name = "gpt-35-turbo" if fast else "gpt-4-32k" if large else "gpt-4"
+    llm = llm_type(  # type: ignore
+        deployment_name=llm_name,
         model_kwargs={
             "api_key": openai.api_key,
             "api_base": openai.api_base,

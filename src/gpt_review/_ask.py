@@ -196,7 +196,15 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
 
 
 def _count_tokens(prompt) -> int:
-    """Determine number of tokens in prompt."""
+    """
+    Determine number of tokens in prompt.
+
+    Args:
+        prompt (str): The prompt to send to GPT-4.
+
+    Returns:
+        int: The number of tokens in the prompt.
+    """
     return int(len(prompt) / 4 * 3)
 
 
