@@ -9,7 +9,7 @@ def ask_doc_test() -> None:
     _load_azure_openai_context()
     question = "What is the name of the package?"
     files = ["src/gpt_review/__init__.py"]
-    _ask_doc(question, files)
+    _ask_doc(question, files, fast=True)
 
 
 def test_ask_doc(mock_openai) -> None:
