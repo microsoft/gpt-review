@@ -88,7 +88,7 @@ def _ask(
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
             fast=fast,
-            large=large
+            large=large,
         )
     return {"response": response}
 
