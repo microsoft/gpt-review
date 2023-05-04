@@ -10,27 +10,21 @@ from llama_index import GPTVectorStoreIndex, LLMPredictor, LangchainEmbedding, S
 from llama_index.indices.base import BaseGPTIndex
 
 
-class AzureGPT35Turbo(AzureOpenAI):
-    """Azure OpenAI Chat API."""
+def _ask_doc(question: str, files: List[str], fast: bool = False, large: bool = False) -> str:
+    """
+    Ask GPT a question.
+    Args:
+        question (List[str]): The question to ask.
+        files (List[str]): The files to search.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
+    Returns:
+        Dict[str, str]: The response.
+    """
+    documents = SimpleDirectoryReader(input_files=files).load_data()
+    index = _document_indexer(documents, fast=fast, large=large)
 
-    @property
-    @override
-    def _default_params(self):
-        """
-        Get the default parameters for calling OpenAI API.
-        gpt-35-turbo does not support best_of, logprobs, or echo.
-        """
-        normal_params = {
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "top_p": self.top_p,
-            "frequency_penalty": self.frequency_penalty,
-            "presence_penalty": self.presence_penalty,
-            "n": self.n,
-            "request_timeout": self.request_timeout,
-            "logit_bias": self.logit_bias,
-        }
-        return {**normal_params, **self.model_kwargs}
+    return index.as_query_engine().query(question).response  # type: ignore
 
 
 def _document_indexer(
@@ -77,18 +71,24 @@ def _document_indexer(
     return GPTVectorStoreIndex.from_documents(documents, service_context=service_context)
 
 
-def _ask_doc(question: str, files: List[str], fast: bool = False, large: bool = False) -> str:
-    """
-    Ask GPT a question.
-    Args:
-        question (List[str]): The question to ask.
-        files (List[str]): The files to search.
-        fast (bool, optional): Whether to use the fast model. Defaults to False.
-        large (bool, optional): Whether to use the large model. Defaults to False.
-    Returns:
-        Dict[str, str]: The response.
-    """
-    documents = SimpleDirectoryReader(input_files=files).load_data()
-    index = _document_indexer(documents, fast=fast, large=large)
+class AzureGPT35Turbo(AzureOpenAI):
+    """Azure OpenAI Chat API."""
 
-    return index.as_query_engine().query(question).response  # type: ignore
+    @property
+    @override
+    def _default_params(self):
+        """
+        Get the default parameters for calling OpenAI API.
+        gpt-35-turbo does not support best_of, logprobs, or echo.
+        """
+        normal_params = {
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "top_p": self.top_p,
+            "frequency_penalty": self.frequency_penalty,
+            "presence_penalty": self.presence_penalty,
+            "n": self.n,
+            "request_timeout": self.request_timeout,
+            "logit_bias": self.logit_bias,
+        }
+        return {**normal_params, **self.model_kwargs}
