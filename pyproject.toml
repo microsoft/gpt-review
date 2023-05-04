@@ -32,6 +32,7 @@ dependencies = [
   'requests',
   'pyyaml',
   'typing_extensions; python_version <= "3.10"',
+  'transformers; python_version <= "3.8"'
 ]
 
 [project.optional-dependencies]
