@@ -40,3 +40,4 @@ jobs:
           REPOSITORY_NAME: ${{ github.repository }}
           AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
