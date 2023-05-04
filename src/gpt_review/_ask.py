@@ -65,8 +65,6 @@ def _document_indexer(
     Returns:
         GPTVectorStoreIndex: The document indexer.
     """
-    _load_azure_openai_context()
-
     llm = (
         AzureGPT35Turbo(  # type: ignore
             deployment_name="gpt-35-turbo",
@@ -180,6 +178,7 @@ def _ask(
     fast: bool = False,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
+    _load_azure_openai_context()
 
     prompt = " ".join(question)
 
@@ -250,11 +249,9 @@ def _call_gpt(
     Returns:
         str: The response from GPT-4.
     """
-    _load_azure_openai_context()
-
     messages = messages or [{"role": "user", "content": prompt}]
     try:
-        engine = _get_engine(prompt, fast)
+        engine = _get_engine(prompt, fast, max_tokens)
         logging.info("Model Selected based on prompt size: %s", engine)
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
@@ -276,18 +273,24 @@ def _call_gpt(
         raise RateLimitError("Retry limit exceeded") from error
 
 
-def _get_engine(prompt: str, fast: bool = False) -> str:
+def _get_engine(prompt: str, fast: bool = False, max_tokens: int = 0) -> str:
     """
     Get the Engine based on the prompt length.
     - when greater then 8k use gpt-4-32k
     - otherwise use gpt-4
     - enable fast to use gpt-35-turbo for small prompts
     """
-    if len(prompt) > 8000:
+    tokens = _count_tokens(prompt)
+    if tokens + max_tokens > 8000:
         return "gpt-4-32k"
-    if len(prompt) > 4000:
+    if tokens + max_tokens > 4000:
         return "gpt-4"
     return "gpt-35-turbo" if fast else "gpt-4"
+
+
+def _count_tokens(prompt) -> int:
+    """Determine number of tokens in prompt."""
+    return int(len(prompt) / 4 * 3)
 
 
 class AskCommandGroup(GPTCommandGroup):
