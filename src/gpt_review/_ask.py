@@ -1,9 +1,6 @@
 """Ask GPT a question."""
-import logging
 import os
-import time
 from typing import Dict, List, Optional
-from typing_extensions import override
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
@@ -12,119 +9,14 @@ from knack.util import CLIError
 import openai
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from openai.error import RateLimitError
-from langchain.chat_models import AzureChatOpenAI
-from langchain.llms import AzureOpenAI
-from langchain.embeddings import OpenAIEmbeddings
-from llama_index import (
-    GPTVectorStoreIndex,
-    LangchainEmbedding,
-    ServiceContext,
-    LLMPredictor,
-    SimpleDirectoryReader,
-)
-from llama_index.indices.base import BaseGPTIndex
 
 from gpt_review._command import GPTCommandGroup
+from gpt_review._llama_index import _ask_doc
+from gpt_review._openai import _call_gpt
 import gpt_review.constants as C
 
 
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
-
-
-def _ask_doc(question: str, files: List[str], fast: bool = False) -> str:
-    """
-    Ask GPT a question.
-
-    Args:
-        question (List[str]): The question to ask.
-        files (List[str]): The files to search.
-
-    Returns:
-        Dict[str, str]: The response.
-    """
-    documents = SimpleDirectoryReader(input_files=files).load_data()
-    index = _document_indexer(documents)
-
-    return index.as_query_engine().query(question).response  # type: ignore
-
-
-def _document_indexer(
-    documents,
-    fast: bool = False,
-) -> BaseGPTIndex:
-    """
-    Create a document indexer.
-
-    Deployment names include: "gpt-35-turbo", "text-davinci-003"
-
-    Args:
-        documents (List[Document]): The documents to index.
-        azure (bool): Whether to use Azure OpenAI.
-
-    Returns:
-        GPTVectorStoreIndex: The document indexer.
-    """
-    llm = (
-        AzureGPT35Turbo(  # type: ignore
-            deployment_name="gpt-35-turbo",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
-        if fast
-        else AzureChatOpenAI(  # type: ignore
-            deployment_name="gpt-4",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
-    )
-    llm_predictor = LLMPredictor(llm=llm)
-
-    embedding_llm = LangchainEmbedding(
-        OpenAIEmbeddings(
-            model="text-embedding-ada-002",
-        ),  # type: ignore
-        embed_batch_size=1,
-    )
-
-    service_context = ServiceContext.from_defaults(
-        llm_predictor=llm_predictor,
-        embed_model=embedding_llm,
-    )
-    return GPTVectorStoreIndex.from_documents(documents, service_context=service_context)
-
-
-class AzureGPT35Turbo(AzureOpenAI):
-    """Azure OpenAI Chat API."""
-
-    @property
-    @override
-    def _default_params(self):
-        """
-        Get the default parameters for calling OpenAI API.
-        gpt-35-turbo does not support best_of, logprobs, or echo.
-        """
-        normal_params = {
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens,
-            "top_p": self.top_p,
-            "frequency_penalty": self.frequency_penalty,
-            "presence_penalty": self.presence_penalty,
-            "n": self.n,
-            "request_timeout": self.request_timeout,
-            "logit_bias": self.logit_bias,
-        }
-        return {**normal_params, **self.model_kwargs}
 
 
 def validate_parameter_range(namespace) -> None:
@@ -176,14 +68,18 @@ def _ask(
     presence_penalty: float = C.PRESENCE_PENALTY_DEFAULT,
     files: Optional[List[str]] = None,
     fast: bool = False,
+    large: bool = False,
+    directory: Optional[str] = None,
+    repository: Optional[str] = None,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
+    _load_azure_openai_context()
     _load_azure_openai_context()
 
     prompt = " ".join(question)
 
-    if files:
-        response = _ask_doc(prompt, files)
+    if files or directory or repository:
+        response = _ask_doc(prompt, files, input_dir=directory, repository=repository, fast=fast, large=large)
     else:
         response = _call_gpt(
             prompt=prompt,
@@ -193,6 +89,7 @@ def _ask(
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
             fast=fast,
+            large=large,
         )
     return {"response": response}
 
@@ -207,8 +104,8 @@ def _load_azure_openai_context() -> None:
     - Without setting the environment variables, the integration tests fail.
     - Without setting the openai package variables, the cli tests fail.
     """
-    openai.api_type = os.environ["OPENAI_API_TYPE"] = "azure"
-    openai.api_version = os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+    openai.api_type = os.environ["OPENAI_API_TYPE"] = os.environ["OPENAI_API_TYPE"] = "azure"
+    openai.api_version = os.environ["OPENAI_API_VERSION"] = os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
 
     if os.getenv("AZURE_OPENAI_API"):
         openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
@@ -219,78 +116,6 @@ def _load_azure_openai_context() -> None:
         )
         openai.api_base = os.environ["OPENAI_API_BASE"] = kv_client.get_secret("azure-open-ai").value  # type: ignore
         openai.api_key = os.environ["OPENAI_API_KEY"] = kv_client.get_secret("azure-openai-key").value  # type: ignore
-
-
-def _call_gpt(
-    prompt: str,
-    temperature=0.10,
-    max_tokens=500,
-    top_p=1.0,
-    frequency_penalty=0.5,
-    presence_penalty=0.0,
-    retry=0,
-    messages=None,
-    fast: bool = False,
-) -> str:
-    """
-    Call GPT-4 with the given prompt.
-
-    Args:
-        prompt (str): The prompt to send to GPT-4.
-        temperature (float, optional): The temperature to use. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 500.
-        top_p (float, optional): The top_p to use. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
-        retry (int, optional): The number of times to retry the request. Defaults to 0.
-        messages (List[Dict[str, str]], optional): The messages to send to GPT-4. Defaults to None.
-        fast (bool, optional): Whether to use the fast model. Defaults to False.
-
-    Returns:
-        str: The response from GPT-4.
-    """
-    messages = messages or [{"role": "user", "content": prompt}]
-    try:
-        engine = _get_engine(prompt, fast, max_tokens)
-        logging.info("Model Selected based on prompt size: %s", engine)
-
-        logging.info("Prompt sent to GPT: %s\n", prompt)
-        completion = openai.ChatCompletion.create(
-            engine=engine,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-        )
-        return completion.choices[0].message.content  # type: ignore
-    except RateLimitError as error:
-        if retry < 5:
-            logging.warning("Call to GPT failed due to rate limit, retry attempt: %s", retry)
-            time.sleep(retry * 10)
-            return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
-        raise RateLimitError("Retry limit exceeded") from error
-
-
-def _get_engine(prompt: str, fast: bool = False, max_tokens: int = 0) -> str:
-    """
-    Get the Engine based on the prompt length.
-    - when greater then 8k use gpt-4-32k
-    - otherwise use gpt-4
-    - enable fast to use gpt-35-turbo for small prompts
-    """
-    tokens = _count_tokens(prompt)
-    if tokens + max_tokens > 8000:
-        return "gpt-4-32k"
-    if tokens + max_tokens > 4000:
-        return "gpt-4"
-    return "gpt-35-turbo" if fast else "gpt-4"
-
-
-def _count_tokens(prompt) -> int:
-    """Determine number of tokens in prompt."""
-    return int(len(prompt) / 4 * 3)
 
 
 class AskCommandGroup(GPTCommandGroup):
@@ -308,6 +133,12 @@ class AskCommandGroup(GPTCommandGroup):
             args.argument(
                 "fast",
                 help="Use gpt-35-turbo for prompts < 4000 tokens.",
+                default=False,
+                action="store_true",
+            )
+            args.argument(
+                "large",
+                help="Use gpt-4-32k for prompts.",
                 default=False,
                 action="store_true",
             )
@@ -348,4 +179,18 @@ class AskCommandGroup(GPTCommandGroup):
                 default=None,
                 action="append",
                 options_list=("--files", "-f"),
+            )
+            args.argument(
+                "directory",
+                type=str,
+                help="Path to the directory.",
+                default=None,
+                options_list=("--directory", "-d"),
+            )
+            args.argument(
+                "repository",
+                type=str,
+                help="The repository to search. Format: owner/repo",
+                default=None,
+                options_list=("--repository", "-r"),
             )

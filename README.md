@@ -23,6 +23,13 @@ export AZURE_OPENAI_API=<your azure api url>
 export AZURE_OPENAI_API_KEY=<your azure key>
 ```
 
+Or use Azure Key Vault to secure your API Key. Create secrets for the url named `azure-open-ai`, and for the API Key named `azure-openai-key`.
+```bash
+export AZURE_KEY_VAULT_URL=https://<keyvault_name>.vault.azure.net/
+
+az login
+```
+
 ## Main Commands
 
 To show help information about available commands and their usage, run:

@@ -45,6 +45,26 @@ jobs:
           python_version: '3.11.3'
           flags: ${{ matrix.flags }}
 
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ['3.8', '3.9', '3.10', '3.11']
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: ${{ matrix.tools }}
+        uses: microsoft/action-python@0.6.3
+        with:
+          pytest: true
+          args: -m not integration and not cli
+          workdir: '.'
+          testdir: 'tests'
+          python_version: ${{ matrix.python }}
+          flags: unittests-${{ matrix.python }}
+
   publish:
     runs-on: ubuntu-latest
     steps:

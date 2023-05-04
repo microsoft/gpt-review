@@ -73,13 +73,15 @@ class GitFile:
         self.diff = diff
 
 
-def _request_goal(git_diff, goal) -> str:
+def _request_goal(git_diff, goal, fast: bool = False, large: bool = False) -> str:
     """
     Request a goal from GPT-4.
 
     Args:
         git_diff (str): The git diff to split.
         goal (str): The goal to request from GPT-4.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
 
     Returns:
         response (str): The response from GPT-4.
@@ -90,7 +92,7 @@ def _request_goal(git_diff, goal) -> str:
 {git_diff}
 """
 
-    response = _ask([prompt], max_tokens=1500)
+    response = _ask([prompt], max_tokens=1500, fast=fast, large=large)
     logging.info(response["response"])
     return response["response"]
 
