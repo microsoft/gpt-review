@@ -13,6 +13,7 @@ import openai
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 from openai.error import RateLimitError
+from langchain.chat_models import AzureChatOpenAI
 from langchain.llms import AzureOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from llama_index import (
@@ -31,7 +32,7 @@ import gpt_review.constants as C
 DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
-def _ask_doc(question: str, files: List[str]) -> str:
+def _ask_doc(question: str, files: List[str], fast: bool = False) -> str:
     """
     Ask GPT a question.
 
@@ -48,7 +49,10 @@ def _ask_doc(question: str, files: List[str]) -> str:
     return index.as_query_engine().query(question).response  # type: ignore
 
 
-def _document_indexer(documents) -> BaseGPTIndex:
+def _document_indexer(
+    documents,
+    fast: bool = False,
+) -> BaseGPTIndex:
     """
     Create a document indexer.
 
@@ -63,15 +67,28 @@ def _document_indexer(documents) -> BaseGPTIndex:
     """
     _load_azure_openai_context()
 
-    llm = AzureGPT35Turbo(  # type: ignore
-        deployment_name="gpt-35-turbo",
-        model_kwargs={
-            "api_key": openai.api_key,
-            "api_base": openai.api_base,
-            "api_type": "azure",
-            "api_version": "2023-03-15-preview",
-        },
-        max_retries=10,
+    llm = (
+        AzureGPT35Turbo(  # type: ignore
+            deployment_name="gpt-35-turbo",
+            model_kwargs={
+                "api_key": openai.api_key,
+                "api_base": openai.api_base,
+                "api_type": "azure",
+                "api_version": "2023-03-15-preview",
+            },
+            max_retries=10,
+        )
+        if fast
+        else AzureChatOpenAI(  # type: ignore
+            deployment_name="gpt-4",
+            model_kwargs={
+                "api_key": openai.api_key,
+                "api_base": openai.api_base,
+                "api_type": "azure",
+                "api_version": "2023-03-15-preview",
+            },
+            max_retries=10,
+        )
     )
     llm_predictor = LLMPredictor(llm=llm)
 
@@ -191,8 +208,8 @@ def _load_azure_openai_context() -> None:
     - Without setting the environment variables, the integration tests fail.
     - Without setting the openai package variables, the cli tests fail.
     """
-    openai.api_type = "azure"
-    openai.api_version = "2023-03-15-preview"
+    openai.api_type = os.environ["OPENAI_API_TYPE"] = "azure"
+    openai.api_version = os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
 
     if os.getenv("AZURE_OPENAI_API"):
         openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
