@@ -18,6 +18,7 @@ def _ask_doc(question: str, files: List[str], fast: bool = False, large: bool = 
         files (List[str]): The files to search.
         fast (bool, optional): Whether to use the fast model. Defaults to False.
         large (bool, optional): Whether to use the large model. Defaults to False.
+
     Returns:
         Dict[str, str]: The response.
     """
@@ -39,6 +40,7 @@ def _document_indexer(
         documents (List[Document]): The documents to index.
         fast (bool, optional): Whether to use the fast model. Defaults to False.
         large (bool, optional): Whether to use the large model. Defaults to False.
+
     Returns:
         GPTVectorStoreIndex: The document indexer.
     """

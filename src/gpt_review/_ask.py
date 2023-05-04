@@ -177,6 +177,15 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
     - when greater then 8k use gpt-4-32k
     - otherwise use gpt-4
     - enable fast to use gpt-35-turbo for small prompts
+
+    Args:
+        prompt (str): The prompt to send to GPT-4.
+        max_tokens (int): The maximum number of tokens to generate.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
+
+    Returns:
+        str: The engine to use.
     """
     tokens = _count_tokens(prompt)
     if large or tokens + max_tokens > 8000:
