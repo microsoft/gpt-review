@@ -17,7 +17,8 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10"
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11"
 ]
 requires-python = ">=3.7"
 dynamic = ["version"]
@@ -30,7 +31,8 @@ dependencies = [
   'knack',
   'openai',
   'requests',
-  "pyyaml",
+  'pyyaml',
+  'typing_extensions; python_version <= "3.10"',
 ]
 
 [project.optional-dependencies]
