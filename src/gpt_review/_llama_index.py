@@ -1,15 +1,12 @@
 """Wrapper for Llama Index."""
+from typing import List
 from typing_extensions import override
+import openai
+
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import AzureOpenAI
 from llama_index import GPTVectorStoreIndex, LLMPredictor, LangchainEmbedding, ServiceContext, SimpleDirectoryReader
-
-
-from typing import List
-
-
-import openai
 from llama_index.indices.base import BaseGPTIndex
 
 
@@ -49,29 +46,18 @@ def _document_indexer(
     Returns:
         GPTVectorStoreIndex: The document indexer.
     """
-    llm = (
-        AzureGPT35Turbo(  # type: ignore
-            deployment_name="gpt-35-turbo",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
-        if fast
-        else AzureChatOpenAI(  # type: ignore
-            deployment_name="gpt-4",
-            model_kwargs={
-                "api_key": openai.api_key,
-                "api_base": openai.api_base,
-                "api_type": "azure",
-                "api_version": "2023-03-15-preview",
-            },
-            max_retries=10,
-        )
+    llmType = AzureGPT35Turbo if fast else AzureChatOpenAI
+    llm = llmType(  # type: ignore
+        deployment_name="gpt-35-turbo",
+        model_kwargs={
+            "api_key": openai.api_key,
+            "api_base": openai.api_base,
+            "api_type": "azure",
+            "api_version": "2023-03-15-preview",
+        },
+        max_retries=10,
     )
+
     llm_predictor = LLMPredictor(llm=llm)
 
     embedding_llm = LangchainEmbedding(
@@ -98,6 +84,6 @@ def _ask_doc(question: str, files: List[str], fast: bool = False) -> str:
         Dict[str, str]: The response.
     """
     documents = SimpleDirectoryReader(input_files=files).load_data()
-    index = _document_indexer(documents)
+    index = _document_indexer(documents, fast=fast)
 
     return index.as_query_engine().query(question).response  # type: ignore
