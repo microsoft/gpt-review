@@ -41,3 +41,14 @@ jobs:
           AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
           AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
           LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+          FILE_SUMMARY: false
+          TEST_SUMMARY: false
+          BUG_SUMMARY: false
+          RISK_SUMMARY: false
+          RISK_ROLLBACK: false
+          RSIK_BREAKING: false
+          RISK_FLAGGED: false
+          SUMMARY_CONFIG: false
+          SUMMARY_SCHEMA: false
+          SUMMARY_FLAGS: false
+          SUMMARY_INCIDENTS: false
