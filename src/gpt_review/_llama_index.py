@@ -36,19 +36,22 @@ class AzureGPT35Turbo(AzureOpenAI):
 def _document_indexer(
     documents,
     fast: bool = False,
+    large: bool = False,
 ) -> BaseGPTIndex:
     """
     Create a document indexer.
-    Deployment names include: "gpt-35-turbo", "text-davinci-003"
+    Deployment names include: "gpt-4", "gpt-4-32", "gpt-35-turbo", "text-davinci-003"
     Args:
         documents (List[Document]): The documents to index.
-        azure (bool): Whether to use Azure OpenAI.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
     Returns:
         GPTVectorStoreIndex: The document indexer.
     """
     llmType = AzureGPT35Turbo if fast else AzureChatOpenAI
+    llmName = "gpt-35-turbo" if fast else "gpt-4-32k" if large else "gpt-4"
     llm = llmType(  # type: ignore
-        deployment_name="gpt-35-turbo",
+        deployment_name=llmName,
         model_kwargs={
             "api_key": openai.api_key,
             "api_base": openai.api_base,
@@ -74,16 +77,18 @@ def _document_indexer(
     return GPTVectorStoreIndex.from_documents(documents, service_context=service_context)
 
 
-def _ask_doc(question: str, files: List[str], fast: bool = False) -> str:
+def _ask_doc(question: str, files: List[str], fast: bool = False, large: bool = False) -> str:
     """
     Ask GPT a question.
     Args:
         question (List[str]): The question to ask.
         files (List[str]): The files to search.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
     Returns:
         Dict[str, str]: The response.
     """
     documents = SimpleDirectoryReader(input_files=files).load_data()
-    index = _document_indexer(documents, fast=fast)
+    index = _document_indexer(documents, fast=fast, large=large)
 
     return index.as_query_engine().query(question).response  # type: ignore

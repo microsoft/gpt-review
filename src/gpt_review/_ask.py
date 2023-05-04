@@ -70,6 +70,7 @@ def _ask(
     presence_penalty: float = C.PRESENCE_PENALTY_DEFAULT,
     files: Optional[List[str]] = None,
     fast: bool = False,
+    large: bool = False,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
     _load_azure_openai_context()
@@ -77,7 +78,7 @@ def _ask(
     prompt = " ".join(question)
 
     if files:
-        response = _ask_doc(prompt, files)
+        response = _ask_doc(prompt, files, fast=fast, large=large)
     else:
         response = _call_gpt(
             prompt=prompt,
@@ -87,6 +88,7 @@ def _ask(
             frequency_penalty=frequency_penalty,
             presence_penalty=presence_penalty,
             fast=fast,
+            large=large
         )
     return {"response": response}
 
@@ -125,6 +127,7 @@ def _call_gpt(
     retry=0,
     messages=None,
     fast: bool = False,
+    large: bool = False,
 ) -> str:
     """
     Call GPT-4 with the given prompt.
@@ -139,13 +142,14 @@ def _call_gpt(
         retry (int, optional): The number of times to retry the request. Defaults to 0.
         messages (List[Dict[str, str]], optional): The messages to send to GPT-4. Defaults to None.
         fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
 
     Returns:
         str: The response from GPT-4.
     """
     messages = messages or [{"role": "user", "content": prompt}]
     try:
-        engine = _get_engine(prompt, fast, max_tokens)
+        engine = _get_engine(prompt, max_tokens=max_tokens, fast=fast, large=large)
         logging.info("Model Selected based on prompt size: %s", engine)
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
@@ -167,7 +171,7 @@ def _call_gpt(
         raise RateLimitError("Retry limit exceeded") from error
 
 
-def _get_engine(prompt: str, fast: bool = False, max_tokens: int = 0) -> str:
+def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = False) -> str:
     """
     Get the Engine based on the prompt length.
     - when greater then 8k use gpt-4-32k
@@ -175,7 +179,7 @@ def _get_engine(prompt: str, fast: bool = False, max_tokens: int = 0) -> str:
     - enable fast to use gpt-35-turbo for small prompts
     """
     tokens = _count_tokens(prompt)
-    if tokens + max_tokens > 8000:
+    if large or tokens + max_tokens > 8000:
         return "gpt-4-32k"
     if tokens + max_tokens > 4000:
         return "gpt-4"
@@ -202,6 +206,12 @@ class AskCommandGroup(GPTCommandGroup):
             args.argument(
                 "fast",
                 help="Use gpt-35-turbo for prompts < 4000 tokens.",
+                default=False,
+                action="store_true",
+            )
+            args.argument(
+                "large",
+                help="Use gpt-4-32k for prompts.",
                 default=False,
                 action="store_true",
             )
