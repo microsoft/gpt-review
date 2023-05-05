@@ -94,15 +94,6 @@ jobs:
           VERSION: ${{ steps.tag_version.outputs.new_version }}
         run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?.*)(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
 
-      - uses: EndBug/add-and-commit@v9
-        if: ${{ github.event_name == 'push' }}
-        with:
-          message: Update Version to ${{ steps.tag_version.outputs.new_version }} [no ci]
-          committer_name: GitHub Actions
-          committer_email: actions@github.com
-          add: src/gpt_review/__init__.py
-          push: origin HEAD:main --force-with-lease
-
       - name: Set Configurations
         if: steps.tag_version.outputs.release_type && github.event_name == 'release'
         shell: bash
