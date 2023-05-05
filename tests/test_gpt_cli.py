@@ -118,7 +118,7 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
 REVIEW_COMMANDS = [
     CLICase("review --help"),
     CLICase("review diff --help"),
-    CLICase("review diff --diff tests/mock.dff --config tests/config.summary.test.yml"),
+    CLICase("review diff --diff tests/mock.diff --config tests/config.summary.test.yml"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS + REVIEW_COMMANDS
