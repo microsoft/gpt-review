@@ -61,42 +61,7 @@ inputs:
     default: false
     required: false
     type: string
-  RISK_ROLLBACK:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
   RISK_BREAKING:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
-  RISK_FLAGGED:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
-  SUMMARY_CONFIG:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
-  SUMMARY_SCHEMA:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
-  SUMMARY_FEATURES:
-    description: 'Include summary of potential breaking changes'
-    default: true
-    required: false
-    type: string
-  SUMMARY_FLAGS:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
-  SUMMARY_INCIDENTS:
     description: 'Include summary of potential breaking changes'
     default: false
     required: false
@@ -145,11 +110,5 @@ runs:
           TEST_SUMMARY: ${{ inputs.TEST_SUMMARY }}
           BUG_SUMMARY: ${{ inputs.BUG_SUMMARY }}
           RISK_SUMMARY: ${{ inputs.RISK_SUMMARY }}
-          RISK_ROLLBACK: ${{ inputs.RISK_ROLLBACK }}
           RISK_BREAKING: ${{ inputs.RISK_BREAKING }}
-          RISK_FLAGGED: ${{ inputs.RISK_FLAGGED }}
-          SUMMARY_CONFIG: ${{ inputs.SUMMARY_CONFIG }}
-          SUMMARY_SCHEMA: ${{ inputs.SUMMARY_SCHEMA }}
-          SUMMARY_FEATURES: ${{ inputs.SUMMARY_FEATURES }}
-          SUMMARY_FLAGS: ${{ inputs.SUMMARY_FLAGS }}
-          SUMMARY_INCIDENTS: ${{ inputs.SUMMARY_INCIDENTS }}
+          
