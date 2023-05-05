@@ -18,20 +18,20 @@ class _GitHubClient(_RepositoryClient):
     """GitHub client."""
 
     @staticmethod
-    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
+    def get_pr_diff(repository=None, pull_request=None, access_token=None) -> str:
         """
         Get the diff of a PR.
 
         Args:
-            patch_repo (str): The repo.
-            patch_pr (str): The PR.
+            repository (str): The repo.
+            pull_request (str): The PR.
             access_token (str): The GitHub access token.
 
         Returns:
             str: The diff of the PR.
         """
-        patch_repo = patch_repo or os.getenv("PATCH_REPO")
-        patch_pr = patch_pr or os.getenv("PATCH_PR")
+        patch_repo = repository or os.getenv("PATCH_REPO")
+        patch_pr = pull_request or os.getenv("PATCH_PR")
         access_token = access_token or os.getenv("GITHUB_TOKEN")
 
         headers = {
@@ -109,7 +109,7 @@ class _GitHubClient(_RepositoryClient):
         return response
 
     @staticmethod
-    def post_pr_summary(pr_patch) -> None:
+    def post_pr_summary(pr_patch) -> str:
         """Get a review of a PR.
         Args:
             pr_patch (str): The patch of the PR.
@@ -120,16 +120,16 @@ class _GitHubClient(_RepositoryClient):
         logging.debug(review)
 
         if os.getenv("LINK"):
-            _GitHubClient._post_pr_comment(review)
-        else:
-            logging.warning("No PR to post too")
+            _GitHubClient._post_pr_comment(review).json()
+            return review
+        raise ValueError("PR link not found, set the LINK environment variable.")
 
 
 def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment."""
     diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
-    _GitHubClient.post_pr_summary(diff)
-    return {"response": "Review posted as a comment."}
+    review = _GitHubClient.post_pr_summary(diff)
+    return {"response": review}
 
 
 class GitHubCommandGroup(GPTCommandGroup):

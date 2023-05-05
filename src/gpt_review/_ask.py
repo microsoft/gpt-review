@@ -74,7 +74,6 @@ def _ask(
 ) -> Dict[str, str]:
     """Ask GPT a question."""
     _load_azure_openai_context()
-    _load_azure_openai_context()
 
     prompt = " ".join(question)
 

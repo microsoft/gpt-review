@@ -7,6 +7,7 @@ from knack import CLI, CLICommandsLoader
 
 from gpt_review import __version__
 from gpt_review._ask import AskCommandGroup
+from gpt_review._devops import DevOpsCommandGroup
 from gpt_review._git import GitCommandGroup
 from gpt_review._github import GitHubCommandGroup
 
@@ -25,6 +26,7 @@ class GPTCommandsLoader(CLICommandsLoader):
 
     _CommandGroups = [
         AskCommandGroup,
+        DevOpsCommandGroup,
         GitHubCommandGroup,
         GitCommandGroup,
     ]

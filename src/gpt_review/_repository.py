@@ -7,13 +7,13 @@ class _RepositoryClient:
 
     @staticmethod
     @abstractmethod
-    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
+    def get_pr_diff(repository=None, pull_request=None, access_token=None) -> str:
         """
         Get the diff of a PR.
 
         Args:
-            patch_repo (str): The repo.
-            patch_pr (str): The PR.
+            repository (str): The repo.
+            pull_request (str): The PR.
             access_token (str): The GitHub access token.
 
         Returns:
@@ -22,7 +22,7 @@ class _RepositoryClient:
 
     @staticmethod
     @abstractmethod
-    def post_pr_summary(pr_patch) -> None:
+    def post_pr_summary(pr_patch) -> str:
         """
         Post a summary to a PR.
 
