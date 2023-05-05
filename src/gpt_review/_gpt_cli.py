@@ -24,12 +24,7 @@ class GPTCLI(CLI):
 class GPTCommandsLoader(CLICommandsLoader):
     """The GPT CLI Commands Loader."""
 
-    _CommandGroups = [
-        AskCommandGroup,
-        GitHubCommandGroup,
-        GitCommandGroup,
-        ReviewCommandGroup
-    ]
+    _CommandGroups = [AskCommandGroup, GitHubCommandGroup, GitCommandGroup, ReviewCommandGroup]
 
     def load_command_table(self, args) -> OrderedDict:
         for command_group in self._CommandGroups:
