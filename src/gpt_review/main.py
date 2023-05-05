@@ -16,6 +16,7 @@ short-summary: {short_summary}
 helps[""] = _help_text("group", "Easily interact with GPT APIs.")
 helps["git"] = _help_text("group", "Use GPT enchanced git commands.")
 helps["github"] = _help_text("group", "Use GPT with GitHub Repositories.")
+helps["review"] = _help_text("group", "Use GPT to perform customized reviews.")
 
 
 exit_code = cli()

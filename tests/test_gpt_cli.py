@@ -115,7 +115,13 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase("ask --fast -f src/gpt_review/__init__.py what programming language is this code written in?"),
 ]
 
-ARGS = ROOT_COMMANDS + ASK_COMMANDS
+REVIEW_COMMANDS = [
+    CLICase("review --help"),
+    CLICase("review diff --help"),
+    CLICase("review diff --diff tests/mock.dff --config tests/config.summary.test.yml"),
+]
+
+ARGS = ROOT_COMMANDS + ASK_COMMANDS + REVIEW_COMMANDS
 
 
 def gpt_cli_test(command: CLICase) -> None:
