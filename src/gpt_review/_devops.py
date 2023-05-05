@@ -1,5 +1,6 @@
 """Azure DevOps API client."""
 import base64
+import json
 import os
 import logging
 from typing import Dict
@@ -60,7 +61,6 @@ class _DevOpsClient(_RepositoryClient):
             change["content"] = response.text
 
         if response.status_code == 200:
-            import json
             return json.dumps(changes)
         raise RequestError(f"Error {response.status_code}: {response.text}")
 

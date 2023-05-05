@@ -124,11 +124,11 @@ def mock_devops(monkeypatch) -> None:
                             "commitId": "23d0bc5b128a10056dc68afece360d8a0fabb014",
                             "path": "/CustomerAddressModule",
                             "isFolder": True,
-                            "url": "https://dev.azure.com/fabrikam/c34d5807-1734-4541-ad1c-d16e9ac1faca/_apis/git/repositories/278d5cd2-584d-4b63-824a-2ba458937249/items/CustomerAddressModule?versionType=Commit&version=23d0bc5b128a10056dc68afece360d8a0fabb014"
+                            "url": "https://dev.azure.com/fabrikam/c34d5807-1734-4541-ad1c-d16e9ac1faca/_apis/git/repositories/278d5cd2-584d-4b63-824a-2ba458937249/items/CustomerAddressModule?versionType=Commit&version=23d0bc5b128a10056dc68afece360d8a0fabb014",
                         },
-                        "changeType": "add"
+                        "changeType": "add",
                     }
-                ]
+                ],
             }
 
     def mock_get(url, headers, timeout) -> MockResponse:
