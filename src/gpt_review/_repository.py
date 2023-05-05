@@ -22,12 +22,13 @@ class _RepositoryClient:
 
     @staticmethod
     @abstractmethod
-    def post_pr_summary(pr_patch) -> str:
+    def create_pr_summary(pr_patch: str, post: bool = True) -> str:
         """
         Post a summary to a PR.
 
         Args:
             pr_patch (str): The patch of the PR.
+            post (bool, optional): Whether to post the summary to the PR. Defaults to True.
 
         Returns:
             str: The review of the PR.

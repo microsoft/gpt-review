@@ -2,8 +2,9 @@
 import base64
 import os
 import logging
-from httpx import RequestError
 from typing import Dict
+
+from httpx import RequestError
 import requests
 
 from knack.arguments import ArgumentsContext
@@ -53,7 +54,7 @@ class _DevOpsClient(_RepositoryClient):
         raise RequestError(f'Error {response.status_code}: {response.text}')
 
     @staticmethod
-    def create_pr_summary(pr_patch) -> str:
+    def create_pr_summary(pr_patch, post: bool = True) -> str:
         """
         Create a summary to a PR.
 
@@ -65,11 +66,13 @@ class _DevOpsClient(_RepositoryClient):
         """
         review = _summarize_files(pr_patch)
         logging.debug(review)
+        if post:
+            print(f"##vso[task.addattachment type=Distributedtask.Core.Summary;name=SUMMARY;]{review}")
         return review
 
 
 def _devops_review(
-    repository=None, pull_request=None, access_token=None, organization=None, project=None
+    repository=None, pull_request=None, access_token=None, organization=None, project=None, post: bool = False
 ) -> Dict[str, str]:
     """
     Create a summary to a PR.
@@ -85,7 +88,7 @@ def _devops_review(
     pr_patch = _DevOpsClient.get_pr_diff(
         repository=repository, pull_request=pull_request, access_token=access_token, organization=organization, project=project
     )
-    review = _DevOpsClient.create_pr_summary(pr_patch)
+    review = _DevOpsClient.create_pr_summary(pr_patch, post=post)
 
     return {"review": review}
 
@@ -135,4 +138,11 @@ class DevOpsCommandGroup(GPTCommandGroup):
                 help="The project of the PR. Set or use AZURE_DEVOPS_PROJECT environment variable.",
                 default=None,
                 options_list=("--project", "-p"),
+            )
+            args.argument(
+                "post",
+                type=str,
+                help="The project of the PR. Set or use AZURE_DEVOPS_PROJECT environment variable.",
+                default=False,
+                action="store_true",
             )

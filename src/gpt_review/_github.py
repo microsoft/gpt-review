@@ -109,7 +109,7 @@ class _GitHubClient(_RepositoryClient):
         return response
 
     @staticmethod
-    def post_pr_summary(pr_patch) -> str:
+    def create_pr_summary(pr_patch, post: bool = True) -> str:
         """Get a review of a PR.
         Args:
             pr_patch (str): The patch of the PR.
@@ -119,7 +119,7 @@ class _GitHubClient(_RepositoryClient):
         review = _summarize_files(pr_patch)
         logging.debug(review)
 
-        if os.getenv("LINK"):
+        if post and os.getenv("LINK"):
             _GitHubClient._post_pr_comment(review).json()
             return review
         raise ValueError("PR link not found, set the LINK environment variable.")
@@ -128,7 +128,7 @@ class _GitHubClient(_RepositoryClient):
 def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment."""
     diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
-    review = _GitHubClient.post_pr_summary(diff)
+    review = _GitHubClient.create_pr_summary(diff)
     return {"response": review}
 
 
