@@ -24,7 +24,6 @@ dynamic = ["version"]
 dependencies = [
   'azure-identity',
   'azure-keyvault-secrets',
-  'azure-pipelines-tasks',
   'llama-index>=0.6.0,<=0.6.0',
   'httpx',
   'GitPython',
