@@ -9,6 +9,7 @@ from gpt_review import __version__
 from gpt_review._ask import AskCommandGroup
 from gpt_review._git import GitCommandGroup
 from gpt_review._github import GitHubCommandGroup
+from gpt_review._review import ReviewCommandGroup
 
 CLI_NAME = "gpt"
 
@@ -23,11 +24,7 @@ class GPTCLI(CLI):
 class GPTCommandsLoader(CLICommandsLoader):
     """The GPT CLI Commands Loader."""
 
-    _CommandGroups = [
-        AskCommandGroup,
-        GitHubCommandGroup,
-        GitCommandGroup,
-    ]
+    _CommandGroups = [AskCommandGroup, GitHubCommandGroup, GitCommandGroup, ReviewCommandGroup]
 
     def load_command_table(self, args) -> OrderedDict:
         for command_group in self._CommandGroups:
