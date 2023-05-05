@@ -1,5 +1,12 @@
+
+import os
 import pytest
 from collections import namedtuple
+
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+
+DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 
 @pytest.fixture
@@ -111,12 +118,24 @@ def mock_devops(monkeypatch) -> None:
     def mock_get(url, headers, timeout) -> MockResponse:
         return MockResponse()
 
-    def mock_put(url, headers, timeout) -> MockResponse:
-        return MockResponse()
-
-    def mock_post(url, headers, data, timeout) -> MockResponse:
-        return MockResponse()
-
     monkeypatch.setattr("requests.get", mock_get)
-    monkeypatch.setattr("requests.put", mock_put)
-    monkeypatch.setattr("requests.post", mock_post)
+    monkeypatch.setenv("AZURE_DEVOPS_ORGANIZATION", "MOCKVALUE")
+    monkeypatch.setenv("AZURE_DEVOPS_PROJECT", "MOCKVALUE")
+    monkeypatch.setenv("AZURE_DEVOPS_REPOSITORY", "MOCKVALUE")
+    monkeypatch.setenv("AZURE_DEVOPS_PULL_REQUEST", "MOCKVALUE")
+    monkeypatch.setenv("AZURE_DEVOPS_TOKEN", "MOCKVALUE")
+
+
+@pytest.fixture
+def devops_creds(monkeypatch) -> None:
+    """
+    Set the Azure DevOps credentials from Key Vault:
+    """
+    kv_client = SecretClient(
+        vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
+    )
+    monkeypatch.setenv("AZURE_DEVOPS_ORGANIZATION", kv_client.get_secret("azure-devops-organization").value)
+    monkeypatch.setenv("AZURE_DEVOPS_PROJECT", kv_client.get_secret("azure-devops-project").value)
+    monkeypatch.setenv("AZURE_DEVOPS_REPOSITORY", kv_client.get_secret("azure-devops-repository").value)
+    monkeypatch.setenv("AZURE_DEVOPS_PULL_REQUEST", kv_client.get_secret("azure-devops-pull-request").value)
+    monkeypatch.setenv("AZURE_DEVOPS_TOKEN", kv_client.get_secret("azure-devops-token").value)
