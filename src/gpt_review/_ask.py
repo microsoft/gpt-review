@@ -103,8 +103,8 @@ def _load_azure_openai_context() -> None:
     - Without setting the environment variables, the integration tests fail.
     - Without setting the openai package variables, the cli tests fail.
     """
-    openai.api_type = os.environ["OPENAI_API_TYPE"] = os.environ["OPENAI_API_TYPE"] = "azure"
-    openai.api_version = os.environ["OPENAI_API_VERSION"] = os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+    openai.api_type = os.environ["OPENAI_API_TYPE"]  = "azure"
+    openai.api_version = os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
 
     if os.getenv("AZURE_OPENAI_API"):
         openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
