@@ -30,7 +30,6 @@ def _ask_doc(
     large: bool = False,
     required_exts: Optional[List[str]] = None,
 ) -> str:
-
     """
     Ask GPT a question.
     Args:
