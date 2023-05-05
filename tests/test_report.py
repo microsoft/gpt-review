@@ -1,7 +1,7 @@
 """Tests for customized markdown report generation."""
 import pytest
 
-from gpt_review._review import process_report, process_yaml
+from gpt_review._review import _process_report, _process_yaml
 
 
 def test_report_generation(git_diff, report_config, mock_openai) -> None:
@@ -25,11 +25,11 @@ def test_int_process_yaml(git_diff, config_yaml) -> None:
 
 
 def report_generation_test(git_diff, report_config) -> None:
-    report = process_report(git_diff, report_config)
+    report = _process_report(git_diff, report_config)
     assert report
 
 
 def process_yaml_test(git_diff, config_yaml) -> None:
     """Test process_yaml."""
-    report = process_yaml(git_diff, config_yaml)
+    report = _process_yaml(git_diff, config_yaml)
     assert report

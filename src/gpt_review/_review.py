@@ -262,17 +262,21 @@ def _review(diff: str = ".diff", config: str = "config.summary.yml") -> Dict[str
         diff_contents = file.read()
 
         if os.path.isfile(config):
-            summary = process_yaml(git_diff=diff_contents, yaml_file=config)
+            summary = _process_yaml(git_diff=diff_contents, yaml_file=config)
         else:
             summary = _summarize_files(diff_contents)
         return {"response": summary}
 
 
-def process_yaml(git_diff, yaml_file, headers=True) -> str:
-    """Process a yaml file.
+def _process_yaml(git_diff, yaml_file, headers=True) -> str:
+    """
+    Process a yaml file.
+
     Args:
         git_diff (str): The diff of the PR.
         yaml_file (str): The path to the yaml file.
+        headers (bool, optional): Whether to include headers. Defaults to True.
+
     Returns:
         str: The report.
     """
@@ -280,14 +284,23 @@ def process_yaml(git_diff, yaml_file, headers=True) -> str:
         yaml_contents = file.read()
         config = yaml.safe_load(yaml_contents)
         report = config["report"]
-        return process_report(git_diff, report, headers=headers)
+        return _process_report(git_diff, report, headers=headers)
 
 
-def process_report(git_diff, report: dict, indent="#", headers=True) -> str:
+def _process_report(git_diff, report: dict, indent="#", headers=True) -> str:
     """
     for-each record in report
     - if record is a string, check_goals
     - else recursively call process_report
+
+    Args:
+        git_diff (str): The diff of the PR.
+        report (dict): The report to process.
+        indent (str, optional): The indent to use. Defaults to "#".
+        headers (bool, optional): Whether to include headers. Defaults to True.
+
+    Returns:
+        str: The report.
     """
     text = ""
     for key, record in report.items():
@@ -302,7 +315,7 @@ def process_report(git_diff, report: dict, indent="#", headers=True) -> str:
             text += f"""
 {indent} {key}
 """
-            text += process_report(git_diff, record, indent=f"{indent}#", headers=headers)
+            text += _process_report(git_diff, record, indent=f"{indent}#", headers=headers)
 
     return text
 
