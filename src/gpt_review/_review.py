@@ -1,8 +1,15 @@
 """Basic functions for requesting review based goals from GPT-4."""
 import logging
 import os
+import yaml
+from typing import Dict
+
+from knack.arguments import ArgumentsContext
+from knack import CLICommandsLoader
+from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
+from gpt_review._command import GPTCommandGroup
 
 _CHECKS = {
     "SUMMARY_CHECKS": [
@@ -11,49 +18,14 @@ _CHECKS = {
             "header": "Suggestions",
             "goal": "Any suggestions for improving the changes in this PR?",
         },
-        {
-            "flag": "SUMMARY_CONFIG",
-            "header": "Configuration Changes",
-            "goal": "Any configuration changes?",
-        },
-        {
-            "flag": "SUMMARY_SCHEMA",
-            "header": "Schema Changes",
-            "goal": "Any schema changes?",
-        },
-        {
-            "flag": "SUMMARY_FEATURES",
-            "header": "Features",
-            "goal": "What features where added?",
-        },
-        {
-            "flag": "SUMMARY_FLAGS",
-            "header": "Feature Flags",
-            "goal": "Any feature flags added?",
-        },
-        {
-            "flag": "SUMMARY_INCIDENTS",
-            "header": "Incidents",
-            "goal": "Any changes that appear to be in response to incidents?",
-        },
     ],
     "RISK_CHECKS": [
-        {
-            "flag": "RISK_ROLLBACK",
-            "header": "Rollback Capability",
-            "goal": "Any concerns about rollback capability (ex: typically associated with schema-related changes)?",
-        },
         {
             "flag": "RISK_BREAKING",
             "header": "Breaking Changes",
             "goal": """Detect breaking changes in a git diff. Here are some things that can cause a breaking change.
 - new parameters to public functions which are required and have no default value.
 """,
-        },
-        {
-            "flag": "RISK_FLAGGED",
-            "header": "Flagged Risks",
-            "goal": "Anything flagged as a risk in the code/comments itself?",
         },
     ],
 }
@@ -279,3 +251,83 @@ def _summarize_files(git_diff) -> str:
     summary += _summarize_risk(git_diff)
 
     return summary
+
+
+def _review(diff: str = ".diff", config: str = "config.summary.yml") -> Dict[str, str]:
+    """Review a git diff from file"""
+
+    # If config is a file, use it
+
+    with open(diff, "r", encoding="utf8") as file:
+        diff_contents = file.read()
+
+        if os.path.isfile(config):
+            summary = process_yaml(git_diff=diff_contents, yaml_file=config)
+        else:
+            summary =  _summarize_files(diff_contents)
+        return {"response": summary}
+
+
+def process_yaml(git_diff, yaml_file, headers=True) -> str:
+    """Process a yaml file.
+    Args:
+        git_diff (str): The diff of the PR.
+        yaml_file (str): The path to the yaml file.
+    Returns:
+        str: The report.
+    """
+    with open(yaml_file, "r", encoding="utf8") as file:
+        yaml_contents = file.read()
+        config = yaml.safe_load(yaml_contents)
+        report = config["report"]
+        return process_report(git_diff, report, headers=headers)
+
+
+def process_report(git_diff, report: dict, indent="#", headers=True) -> str:
+    """
+    for-each record in report
+    - if record is a string, check_goals
+    - else recursively call process_report
+    """
+    text = ""
+    for key, record in report.items():
+        if isinstance(record, str) or record is None:
+            if headers and key != "_":
+                text += f"""
+{indent} {key}
+"""
+            text += f"{_request_goal(git_diff, goal=record)}"
+
+        else:
+            text += f"""
+{indent} {key}
+"""
+            text += process_report(git_diff, record, indent=f"{indent}#", headers=headers)
+
+    return text
+
+
+class ReviewCommandGroup(GPTCommandGroup):
+    """Review Command Group."""
+
+    @staticmethod
+    def load_command_table(loader: CLICommandsLoader) -> None:
+        with CommandGroup(loader, "review", "gpt_review._review#{}", is_preview=True) as group:
+            group.command("diff", "_review", is_preview=True)
+
+    @staticmethod
+    def load_arguments(loader: CLICommandsLoader) -> None:
+        """Add patch_repo, patch_pr, and access_token arguments."""
+        with ArgumentsContext(loader, "github") as args:
+            args.argument(
+                "diff",
+                type=str,
+                help="Git diff to review.",
+                default=".diff",
+            )
+            args.argument(
+                "config",
+                type=str,
+                help="The config file to use to customize review summary.",
+                default="config.template.yml",
+            )

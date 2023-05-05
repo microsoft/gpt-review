@@ -10,6 +10,7 @@ from gpt_review._ask import AskCommandGroup
 from gpt_review._devops import DevOpsCommandGroup
 from gpt_review._git import GitCommandGroup
 from gpt_review._github import GitHubCommandGroup
+from gpt_review._review import ReviewCommandGroup
 
 CLI_NAME = "gpt"
 
@@ -29,6 +30,7 @@ class GPTCommandsLoader(CLICommandsLoader):
         DevOpsCommandGroup,
         GitHubCommandGroup,
         GitCommandGroup,
+        ReviewCommandGroup,
     ]
 
     def load_command_table(self, args) -> OrderedDict:
