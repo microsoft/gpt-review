@@ -113,7 +113,7 @@ class DevOpsCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader) -> None:
-        with CommandGroup(loader, "devops", "gpt_review._devops#{}") as group:
+        with CommandGroup(loader, "devops", "gpt_review._devops#{}", is_preview=True) as group:
             group.command("review", "_devops_review", is_preview=True)
 
     @staticmethod

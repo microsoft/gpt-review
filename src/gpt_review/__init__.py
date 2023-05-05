@@ -5,4 +5,19 @@
 """Easy GPT CLI"""
 from __future__ import annotations
 
+from knack.help_files import helps
+
 __version__ = "0.5.0"
+
+
+def _help_text(help_type, short_summary) -> str:
+    return f"""
+type: {help_type}
+short-summary: {short_summary}
+"""
+
+
+helps[""] = _help_text("group", "Easily interact with GPT APIs.")
+helps["git"] = _help_text("group", "Use GPT enchanced git commands.")
+helps["github"] = _help_text("group", "Use GPT with GitHub Repositories.")
+helps["devops"] = _help_text("group", "Use GPT with Azure DevOps Repositories.")

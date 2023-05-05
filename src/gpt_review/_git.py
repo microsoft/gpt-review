@@ -76,7 +76,7 @@ class GitCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader) -> None:
-        with CommandGroup(loader, "git", "gpt_review._git#{}") as group:
+        with CommandGroup(loader, "git", "gpt_review._git#{}", is_preview=True) as group:
             group.command("commit", "_commit", is_preview=True)
 
     @staticmethod
