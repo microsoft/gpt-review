@@ -28,6 +28,7 @@ def report_generation_test(git_diff, report_config) -> None:
     report = process_report(git_diff, report_config)
     assert report
 
+
 def process_yaml_test(git_diff, config_yaml) -> None:
     """Test process_yaml."""
     report = process_yaml(git_diff, config_yaml)
