@@ -2,6 +2,7 @@
 import logging
 import os
 from typing import Dict
+
 import yaml
 
 from knack.arguments import ArgumentsContext
