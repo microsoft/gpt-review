@@ -1,8 +1,9 @@
 """Basic functions for requesting review based goals from GPT-4."""
 import logging
 import os
-import yaml
 from typing import Dict
+
+import yaml
 
 from knack.arguments import ArgumentsContext
 from knack import CLICommandsLoader
@@ -10,6 +11,16 @@ from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
+
+SUMMARIZE_PROMPT = """Summarize the following file changed in a pull request submitted by a developer on GitHub,
+focusing on major modifications, additions, deletions, and any significant updates within the files. Do not include the
+file name in the summary and list the summary with bullet points"""
+TEST_COVERAGE_PROMPT = """You are an experienced software developer. Generate unit test cases for the code submitted in
+the pull request, ensuring comprehensive coverage of all functions, methods, and scenarios to validate the correctness
+and reliability of the implementation."""
+BUGS_PROMPT = """Provide a concise summary of the bug found in the code, describing its characteristics, location, and
+potential effects on the overall functionality and performance of the application. Present the potential issues and
+errors first, following by the most important findings, in your summary"""
 
 _CHECKS = {
     "SUMMARY_CHECKS": [
@@ -45,7 +56,7 @@ class GitFile:
         self.diff = diff
 
 
-def _request_goal(git_diff, goal, fast: bool = False, large: bool = False) -> str:
+def _request_goal(git_diff, goal, fast: bool = False, large: bool = False, temperature: float = 0) -> str:
     """
     Request a goal from GPT-4.
 
@@ -54,6 +65,7 @@ def _request_goal(git_diff, goal, fast: bool = False, large: bool = False) -> st
         goal (str): The goal to request from GPT-4.
         fast (bool, optional): Whether to use the fast model. Defaults to False.
         large (bool, optional): Whether to use the large model. Defaults to False.
+        temperature (float, optional): The temperature to use. Defaults to 0.
 
     Returns:
         response (str): The response from GPT-4.
@@ -64,7 +76,7 @@ def _request_goal(git_diff, goal, fast: bool = False, large: bool = False) -> st
 {git_diff}
 """
 
-    response = _ask([prompt], max_tokens=1500, fast=fast, large=large)
+    response = _ask([prompt], max_tokens=1500, fast=fast, large=large, temperature=temperature)
     logging.info(response["response"])
     return response["response"]
 
@@ -122,9 +134,7 @@ def _summarize_file(diff) -> str:
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
     prompt = f"""
-Summarize the changes to the file {git_file.file_name}.
-- Do not include the file name in the summary.
-- list the summary with bullet points
+{SUMMARIZE_PROMPT}
 {diff}
 """
     response = _ask([prompt], temperature=0.0)
@@ -168,7 +178,7 @@ def _summarize_test_coverage(git_diff) -> str:
 ```
 {git_diff}
 ```
-Discuss if tests been included to cover the latest changes?
+{TEST_COVERAGE_PROMPT}
 """
 
     return _ask([prompt], temperature=0.0, max_tokens=1500)["response"]
@@ -185,7 +195,7 @@ def _summarize_bugs_in_pr(git_diff) -> str:
         response (str): The response from GPT-4.
     """
     gpt4_big_prompot = f"""
-Summarize bugs that may be introduced.
+{BUGS_PROMPT}
 
 {git_diff}
 """
