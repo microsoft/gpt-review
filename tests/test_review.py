@@ -18,4 +18,4 @@ def get_review_test() -> None:
     with open("tests/mock.diff", "r") as f:
         diff = f.read()
 
-        _GitHubClient.post_pr_summary(diff)
+        _GitHubClient.create_pr_summary(diff)
