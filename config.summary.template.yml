@@ -1,0 +1,7 @@
+# This configuration file generates sample.report.md
+report:
+  Summary by GPT-4:
+    _:
+    Overview:
+      _: What is the main goal of this PR?
+      Suggestions: Any suggestions for improving the changes in this PR?
