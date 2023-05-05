@@ -92,3 +92,31 @@ def mock_git_commit(monkeypatch) -> None:
         return MockGit()
 
     monkeypatch.setattr("git.repo.Repo.init", mock_init)
+
+
+@pytest.fixture
+def mock_devops(monkeypatch) -> None:
+    """
+    Mock Azure DevOps Functions with monkeypatch
+    - requests.get
+    """
+
+    class MockResponse:
+        def __init__(self) -> None:
+            self.text = "diff --git a/README.md b/README.md"
+
+        def json(self) -> dict:
+            return {"test": "test"}
+
+    def mock_get(url, headers, timeout) -> MockResponse:
+        return MockResponse()
+
+    def mock_put(url, headers, timeout) -> MockResponse:
+        return MockResponse()
+
+    def mock_post(url, headers, data, timeout) -> MockResponse:
+        return MockResponse()
+
+    monkeypatch.setattr("requests.get", mock_get)
+    monkeypatch.setattr("requests.put", mock_put)
+    monkeypatch.setattr("requests.post", mock_post)

@@ -38,20 +38,17 @@ class _DevOpsClient(_RepositoryClient):
         pull_request_id = pull_request or os.getenv("AZURE_DEVOPS_PULL_REQUEST")
         personal_access_token = access_token or os.getenv("AZURE_DEVOPS_TOKEN")
 
-        credentials = ('', personal_access_token)
+        credentials = ("", personal_access_token)
         credentials_base64 = base64.b64encode(credentials[1].encode())
-        headers = {
-            'Authorization': f'Basic {credentials_base64.decode()}',
-            'Content-Type': 'application/json'
-        }
+        headers = {"Authorization": f"Basic {credentials_base64.decode()}", "Content-Type": "application/json"}
 
-        url = f'https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repository_id}/pullRequests/{pull_request_id}/diffs?api-version=6.0'
+        url = f"https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repository_id}/pullRequests/{pull_request_id}/diffs?api-version=6.0"
 
         response = requests.get(url, headers=headers, timeout=10)
 
         if response.status_code == 200:
             return response.json()
-        raise RequestError(f'Error {response.status_code}: {response.text}')
+        raise RequestError(f"Error {response.status_code}: {response.text}")
 
     @staticmethod
     def create_pr_summary(pr_patch, post: bool = True) -> str:
@@ -86,7 +83,11 @@ def _devops_review(
         str: The review of the PR.
     """
     pr_patch = _DevOpsClient.get_pr_diff(
-        repository=repository, pull_request=pull_request, access_token=access_token, organization=organization, project=project
+        repository=repository,
+        pull_request=pull_request,
+        access_token=access_token,
+        organization=organization,
+        project=project,
     )
     review = _DevOpsClient.create_pr_summary(pr_patch, post=post)
 
