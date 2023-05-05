@@ -161,3 +161,26 @@ def test_cli_gpt_cli(command: CLICase) -> None:
     )
 
     assert result.returncode == command.expected_error_code
+
+
+MODULE_COMMANDS = [
+    CLICase("python -m gpt --version"),
+    CLICase("python -m gpt_review --version"),
+]
+
+
+@pytest.mark.parametrize("command", MODULE_COMMANDS)
+@pytest.mark.cli
+def test_cli_gpt_module(command: CLICase) -> None:
+    """Test running cli as module"""
+
+    command_array = command.command.split(" ")
+
+    result = subprocess.run(
+        command_array,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert result.returncode == command.expected_error_code
