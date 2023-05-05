@@ -110,9 +110,26 @@ def mock_devops(monkeypatch) -> None:
     class MockResponse:
         def __init__(self) -> None:
             self.text = "diff --git a/README.md b/README.md"
+            self.status_code = 200
 
         def json(self) -> dict:
-            return {"test": "test"}
+            return {
+                "test": "test",
+                "sourceRefName": "refs/heads/main",
+                "targetRefName": "refs/heads/pipeline-test",
+                "changes": [
+                    {
+                        "item": {
+                            "gitObjectType": "tree",
+                            "commitId": "23d0bc5b128a10056dc68afece360d8a0fabb014",
+                            "path": "/CustomerAddressModule",
+                            "isFolder": True,
+                            "url": "https://dev.azure.com/fabrikam/c34d5807-1734-4541-ad1c-d16e9ac1faca/_apis/git/repositories/278d5cd2-584d-4b63-824a-2ba458937249/items/CustomerAddressModule?versionType=Commit&version=23d0bc5b128a10056dc68afece360d8a0fabb014"
+                        },
+                        "changeType": "add"
+                    }
+                ]
+            }
 
     def mock_get(url, headers, timeout) -> MockResponse:
         return MockResponse()

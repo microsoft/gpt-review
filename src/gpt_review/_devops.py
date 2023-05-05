@@ -46,9 +46,22 @@ class _DevOpsClient(_RepositoryClient):
         url = f"{root}/_apis/git/repositories/{repository_id}/pullRequests/{pull_request_id}/diffs?api-version=6.0"
 
         response = requests.get(url, headers=headers, timeout=10)
+        print(response.text)
+        pr_response = response.json()
+        source_ref = pr_response["sourceRefName"].split("/")[2]
+        target_ref = pr_response["targetRefName"].split("/")[2]
+
+        url = f"{root}/_apis/git/repositories/{repository_id}/diffs/commits/?baseVersion={source_ref}&targetVersion={target_ref}&api-version=7.0"
+        response = requests.get(url, headers=headers, timeout=10)
+        changes = response.json()["changes"]
+        for change in changes:
+            url = change["item"]["url"]
+            response = requests.get(url, headers=headers, timeout=10)
+            change["content"] = response.text
 
         if response.status_code == 200:
-            return response.json()
+            import json
+            return json.dumps(changes)
         raise RequestError(f"Error {response.status_code}: {response.text}")
 
     @staticmethod

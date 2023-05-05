@@ -20,9 +20,9 @@ def test_int_pr_diff(devops_creds) -> None:
     get_pr_diff_test("diff --git a/.devcontainer/Dockerfile b/.devcontainer/Dockerfile")
 
 
-def test_pr_diff(mock_devops) -> None:
+def test_pr_diff(mock_openai, mock_devops) -> None:
     """Unit Test for Azure DevOps API diff call."""
-    get_pr_diff_test("diff --git a/README.md b/README.md")
+    get_pr_diff_test('[{"item": {"gitObjectType": "tree"')
 
 
 @pytest.mark.integration
@@ -32,7 +32,7 @@ def test_int_create_pr_summary(devops_creds) -> None:
     create_pr_summary_test(pr_patch)
 
 
-def test_create_pr_summary(mock_devops) -> None:
+def test_create_pr_summary(mock_openai, mock_devops) -> None:
     """Unit Test for Azure DevOps PR summary creation."""
     pr_patch = "your-pr-patch"
     create_pr_summary_test(pr_patch)
