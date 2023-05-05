@@ -51,10 +51,4 @@ jobs:
           TEST_SUMMARY: false
           BUG_SUMMARY: false
           RISK_SUMMARY: false
-          RISK_ROLLBACK: false
           RSIK_BREAKING: false
-          RISK_FLAGGED: false
-          SUMMARY_CONFIG: false
-          SUMMARY_SCHEMA: false
-          SUMMARY_FLAGS: false
-          SUMMARY_INCIDENTS: false
