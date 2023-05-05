@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from knack.help_files import helps
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 
 def _help_text(help_type, short_summary) -> str:
