@@ -119,6 +119,7 @@ REVIEW_COMMANDS = [
     CLICase("review --help"),
     CLICase("review diff --help"),
     CLICase("review diff --diff tests/mock.diff --config tests/config.summary.test.yml"),
+    CLICase("review diff --diff tests/mock.diff --config tests/config.summary.fake.yml"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS + REVIEW_COMMANDS
