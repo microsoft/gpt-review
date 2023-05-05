@@ -264,7 +264,7 @@ def _review(diff: str = ".diff", config: str = "config.summary.yml") -> Dict[str
         if os.path.isfile(config):
             summary = process_yaml(git_diff=diff_contents, yaml_file=config)
         else:
-            summary =  _summarize_files(diff_contents)
+            summary = _summarize_files(diff_contents)
         return {"response": summary}
 
 
