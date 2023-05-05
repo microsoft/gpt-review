@@ -68,3 +68,4 @@ jobs:
             LICENSE dist/*.tar.gz dist/*.whl
         env:
           TAG: ${{ steps.tag_version.outputs.new_tag }}
+          GH_TOKEN: ${{ secrets.PAT }}
