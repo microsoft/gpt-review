@@ -162,10 +162,12 @@ def test_cli_gpt_cli(command: CLICase) -> None:
 
     assert result.returncode == command.expected_error_code
 
+
 MODULE_COMMANDS = [
     CLICase("python -m gpt --version"),
     CLICase("python -m gpt_review --version"),
 ]
+
 
 @pytest.mark.parametrize("command", MODULE_COMMANDS)
 @pytest.mark.cli
