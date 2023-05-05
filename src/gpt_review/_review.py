@@ -134,7 +134,6 @@ def _summarize_file(diff) -> str:
     git_file = GitFile(diff.split(" b/")[0], diff)
     prompt = f"""
 {SUMMARIZE_PROMPT}
-
 {diff}
 """
     response = _ask([prompt], temperature=0.0)
