@@ -42,7 +42,8 @@ class _DevOpsClient(_RepositoryClient):
         credentials_base64 = base64.b64encode(credentials[1].encode())
         headers = {"Authorization": f"Basic {credentials_base64.decode()}", "Content-Type": "application/json"}
 
-        url = f"https://dev.azure.com/{organization}/{project}/_apis/git/repositories/{repository_id}/pullRequests/{pull_request_id}/diffs?api-version=6.0"
+        root = f"https://dev.azure.com/{organization}/{project}"
+        url = f"{root}/_apis/git/repositories/{repository_id}/pullRequests/{pull_request_id}/diffs?api-version=6.0"
 
         response = requests.get(url, headers=headers, timeout=10)
 
