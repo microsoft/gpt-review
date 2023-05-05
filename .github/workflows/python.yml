@@ -5,7 +5,7 @@ on:
   pull_request_target:
     branches: [ main ]
   release:
-    types: [created]
+    types: [released]
   workflow_dispatch:
 
 env:
