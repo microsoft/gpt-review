@@ -11,6 +11,9 @@ def ask_doc_test() -> None:
     files = ["src/gpt_review/__init__.py"]
     _query_index(question, files, fast=True)
 
+    # Try again to use the cached index
+    _query_index(question, files, fast=True)
+
 
 def test_ask_doc(mock_openai) -> None:
     """Unit Test for the ask_doc function."""
