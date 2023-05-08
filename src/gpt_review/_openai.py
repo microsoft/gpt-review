@@ -5,6 +5,8 @@ import time
 import openai
 from openai.error import RateLimitError
 
+import gpt_review.constants as C
+
 
 def _count_tokens(prompt) -> int:
     """
@@ -90,8 +92,8 @@ def _call_gpt(
         )
         return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
-        if retry < 5:
-            logging.warning("Call to GPT failed due to rate limit, retry attempt: %s", retry)
+        if retry < C.MAX_RETRIES:
+            logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
             time.sleep(retry * 10)
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
