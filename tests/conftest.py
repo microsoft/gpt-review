@@ -1,5 +1,6 @@
 import os
 import pytest
+import yaml
 from collections import namedtuple
 
 from azure.identity import DefaultAzureCredential
@@ -155,3 +156,27 @@ def devops_creds(monkeypatch) -> None:
     monkeypatch.setenv("AZURE_DEVOPS_REPOSITORY", kv_client.get_secret("azure-devops-repository").value)
     monkeypatch.setenv("AZURE_DEVOPS_PULL_REQUEST", kv_client.get_secret("azure-devops-pull-request").value)
     monkeypatch.setenv("AZURE_DEVOPS_TOKEN", kv_client.get_secret("azure-devops-token").value)
+
+
+def report_config():
+    """Load sample.report.yaml file"""
+    return load_report_config("config.summary.template.yml")
+
+
+def load_report_config(file_name):
+    with open(file_name, "r") as yaml_file:
+        config = yaml.safe_load(yaml_file)
+        return config["report"]
+
+
+@pytest.fixture
+def config_yaml():
+    return "tests/config.summary.test.yml"
+
+
+@pytest.fixture
+def git_diff() -> str:
+    """Load test.diff file"""
+    with open("tests/mock.diff", "r") as diff_file:
+        diff = diff_file.read()
+    return diff

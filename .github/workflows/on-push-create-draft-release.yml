@@ -57,17 +57,15 @@ jobs:
           python -m pip install flit
 
           python -m flit build
-
-      - uses: dciborow/action-github-releases@v1.0.1
-        if: steps.tag_version.outputs.release_type
-        with:
-          repo_token: "${{ secrets.PAT }}"
-          automatic_release_tag: "latest"
-          draft: true
-          title: ${{ steps.tag_version.outputs.new_tag }}
-          generate_release_notes: true
-          prerelease: false
-          files: |
-            LICENSE
-            **.tar.gz
-            **.whl
+          
+      - if: steps.tag_version.outputs.release_type
+        run: |
+          gh release create \
+            -d \
+            --target main \
+            --generate-notes \
+            $TAG \
+            LICENSE dist/*.tar.gz dist/*.whl
+        env:
+          TAG: ${{ steps.tag_version.outputs.new_tag }}
+          GH_TOKEN: ${{ secrets.PAT }}
