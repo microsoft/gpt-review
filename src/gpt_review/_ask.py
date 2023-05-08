@@ -195,7 +195,7 @@ class AskCommandGroup(GPTCommandGroup):
             args.argument(
                 "directory",
                 type=str,
-                help="Path to the directory to index.",
+                help="Path of the directory to index. Use --recursive (or -r) to index subdirectories.",
                 default=None,
                 options_list=("--directory", "-d"),
             )
@@ -208,15 +208,13 @@ class AskCommandGroup(GPTCommandGroup):
             )
             args.argument(
                 "hidden",
-                type=bool,
-                help="Include hidden files when indexing a directory. Requires --directory. Default: False.",
+                help="Include hidden files when indexing a directory. Requires --directory.",
                 default=False,
                 action="store_true",
             )
             args.argument(
                 "recursive",
-                type=bool,
-                help="Recursively index a directory. Requires --directory. Default: False.",
+                help="Recursively index a directory. Requires --directory.",
                 default=False,
                 action="store_true",
                 options_list=("--recursive", "-r"),

@@ -58,9 +58,22 @@ def _ask_doc(
         owner, repo = repository.split("/")
         documents += GithubRepositoryReader(owner=owner, repo=repo, use_parser=False).load_data(branch=branch)
 
+    # index = _load_index(documents, fast, large)
     index = _document_indexer(documents, fast=fast, large=large)
 
     return index.as_query_engine().query(question).response  # type: ignore
+
+
+def _load_index(documents, fast, large, save=True) -> BaseGPTIndex:
+    documents_hash = hash(tuple(documents))
+    # Load File based on docuemnts_hash
+    with open(f".index/{documents_hash}.json", "r") as f:
+        index = f.read()
+        return BaseGPTIndex.load(index)
+    index = _document_indexer(documents, fast=fast, large=large)
+    if save:
+        index.save(f".index/{documents_hash}.json")
+    return index
 
 
 def _document_indexer(
