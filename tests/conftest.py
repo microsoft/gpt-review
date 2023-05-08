@@ -62,11 +62,15 @@ def mock_openai(monkeypatch) -> None:
             return SimpleDirectoryReader(input_dir=".").load_data()
 
     def init_mock_reader(self, owner, repo, use_parser) -> None:
-        self = MockRepoReader(owner=owner, repo=repo, use_parser=use_parser)
+        MockRepoReader(owner=owner, repo=repo, use_parser=use_parser)
+
+    def mock_load_data_from_branch(self, branch):
+        return SimpleDirectoryReader(input_dir=".").load_data()
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
     monkeypatch.setattr("llama_index.GithubRepositoryReader.__init__", init_mock_reader)
+    monkeypatch.setattr("llama_index.GithubRepositoryReader._load_data_from_branch", mock_load_data_from_branch)
 
 
 @pytest.fixture
