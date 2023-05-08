@@ -63,7 +63,7 @@ def mock_openai(monkeypatch) -> None:
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
-    monkeypatch.setattr("llama_index.GithubRepositoryReader", MockRepoReader)
+    monkeypatch.setattr("llama_index.readers.github_readers.github_repository_reader.GithubRepositoryReader", MockRepoReader)
 
 
 @pytest.fixture
