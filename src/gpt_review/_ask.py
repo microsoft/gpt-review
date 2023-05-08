@@ -226,3 +226,9 @@ class AskCommandGroup(GPTCommandGroup):
                 default=None,
                 options_list=("--repository", "-repo"),
             )
+            args.argument(
+                "refresh",
+                help="Refresh the index. Requires --directory, --files, or --repository.",
+                default=False,
+                action="store_true",
+            )
