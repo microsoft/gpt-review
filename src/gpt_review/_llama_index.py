@@ -1,35 +1,70 @@
 """Wrapper for Llama Index."""
-from typing import List
+from typing import List, Optional
 from typing_extensions import override
 import openai
 
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import AzureOpenAI
-from llama_index import GPTVectorStoreIndex, LLMPredictor, LangchainEmbedding, ServiceContext, SimpleDirectoryReader
+from llama_index import (
+    Document,
+    GPTVectorStoreIndex,
+    LLMPredictor,
+    LangchainEmbedding,
+    ServiceContext,
+    SimpleDirectoryReader,
+    GithubRepositoryReader,
+)
 from llama_index.indices.base import BaseGPTIndex
 
 
-def _ask_doc(question: str, files: List[str], fast: bool = False, large: bool = False) -> str:
+def _ask_doc(
+    question: str,
+    files: Optional[List[str]] = None,
+    input_dir: Optional[str] = None,
+    exclude_hidden: bool = True,
+    recursive=True,
+    repository: Optional[str] = None,
+    branch: str = "main",
+    fast: bool = False,
+    large: bool = False,
+    required_exts: Optional[List[str]] = None,
+) -> str:
     """
     Ask GPT a question.
     Args:
         question (List[str]): The question to ask.
-        files (List[str]): The files to search.
+        files (List[str], optional): The files to search.
+            (Optional; overrides input_dir, exclude)
+        input_dir (str, optional): Path to the directory.
+        exclude_hidden (bool): Whether to exclude hidden files.
+        recursive (bool): Whether to search directory recursively.
+        required_exts (List, optional): The required extensions for files in directory.
+        repository (str): The repository to search. Format: owner/repo
         fast (bool, optional): Whether to use the fast model. Defaults to False.
         large (bool, optional): Whether to use the large model. Defaults to False.
 
     Returns:
         Dict[str, str]: The response.
     """
-    documents = SimpleDirectoryReader(input_files=files).load_data()
+    documents = []
+    if files:
+        documents += SimpleDirectoryReader(input_files=files).load_data()
+    elif input_dir:
+        documents += SimpleDirectoryReader(
+            input_dir=input_dir, exclude_hidden=exclude_hidden, recursive=recursive, required_exts=required_exts
+        ).load_data()
+    if repository:
+        owner, repo = repository.split("/")
+        documents += GithubRepositoryReader(owner=owner, repo=repo, use_parser=False).load_data(branch=branch)
+
     index = _document_indexer(documents, fast=fast, large=large)
 
     return index.as_query_engine().query(question).response  # type: ignore
 
 
 def _document_indexer(
-    documents,
+    documents: List[Document],
     fast: bool = False,
     large: bool = False,
 ) -> BaseGPTIndex:
