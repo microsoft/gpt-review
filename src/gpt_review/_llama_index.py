@@ -56,7 +56,7 @@ def _document_indexer(
             "api_type": "azure",
             "api_version": "2023-03-15-preview",
         },
-        max_retries=MAX_RETRIES,
+        max_retries=C.MAX_RETRIES,
     )
 
     llm_predictor = LLMPredictor(llm=llm)
