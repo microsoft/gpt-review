@@ -9,6 +9,7 @@ from knack.help_files import helps
 
 __version__ = "0.7.2"
 
+
 def _help_text(help_type, short_summary) -> str:
     return f"""
 type: {help_type}
