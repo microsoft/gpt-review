@@ -12,11 +12,12 @@ env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
   AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   validation:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
