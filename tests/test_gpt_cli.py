@@ -114,7 +114,7 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     ),
     CLICase("ask --fast -f src/gpt_review/__init__.py what programming language is this code written in?"),
     CLICase("ask --fast -d src/gpt_review --recursive --hidden what programming language is this code written in?"),
-    CLICase("ask --fast -r microsoft/gpt-review what programming language is this code written in?"),
+    CLICase("ask --fast -repo microsoft/gpt-review what programming language is this code written in?"),
 ]
 
 REVIEW_COMMANDS = [
