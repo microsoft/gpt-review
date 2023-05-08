@@ -92,13 +92,13 @@ class GitCommandGroup(GPTCommandGroup):
         with ArgumentsContext(loader, "git commit") as args:
             args.argument(
                 "gpt4",
-                help="Use gpt-4 for prompts instead of gpt-35-turbo.",
+                help="Use gpt-4 for generating commit messages instead of gpt-35-turbo.",
                 default=False,
                 action="store_true",
             )
             args.argument(
                 "large",
-                help="Use gpt-4-32k for prompts.",
+                help="Use gpt-4-32k model for generating commit messages.",
                 default=False,
                 action="store_true",
             )
