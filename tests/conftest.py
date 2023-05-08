@@ -2,6 +2,8 @@ import pytest
 import yaml
 from collections import namedtuple
 
+from llama_index import SimpleDirectoryReader
+
 
 @pytest.fixture
 def mock_openai(monkeypatch) -> None:
@@ -50,8 +52,18 @@ def mock_openai(monkeypatch) -> None:
     def from_documents(documents, service_context=None) -> MockIndex:
         return MockIndex()
 
+    class MockRepoReader():
+        def __init__(self, owner, repo, use_parser) -> None:
+            self.owner = owner
+            self.repo = repo
+            self.use_parser = use_parser
+
+        def load_data(self, branch):
+            return SimpleDirectoryReader(input_dir=".").load_data()
+
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
+    monkeypatch.setattr("llama_index.GithubRepositoryReader", MockRepoReader)
 
 
 @pytest.fixture
