@@ -61,8 +61,8 @@ def mock_openai(monkeypatch) -> None:
         def load_data(self, branch):
             return SimpleDirectoryReader(input_dir=".").load_data()
 
-    def init_mock_reader(self, owner, repo, use_parser) -> MockRepoReader:
-        return MockRepoReader(owner=owner, repo=repo, use_parser=use_parser)
+    def init_mock_reader(self, owner, repo, use_parser) -> None:
+        self = MockRepoReader(owner=owner, repo=repo, use_parser=use_parser)
 
     monkeypatch.setattr("openai.ChatCompletion.create", mock_create)
     monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
