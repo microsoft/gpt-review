@@ -26,9 +26,6 @@ ASK_COMMANDS = [
     CLICase("ask how are you"),
     CLICase("ask --fast how are you"),
     CLICase(
-        f"ask how are you --fast --max-tokens={C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.PRESENCE_PENALTY_DEFAULT}"
-    ),
-    CLICase(
         "ask how are you --fast --max-tokens",
         """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
                [--output {json,jsonc,yaml,yamlc,table,tsv,none}]
@@ -96,7 +93,7 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
         f"ask how are you --fast --max-tokens={C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"
     ),
     CLICase(
-        f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
+        f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
     CLICase("github review --help"),
     CLICase("github review"),
