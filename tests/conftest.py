@@ -13,20 +13,22 @@ def mock_openai(monkeypatch) -> None:
     monkeypatch.setenv("AZURE_OPENAI_API", "MOCK")
     monkeypatch.setenv("AZURE_OPENAI_API_KEY", "MOCK")
 
-    class MockStorageContext:
-        def persist(self, persist_dir) -> None:
-            pass
-
     class MockResponse:
         def __init__(self) -> None:
             self.choices = [namedtuple("mockMessage", "message")(*[namedtuple("mockContent", "content")(*[["test"]])])]
-            self.storage_context = MockStorageContext()
 
     class MockQueryResponse:
         def __init__(self) -> None:
             self.response = "test"
 
+    class MockStorageContext:
+        def persist(self, persist_dir) -> None:
+            pass
+
     class MockIndex:
+        def __init__(self) -> None:
+            self.storage_context = MockStorageContext()
+
         def query(self, question: str) -> MockQueryResponse:
             assert isinstance(question, str)
             return MockQueryResponse()
