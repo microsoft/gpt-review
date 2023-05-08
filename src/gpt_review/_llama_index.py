@@ -9,12 +9,13 @@ from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import AzureOpenAI
 from llama_index import (
+    Document,
+    GithubRepositoryReader,
     GPTVectorStoreIndex,
     LLMPredictor,
     LangchainEmbedding,
     ServiceContext,
     SimpleDirectoryReader,
-    GithubRepositoryReader,
     StorageContext,
     load_index_from_storage,
 )
@@ -72,7 +73,11 @@ def _query_index(
 
 
 def _load_index(
-    documents, fast: bool = True, large: bool = True, refresh: bool = False, persist_dir: str = DEFAULT_PERSIST_DIR
+    documents: List[Document],
+    fast: bool = True,
+    large: bool = True,
+    refresh: bool = False,
+    persist_dir: str = DEFAULT_PERSIST_DIR,
 ) -> BaseGPTIndex:
     """
     Load or create a document indexer.

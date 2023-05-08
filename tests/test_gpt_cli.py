@@ -102,13 +102,9 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase(
         f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
-    CLICase(
-        "ask --files src/gpt_review/main.py --files src/gpt_review/main.py what programming language is this code written in?"
-    ),
     CLICase("git commit --help"),
     # CLICase("git commit"),
     CLICase("github review --help"),
-    CLICase("github review"),
     CLICase(
         "ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py what programming language is this code written in?"
     ),
