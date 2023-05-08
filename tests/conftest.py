@@ -52,7 +52,7 @@ def mock_openai(monkeypatch) -> None:
     def from_documents(documents, service_context=None) -> MockIndex:
         return MockIndex()
 
-    class MockRepoReader():
+    class MockRepoReader:
         def __init__(self, owner, repo, use_parser) -> None:
             self.owner = owner
             self.repo = repo
