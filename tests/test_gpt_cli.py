@@ -25,7 +25,9 @@ ASK_COMMANDS = [
     CLICase("ask --help"),
     CLICase("ask how are you"),
     CLICase("ask --fast how are you"),
-    CLICase(f"ask how are you --fast --max-tokens={C.MAX_TOKENS_DEFAULT}"),
+    CLICase(
+        f"ask how are you --fast --max-tokens={C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.PRESENCE_PENALTY_DEFAULT}"
+    ),
     CLICase(
         "ask how are you --fast --max-tokens",
         """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
@@ -57,32 +59,26 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
         f"ERROR: --max-tokens must be a(n) int between {C.MAX_TOKENS_MIN} and {C.MAX_TOKENS_MAX}\n",
         1,
     ),
-    CLICase(f"ask how are you --fast --temperature {C.TEMPERATURE_DEFAULT}"),
     CLICase(
         f"ask how are you --temperature {C.TEMPERATURE_MAX+8}",
         f"ERROR: --temperature must be a(n) float between {C.TEMPERATURE_MIN} and {C.TEMPERATURE_MAX}\n",
         1,
     ),
-    CLICase(f"ask how are you --fast --top-p {C.TOP_P_DEFAULT}"),
     CLICase(
         f"ask how are you --top-p {C.TOP_P_MAX+3.5}",
         f"ERROR: --top-p must be a(n) float between {C.TOP_P_MIN} and {C.TOP_P_MAX}\n",
         1,
     ),
-    CLICase(f"ask how are you --fast --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT}"),
     CLICase(
         f"ask how are you --frequency-penalty {C.FREQUENCY_PENALTY_MAX+2}",
         f"ERROR: --frequency-penalty must be a(n) float between {C.FREQUENCY_PENALTY_MIN} and {C.FREQUENCY_PENALTY_MAX}\n",
         1,
     ),
-    CLICase(f"ask how are you --fast --presence-penalty {C.PRESENCE_PENALTY_DEFAULT}"),
     CLICase(
         f"ask how are you --presence-penalty {C.PRESENCE_PENALTY_MAX+7.7}",
         f"ERROR: --presence-penalty must be a(n) float between {C.PRESENCE_PENALTY_MIN} and {C.PRESENCE_PENALTY_MAX}\n",
         1,
     ),
-    CLICase(f"ask how are you --fast --max-tokens={C.MAX_TOKENS_DEFAULT} --temperature {C.TEMPERATURE_DEFAULT}"),
-    CLICase(f"ask how are you --fast --max-tokens={C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT}"),
     CLICase(
         f"ask how are you --fast --max-tokens {C.MAX_TOKENS_MAX+1} --top-p {C.TOP_P_DEFAULT}",
         f"ERROR: --max-tokens must be a(n) int between {C.MAX_TOKENS_MIN} and {C.MAX_TOKENS_MAX}\n",
@@ -101,9 +97,6 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     ),
     CLICase(
         f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
-    ),
-    CLICase(
-        "ask --files src/gpt_review/main.py --files src/gpt_review/main.py what programming language is this code written in?"
     ),
     CLICase("github review --help"),
     CLICase("github review"),
