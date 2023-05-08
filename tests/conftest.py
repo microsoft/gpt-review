@@ -58,9 +58,6 @@ def mock_openai(monkeypatch) -> None:
             self.repo = repo
             self.use_parser = use_parser
 
-        def load_data(self, branch):
-            return SimpleDirectoryReader(input_dir=".").load_data()
-
     def init_mock_reader(self, owner, repo, use_parser) -> None:
         MockRepoReader(owner=owner, repo=repo, use_parser=use_parser)
 

@@ -105,6 +105,7 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
         f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
     CLICase("github review --help"),
+    CLICase("github review"),
     CLICase(f"ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py {WHAT_LANGUAGE}"),
     CLICase(f"ask --fast -f src/gpt_review/__init__.py {WHAT_LANGUAGE}"),
     CLICase(f"ask --fast -d src/gpt_review --recursive --hidden --required-exts .py {WHAT_LANGUAGE}"),
