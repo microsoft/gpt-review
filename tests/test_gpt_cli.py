@@ -102,8 +102,6 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase(
         f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
-    CLICase("git commit --help"),
-    # CLICase("git commit"),
     CLICase("github review --help"),
     CLICase(
         "ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py what programming language is this code written in?"
@@ -113,13 +111,20 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase("ask --fast -repo microsoft/gpt-review what programming language is this code written in?"),
 ]
 
+GIT_COMMANDS = [
+    CLICase("git commit --help"),
+    # CLICase("git commit"),
+    # CLICase("git commit --large"),
+    # CLICase("git commit --gpt4"),
+]
+
 REVIEW_COMMANDS = [
     CLICase("review --help"),
     CLICase("review diff --help"),
     CLICase("review diff --diff tests/mock.diff --config tests/config.summary.test.yml"),
 ]
 
-ARGS = ROOT_COMMANDS + ASK_COMMANDS + REVIEW_COMMANDS
+ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + REVIEW_COMMANDS
 
 
 def gpt_cli_test(command: CLICase) -> None:

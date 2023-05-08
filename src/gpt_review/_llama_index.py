@@ -24,6 +24,8 @@ from llama_index.storage.storage_context import DEFAULT_PERSIST_DIR
 
 logger = logging.getLogger(__name__)
 
+import gpt_review.constants as C
+
 
 def _query_index(
     question: str,
@@ -129,7 +131,7 @@ def _load_service_context(fast: bool = False, large: bool = False) -> ServiceCon
             "api_type": "azure",
             "api_version": "2023-03-15-preview",
         },
-        max_retries=10,
+        max_retries=C.MAX_RETRIES,
     )
 
     llm_predictor = LLMPredictor(llm=llm)
