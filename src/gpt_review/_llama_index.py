@@ -9,6 +9,8 @@ from langchain.llms import AzureOpenAI
 from llama_index import GPTVectorStoreIndex, LLMPredictor, LangchainEmbedding, ServiceContext, SimpleDirectoryReader
 from llama_index.indices.base import BaseGPTIndex
 
+import gpt_review.constants as C
+
 
 def _ask_doc(question: str, files: List[str], fast: bool = False, large: bool = False) -> str:
     """
@@ -54,7 +56,7 @@ def _document_indexer(
             "api_type": "azure",
             "api_version": "2023-03-15-preview",
         },
-        max_retries=10,
+        max_retries=C.MAX_RETRIES,
     )
 
     llm_predictor = LLMPredictor(llm=llm)
