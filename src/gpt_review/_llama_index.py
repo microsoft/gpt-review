@@ -23,12 +23,12 @@ def _ask_doc(
     files: Optional[List[str]] = None,
     input_dir: Optional[str] = None,
     exclude_hidden: bool = True,
-    recursive=True,
+    recursive: bool = True,
+    required_exts: Optional[List[str]] = None,
     repository: Optional[str] = None,
     branch: str = "main",
     fast: bool = False,
     large: bool = False,
-    required_exts: Optional[List[str]] = None,
 ) -> str:
     """
     Ask GPT a question.

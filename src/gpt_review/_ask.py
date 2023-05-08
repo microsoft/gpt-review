@@ -70,6 +70,9 @@ def _ask(
     fast: bool = False,
     large: bool = False,
     directory: Optional[str] = None,
+    required_exts: Optional[List[str]] = None,
+    hidden: bool = False,
+    recursive: bool = False,
     repository: Optional[str] = None,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
@@ -78,7 +81,17 @@ def _ask(
     prompt = " ".join(question)
 
     if files or directory or repository:
-        response = _ask_doc(prompt, files, input_dir=directory, repository=repository, fast=fast, large=large)
+        response = _ask_doc(
+            prompt,
+            files,
+            input_dir=directory,
+            exclude_hidden=not hidden,
+            recursive=recursive,
+            required_exts=required_exts,
+            repository=repository,
+            fast=fast,
+            large=large,
+        )
     else:
         response = _call_gpt(
             prompt=prompt,
@@ -182,14 +195,36 @@ class AskCommandGroup(GPTCommandGroup):
             args.argument(
                 "directory",
                 type=str,
-                help="Path to the directory.",
+                help="Path to the directory to index.",
                 default=None,
                 options_list=("--directory", "-d"),
             )
             args.argument(
+                "required_exts",
+                type=str,
+                help="Required extensions when indexing a directory. Requires --directory. Can be used multiple times.",
+                default=None,
+                action="append",
+            )
+            args.argument(
+                "hidden",
+                type=bool,
+                help="Include hidden files when indexing a directory. Requires --directory. Default: False.",
+                default=False,
+                action="store_true",
+            )
+            args.argument(
+                "recursive",
+                type=bool,
+                help="Recursively index a directory. Requires --directory. Default: False.",
+                default=False,
+                action="store_true",
+                options_list=("--recursive", "-r"),
+            )
+            args.argument(
                 "repository",
                 type=str,
-                help="The repository to search. Format: owner/repo",
+                help="Repository to index. Default: None.",
                 default=None,
-                options_list=("--repository", "-r"),
+                options_list=("--repository", "-repo"),
             )
