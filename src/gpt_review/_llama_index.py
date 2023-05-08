@@ -24,7 +24,7 @@ from llama_index.storage.storage_context import DEFAULT_PERSIST_DIR
 logger = logging.getLogger(__name__)
 
 
-def _ask_doc(
+def _query_index(
     question: str,
     files: Optional[List[str]] = None,
     input_dir: Optional[str] = None,
@@ -38,7 +38,7 @@ def _ask_doc(
     refresh: bool = False,
 ) -> str:
     """
-    Ask GPT a question.
+    Query a Vector Index with GPT.
     Args:
         question (List[str]): The question to ask.
         files (List[str], optional): The files to search.

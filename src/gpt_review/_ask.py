@@ -11,7 +11,7 @@ from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review._llama_index import _ask_doc
+from gpt_review._llama_index import _query_index
 from gpt_review._openai import _call_gpt
 import gpt_review.constants as C
 
@@ -81,7 +81,7 @@ def _ask(
     prompt = " ".join(question)
 
     if files or directory or repository:
-        response = _ask_doc(
+        response = _query_index(
             prompt,
             files,
             input_dir=directory,
