@@ -1,4 +1,5 @@
 """Contains constants for minimum and maximum values of various parameters used in GPT Review."""
+import os
 import sys
 
 MAX_TOKENS_DEFAULT = 100
@@ -21,4 +22,4 @@ PRESENCE_PENALTY_DEFAULT = 0
 PRESENCE_PENALTY_MIN = 0
 PRESENCE_PENALTY_MAX = 2
 
-RETRY_COUNT = 10
+RETRY_LIMIT = os.getenv("RETRY_LIMIT", 10)
