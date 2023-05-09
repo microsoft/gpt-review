@@ -10,6 +10,7 @@ class Prompt:
         prompt_suffix (str): The suffix of the prompt.
         system_message (str): The system message to display.
         examples (list): The examples to include in the message.
+        history: (list): Messages from previous conversation.
     """
 
     prompt_prefix: str = ""
