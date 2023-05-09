@@ -48,7 +48,6 @@ index 0000000..8d28b0c
 +        }
 +    ]
 +}
-\ No newline at end of file
 ```
 """,
         },
