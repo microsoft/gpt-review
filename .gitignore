@@ -128,4 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-index.*
+# Default Directory for llama index files
+storage/

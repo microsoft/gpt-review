@@ -21,6 +21,8 @@ ROOT_COMMANDS = [
     CLICase("--help"),
 ]
 
+WHAT_LANGUAGE = "what programming language is this code written in?"
+
 ASK_COMMANDS = [
     CLICase("ask --help"),
     CLICase("ask how are you"),
@@ -102,15 +104,12 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     CLICase(
         f"""ask how are you --fast --max-tokens {C.MAX_TOKENS_DEFAULT} --top-p {C.TOP_P_DEFAULT} --frequency-penalty {C.FREQUENCY_PENALTY_DEFAULT} --presence-penalty {C.FREQUENCY_PENALTY_MAX}"""
     ),
-    CLICase(
-        "ask --files src/gpt_review/main.py --files src/gpt_review/main.py what programming language is this code written in?"
-    ),
     CLICase("github review --help"),
     CLICase("github review"),
-    CLICase(
-        "ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py what programming language is this code written in?"
-    ),
-    CLICase("ask --fast -f src/gpt_review/__init__.py what programming language is this code written in?"),
+    CLICase(f"ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py {WHAT_LANGUAGE}"),
+    CLICase(f"ask --fast -f src/gpt_review/__init__.py {WHAT_LANGUAGE}"),
+    CLICase(f"ask --fast -d src/gpt_review --recursive --hidden --required-exts .py {WHAT_LANGUAGE}"),
+    CLICase(f"ask --fast -repo microsoft/gpt-review {WHAT_LANGUAGE}"),
 ]
 
 GIT_COMMANDS = [
