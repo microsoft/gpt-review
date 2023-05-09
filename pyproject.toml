@@ -81,6 +81,7 @@ fast = true
 [tool.coverage.run]
 branch = true
 omit = [
+    # Omitting files that can not be covered by tests
     "src/gpt/__main__.py",
     "src/gpt_review/__main__.py",
     "src/gpt_review/main.py"
