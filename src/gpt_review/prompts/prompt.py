@@ -1,3 +1,4 @@
+"""Interface for a GPT Prompts."""
 from dataclasses import dataclass, field
 
 
