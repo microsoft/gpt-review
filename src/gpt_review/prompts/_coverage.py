@@ -1,7 +1,10 @@
 """A prompt for the GPT Coverage task."""
+from dataclasses import dataclass
+
 from gpt_review.prompts._prompt import Prompt
 
 
+@dataclass
 class CoveragePrompt(Prompt):
     """A prompt for the GPT Coverage task."""
 
