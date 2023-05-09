@@ -26,6 +26,7 @@ class CLICase1(CLICase):
 class CLICase2(CLICase):
     expected_error_code: int = 2
 
+
 SAMPLE_FILE = "src/gpt_review/__init__.py"
 
 QUESTION = "how are you"
@@ -160,7 +161,7 @@ def test_cli_gpt_module(command: str) -> None:
     """Test running cli as module"""
     command_array = MODULE_DICT[command].command.split(" ")
 
-    cli_test(ARGS_DICT[command], command_array)
+    cli_test(MODULE_DICT[command], command_array)
 
 
 @pytest.mark.parametrize("command", ARGS_DICT.keys())
