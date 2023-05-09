@@ -12,7 +12,8 @@
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
-                "PYTEST_ADDOPTS": "--no-cov"
+                "PYTEST_ADDOPTS": "--no-cov",
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1"
             }
         }
     ]
