@@ -166,7 +166,13 @@ def _call_gpt(
     except RateLimitError as error:
         if retry < C.MAX_RETRIES:
             logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
-            time.sleep(retry * 10)
+
+            wait_time_match = re.search(r"Please retry after (\d+) seconds.", str(error))
+            wait_time = int(wait_time_match.group(1)) if wait_time_match else retry * 10
+            logging.warning(f"Waiting for {wait_time} seconds before retrying.")
+
+            time.sleep(wait_time)
+
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
 
