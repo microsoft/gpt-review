@@ -44,13 +44,6 @@ jobs:
           committer_email: actions@github.com
           add: "src/gpt_review/__init__.py"
 
-      - name: Remove old release draft 
-        if: steps.tag_version.outputs.release_type
-        shell: bash
-        run: hub release delete latest || exit 0
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
-
       - if: steps.tag_version.outputs.release_type
         run: |
           python -m pip install --upgrade pip
@@ -60,6 +53,8 @@ jobs:
           
       - if: steps.tag_version.outputs.release_type
         run: |
+          gh release delete $TAG || echo "no tag existed"
+
           gh release create \
             -d \
             --target main \
