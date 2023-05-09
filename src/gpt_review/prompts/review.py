@@ -22,11 +22,38 @@ Do not include the file name in the summary and list the summary with bullet poi
         {
             "role": "user",
             "content": """
+```diff
+diff --git a/.vscode/launch.json b/.vscode/launch.json
+new file mode 100644
+index 0000000..8d28b0c
+--- /dev/null
++++ b/.vscode/launch.json
+@@ -0,0 +1,19 @@
++{
++    "version": "0.1.0",
++    "configurations": [
++        {
++            "name": "Debug Tests",
++            "type": "python",
++            "request": "launch",
++            "program": "${file}",
++            "purpose": [
++                "debug-test"
++            ],
++            "console": "integratedTerminal",
++            "justMyCode": false,
++            "env": {
++                "PYTEST_ADDOPTS": "--no-cov -n0 --dist no"
++            }
++        }
++    ]
++}
+\ No newline at end of file
+```
 """,
         },
         {
             "role": "assistant",
-            "content": """
-""",
+            "content": "This adds a Debug Configuration for VS Code.",
         },
     ]
