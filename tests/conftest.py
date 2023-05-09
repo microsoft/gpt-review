@@ -52,14 +52,8 @@ def mock_openai(monkeypatch) -> None:
     def from_documents(documents, service_context=None) -> MockIndex:
         return MockIndex()
 
-    class MockRepoReader:
-        def __init__(self, owner, repo, use_parser) -> None:
-            self.owner = owner
-            self.repo = repo
-            self.use_parser = use_parser
-
     def init_mock_reader(self, owner, repo, use_parser) -> None:
-        MockRepoReader(owner=owner, repo=repo, use_parser=use_parser)
+        pass
 
     def mock_load_data_from_branch(self, branch):
         return SimpleDirectoryReader(input_dir=".").load_data()
@@ -68,6 +62,11 @@ def mock_openai(monkeypatch) -> None:
     monkeypatch.setattr("llama_index.GPTVectorStoreIndex.from_documents", from_documents)
     monkeypatch.setattr("llama_index.GithubRepositoryReader.__init__", init_mock_reader)
     monkeypatch.setattr("llama_index.GithubRepositoryReader._load_data_from_branch", mock_load_data_from_branch)
+
+    def mock_query(self, question) -> MockQueryResponse:
+        return MockQueryResponse()
+
+    monkeypatch.setattr("llama_index.indices.query.base.BaseQueryEngine.query", mock_query)
 
 
 @pytest.fixture

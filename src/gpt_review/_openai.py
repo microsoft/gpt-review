@@ -96,7 +96,7 @@ def _call_gpt(
             logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
 
             wait_time = int(error.headers["Retry-After"]) if error.headers["Retry-After"] else retry * 10
-            logging.warning(f"Waiting for {wait_time} seconds before retrying.")
+            logging.warning("Waiting for %s seconds before retrying.", wait_time)
 
             time.sleep(wait_time)
 
