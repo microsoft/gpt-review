@@ -1,5 +1,6 @@
 """Pytest for gpt_review/main.py"""
 from dataclasses import dataclass
+
 import os
 import pytest
 import subprocess
@@ -24,7 +25,6 @@ class CLICase1(CLICase):
 @dataclass
 class CLICase2(CLICase):
     expected_error_code: int = 2
-
 
 SAMPLE_FILE = "src/gpt_review/__init__.py"
 
@@ -111,7 +111,7 @@ REVIEW_COMMANDS = [
     CLICase("review diff --diff tests/mock.diff --config tests/config.summary.test.yml"),
 ]
 
-ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS
+ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + REVIEW_COMMANDS
 ARGS_DICT = {arg.command: arg for arg in ARGS}
 
 MODULE_COMMANDS = [
@@ -151,7 +151,7 @@ def test_cli_gpt_cli(command: str) -> None:
     """Test gpt commands from installed CLI"""
     command_array = f"gpt {ARGS_DICT[command].command}".split(" ")
 
-    cli_test(command, command_array)
+    cli_test(ARGS_DICT[command], command_array)
 
 
 @pytest.mark.parametrize("command", MODULE_DICT.keys())
@@ -160,7 +160,7 @@ def test_cli_gpt_module(command: str) -> None:
     """Test running cli as module"""
     command_array = MODULE_DICT[command].command.split(" ")
 
-    cli_test(command, command_array)
+    cli_test(ARGS_DICT[command], command_array)
 
 
 @pytest.mark.parametrize("command", ARGS_DICT.keys())
