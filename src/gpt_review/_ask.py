@@ -1,7 +1,5 @@
 """Ask GPT a question."""
-import logging
 import os
-import time
 from typing import Dict, List, Optional
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
@@ -11,10 +9,10 @@ from knack.util import CLIError
 import openai
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from openai.error import RateLimitError
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review._llama_index import _ask_doc
+from gpt_review._llama_index import _query_index
+from gpt_review._openai import _call_gpt
 import gpt_review.constants as C
 
 
@@ -71,14 +69,29 @@ def _ask(
     files: Optional[List[str]] = None,
     fast: bool = False,
     large: bool = False,
+    directory: Optional[str] = None,
+    required_exts: Optional[List[str]] = None,
+    hidden: bool = False,
+    recursive: bool = False,
+    repository: Optional[str] = None,
 ) -> Dict[str, str]:
     """Ask GPT a question."""
     _load_azure_openai_context()
 
     prompt = " ".join(question)
 
-    if files:
-        response = _ask_doc(prompt, files, fast=fast, large=large)
+    if files or directory or repository:
+        response = _query_index(
+            prompt,
+            files,
+            input_dir=directory,
+            exclude_hidden=not hidden,
+            recursive=recursive,
+            required_exts=required_exts,
+            repository=repository,
+            fast=fast,
+            large=large,
+        )
     else:
         response = _call_gpt(
             prompt=prompt,
@@ -115,102 +128,6 @@ def _load_azure_openai_context() -> None:
         )
         openai.api_base = os.environ["OPENAI_API_BASE"] = kv_client.get_secret("azure-open-ai").value  # type: ignore
         openai.api_key = os.environ["OPENAI_API_KEY"] = kv_client.get_secret("azure-openai-key").value  # type: ignore
-
-
-def _call_gpt(
-    prompt: str,
-    temperature=0.10,
-    max_tokens=500,
-    top_p=1.0,
-    frequency_penalty=0.5,
-    presence_penalty=0.0,
-    retry=0,
-    messages=None,
-    fast: bool = False,
-    large: bool = False,
-) -> str:
-    """
-    Call GPT-4 with the given prompt.
-
-    Args:
-        prompt (str): The prompt to send to GPT-4.
-        temperature (float, optional): The temperature to use. Defaults to 0.10.
-        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to 500.
-        top_p (float, optional): The top_p to use. Defaults to 1.
-        frequency_penalty (float, optional): The frequency penalty to use. Defaults to 0.5.
-        presence_penalty (float, optional): The presence penalty to use. Defaults to 0.0.
-        retry (int, optional): The number of times to retry the request. Defaults to 0.
-        messages (List[Dict[str, str]], optional): The messages to send to GPT-4. Defaults to None.
-        fast (bool, optional): Whether to use the fast model. Defaults to False.
-        large (bool, optional): Whether to use the large model. Defaults to False.
-
-    Returns:
-        str: The response from GPT-4.
-    """
-    messages = messages or [{"role": "user", "content": prompt}]
-    try:
-        engine = _get_engine(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.info("Model Selected based on prompt size: %s", engine)
-
-        logging.info("Prompt sent to GPT: %s\n", prompt)
-        completion = openai.ChatCompletion.create(
-            engine=engine,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-        )
-        return completion.choices[0].message.content  # type: ignore
-    except RateLimitError as error:
-        if retry < C.MAX_RETRIES:
-            logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
-
-            wait_time = int(error.headers["Retry-After"]) if error.headers["Retry-After"] else retry * 10
-            logging.warning(f"Waiting for {wait_time} seconds before retrying.")
-
-            time.sleep(wait_time)
-
-            return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
-        raise RateLimitError("Retry limit exceeded") from error
-
-
-def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = False) -> str:
-    """
-    Get the Engine based on the prompt length.
-    - when greater then 8k use gpt-4-32k
-    - otherwise use gpt-4
-    - enable fast to use gpt-35-turbo for small prompts
-
-    Args:
-        prompt (str): The prompt to send to GPT-4.
-        max_tokens (int): The maximum number of tokens to generate.
-        fast (bool, optional): Whether to use the fast model. Defaults to False.
-        large (bool, optional): Whether to use the large model. Defaults to False.
-
-    Returns:
-        str: The engine to use.
-    """
-    tokens = _count_tokens(prompt)
-    if large or tokens + max_tokens > 8000:
-        return "gpt-4-32k"
-    if tokens + max_tokens > 4000:
-        return "gpt-4"
-    return "gpt-35-turbo" if fast else "gpt-4"
-
-
-def _count_tokens(prompt) -> int:
-    """
-    Determine number of tokens in prompt.
-
-    Args:
-        prompt (str): The prompt to send to GPT-4.
-
-    Returns:
-        int: The number of tokens in the prompt.
-    """
-    return int(len(prompt) / 4 * 3)
 
 
 class AskCommandGroup(GPTCommandGroup):
@@ -274,4 +191,44 @@ class AskCommandGroup(GPTCommandGroup):
                 default=None,
                 action="append",
                 options_list=("--files", "-f"),
+            )
+            args.argument(
+                "directory",
+                type=str,
+                help="Path of the directory to index. Use --recursive (or -r) to index subdirectories.",
+                default=None,
+                options_list=("--directory", "-d"),
+            )
+            args.argument(
+                "required_exts",
+                type=str,
+                help="Required extensions when indexing a directory. Requires --directory. Can be used multiple times.",
+                default=None,
+                action="append",
+            )
+            args.argument(
+                "hidden",
+                help="Include hidden files when indexing a directory. Requires --directory.",
+                default=False,
+                action="store_true",
+            )
+            args.argument(
+                "recursive",
+                help="Recursively index a directory. Requires --directory.",
+                default=False,
+                action="store_true",
+                options_list=("--recursive", "-r"),
+            )
+            args.argument(
+                "repository",
+                type=str,
+                help="Repository to index. Default: None.",
+                default=None,
+                options_list=("--repository", "-repo"),
+            )
+            args.argument(
+                "refresh",
+                help="Refresh the index. Requires --directory, --files, or --repository.",
+                default=False,
+                action="store_true",
             )
