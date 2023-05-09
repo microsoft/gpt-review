@@ -34,7 +34,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Azure/login@v1.4.6
-        continue-on-error: true
+        if: ${{ matrix.flags == 'integration' }}
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: ${{ matrix.tools }}
