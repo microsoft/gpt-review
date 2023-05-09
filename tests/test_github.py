@@ -19,11 +19,10 @@ def post_pr_comment_test() -> None:
     assert response
 
 
-@pytest.mark.skip(reason="Creds for action missing on build server")
 @pytest.mark.integration
-def test_int_pr_diff() -> None:
+def test_int_pr_diff(mock_github) -> None:
     """Integration Test for GitHub API diff call."""
-    get_pr_diff_test("diff --git a/.devcontainer/Dockerfile b/.devcontainer/Dockerfile", "microsoft/gpt-review", 1)
+    get_pr_diff_test("diff --git a/README.md b/README.md", "microsoft/gpt-review", 1)
 
 
 def test_pr_diff(mock_github) -> None:
@@ -31,13 +30,23 @@ def test_pr_diff(mock_github) -> None:
     get_pr_diff_test("diff --git a/README.md b/README.md")
 
 
-@pytest.mark.skip(reason="Creds for action missing on build server")
 @pytest.mark.integration
-def test_int_pr_comment() -> None:
+def test_int_pr_comment(mock_github) -> None:
+    """Integration Test for GitHub API comment call."""
+    post_pr_comment_test()
+
+
+@pytest.mark.integration
+def test_int_pr_update(mock_github, mock_github_comment) -> None:
     """Integration Test for GitHub API comment call."""
     post_pr_comment_test()
 
 
 def test_pr_comment(mock_github) -> None:
+    """Unit Test for GitHub API comment call."""
+    post_pr_comment_test()
+
+
+def test_pr_update(mock_github, mock_github_comment) -> None:
     """Unit Test for GitHub API comment call."""
     post_pr_comment_test()
