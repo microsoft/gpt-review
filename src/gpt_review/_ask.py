@@ -1,6 +1,7 @@
 """Ask GPT a question."""
 import logging
 import os
+import re
 import time
 from typing import Dict, List, Optional
 from knack import CLICommandsLoader
