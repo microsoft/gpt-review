@@ -16,10 +16,12 @@ class CLICase:
     expected_error_code: int = 0
 
 
+@dataclass
 class CLICase1(CLICase):
     expected_error_code: int = 1
 
 
+@dataclass
 class CLICase2(CLICase):
     expected_error_code: int = 2
 
