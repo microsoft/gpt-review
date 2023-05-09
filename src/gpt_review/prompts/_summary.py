@@ -1,5 +1,5 @@
 """A prompt for the GPT Review task."""
-from gpt_review.prompts.prompt import Prompt
+from gpt_review.prompts._prompt import Prompt
 
 
 class SummaryPrompt(Prompt):
