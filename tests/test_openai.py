@@ -30,7 +30,9 @@ def test_int_get_engine() -> None:
 
 def rate_limit_test(monkeypatch):
     def mock_get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = False):
-        raise RateLimitError("Rate Limit Error")
+        error = RateLimitError("Rate Limit Error")
+        error.headers["Retry-After"] = 10
+        raise error
 
     monkeypatch.setattr("gpt_review._openai._get_engine", mock_get_engine)
     with pytest.raises(RateLimitError):
