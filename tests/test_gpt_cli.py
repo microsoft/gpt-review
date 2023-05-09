@@ -1,6 +1,7 @@
 """Pytest for gpt_review/main.py"""
 from dataclasses import dataclass
 
+
 import os
 import pytest
 import subprocess
