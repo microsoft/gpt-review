@@ -11,16 +11,9 @@ from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
-
-SUMMARIZE_PROMPT = """Summarize the following file changed in a pull request submitted by a developer on GitHub,
-focusing on major modifications, additions, deletions, and any significant updates within the files. Do not include the
-file name in the summary and list the summary with bullet points"""
-TEST_COVERAGE_PROMPT = """You are an experienced software developer. Generate unit test cases for the code submitted in
-the pull request, ensuring comprehensive coverage of all functions, methods, and scenarios to validate the correctness
-and reliability of the implementation."""
-BUGS_PROMPT = """Provide a concise summary of the bug found in the code, describing its characteristics, location, and
-potential effects on the overall functionality and performance of the application. Present the potential issues and
-errors first, following by the most important findings, in your summary"""
+from gpt_review.prompts.bugs import BugPrompt
+from gpt_review.prompts.coverage import CoveragePrompt
+from gpt_review.prompts.review import ReviewPrompt
 
 _CHECKS = {
     "SUMMARY_CHECKS": [
@@ -133,11 +126,8 @@ def _summarize_file(diff) -> str:
         str: The summary of the file.
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
-    prompt = f"""
-{SUMMARIZE_PROMPT}
-{diff}
-"""
-    response = _ask([prompt], temperature=0.0)
+    messages = ReviewPrompt().get_messages(diff)
+    response = _ask(question=[], messages=messages, temperature=0.0)
     return f"""
 ### {git_file.file_name}
 {response}
@@ -174,14 +164,9 @@ def _summarize_test_coverage(git_diff) -> str:
 
         files[git_file.file_name] = git_file
 
-    prompt = f"""
-```
-{git_diff}
-```
-{TEST_COVERAGE_PROMPT}
-"""
+    messages = CoveragePrompt().get_messages(git_diff)
 
-    return _ask([prompt], temperature=0.0, max_tokens=1500)["response"]
+    return _ask([], messages=messages, temperature=0.0, max_tokens=1500)["response"]
 
 
 def _summarize_bugs_in_pr(git_diff) -> str:
@@ -194,12 +179,8 @@ def _summarize_bugs_in_pr(git_diff) -> str:
     Returns:
         response (str): The response from GPT-4.
     """
-    gpt4_big_prompot = f"""
-{BUGS_PROMPT}
-
-{git_diff}
-"""
-    response = _ask([gpt4_big_prompot])
+    messages = BugPrompt().get_messages(git_diff)
+    response = _ask([], messages=messages)
     logging.info(response["response"])
     return response["response"]
 

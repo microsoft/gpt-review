@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -14,8 +14,8 @@ class Prompt:
     prompt_prefix: str = ""
     prompt_suffix: str = ""
     system_message: str = ""
-    examples: list = []
-    history: list = []
+    examples: list = field(default_factory=list)
+    history: list = field(default_factory=list)
 
     def get_messages(self, prompt_contents: str):
         """Get the messages of the prompt.

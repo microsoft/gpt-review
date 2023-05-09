@@ -69,6 +69,7 @@ def _ask(
     frequency_penalty: float = C.FREQUENCY_PENALTY_DEFAULT,
     presence_penalty: float = C.PRESENCE_PENALTY_DEFAULT,
     files: Optional[List[str]] = None,
+    messages=None,
     fast: bool = False,
     large: bool = False,
 ) -> Dict[str, str]:
@@ -89,6 +90,7 @@ def _ask(
             presence_penalty=presence_penalty,
             fast=fast,
             large=large,
+            messages=messages,
         )
     return {"response": response}
 
