@@ -1,7 +1,6 @@
 """Ask GPT a question."""
 import logging
 import os
-import re
 import time
 from typing import Dict, List, Optional
 from knack import CLICommandsLoader
@@ -168,8 +167,7 @@ def _call_gpt(
         if retry < C.MAX_RETRIES:
             logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
 
-            wait_time_match = re.search(r"Please retry after (\d+) seconds.", str(error))
-            wait_time = int(wait_time_match.group(1)) if wait_time_match else retry * 10
+            wait_time = int(error.headers["Retry-After"]) if error.headers["Retry-After"] else retry * 10
             logging.warning(f"Waiting for {wait_time} seconds before retrying.")
 
             time.sleep(wait_time)
