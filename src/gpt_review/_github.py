@@ -62,9 +62,7 @@ class _GitHubClient(_RepositoryClient):
         data = {"body": review, "commit_id": git_commit_hash, "event": "COMMENT"}
         data = json.dumps(data)
 
-        pr_link = link or os.getenv("LINK")
-        if not isinstance(pr_link, str):
-            raise ValueError("PR link not found, set the LINK environment variable.")
+        pr_link = link or os.getenv("LINK")  # type: ignore
         owner = pr_link.split("/")[-4]
         repo = pr_link.split("/")[-3]
         pr_number = pr_link.split("/")[-1]
