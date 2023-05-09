@@ -13,7 +13,7 @@ from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
 from gpt_review.prompts.bugs import BugPrompt
 from gpt_review.prompts.coverage import CoveragePrompt
-from gpt_review.prompts.review import ReviewPrompt
+from gpt_review.prompts.summary import SummaryPrompt
 
 _CHECKS = {
     "SUMMARY_CHECKS": [
@@ -126,7 +126,7 @@ def _summarize_file(diff) -> str:
         str: The summary of the file.
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
-    messages = ReviewPrompt().get_messages(diff)
+    messages = SummaryPrompt().get_messages(diff)
     response = _ask(question=[], messages=messages, temperature=0.0)
     return f"""
 ### {git_file.file_name}
