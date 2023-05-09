@@ -98,6 +98,24 @@ def mock_github(monkeypatch) -> None:
 
 
 @pytest.fixture
+def mock_github_comment(monkeypatch) -> None:
+    class MockCommentResponse:
+        def json(self) -> list:
+            return [
+                {
+                    "user": {"login": "github-actions[bot]"},
+                    "body": "Summary by GPT-4",
+                    "id": 1,
+                }
+            ]
+
+    def mock_get(url, headers, timeout) -> MockCommentResponse:
+        return MockCommentResponse()
+
+    monkeypatch.setattr("requests.get", mock_get)
+
+
+@pytest.fixture
 def mock_git_commit(monkeypatch) -> None:
     """Mock git.commit with pytest monkey patch"""
 
