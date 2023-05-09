@@ -75,7 +75,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           token: ${{ secrets.PAT }}
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.11.3'
           cache: 'pip' # caching pip dependencies

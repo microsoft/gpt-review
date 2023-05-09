@@ -22,9 +22,9 @@ from llama_index import (
 from llama_index.indices.base import BaseGPTIndex
 from llama_index.storage.storage_context import DEFAULT_PERSIST_DIR
 
-logger = logging.getLogger(__name__)
-
 import gpt_review.constants as C
+
+logger = logging.getLogger(__name__)
 
 
 def _query_index(
