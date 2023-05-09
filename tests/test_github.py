@@ -38,7 +38,7 @@ def test_int_pr_comment(mock_github) -> None:
 
 @pytest.mark.integration
 def test_int_pr_update(mock_github, mock_github_comment) -> None:
-    """Integration Test for GitHub API comment call."""
+    """Integration Test for updating GitHub API comment call."""
     post_pr_comment_test()
 
 
@@ -48,5 +48,5 @@ def test_pr_comment(mock_github) -> None:
 
 
 def test_pr_update(mock_github, mock_github_comment) -> None:
-    """Unit Test for GitHub API comment call."""
+    """Unit Test for updating GitHub API comment call."""
     post_pr_comment_test()
