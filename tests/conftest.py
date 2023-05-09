@@ -69,6 +69,11 @@ def mock_openai(monkeypatch) -> None:
     monkeypatch.setattr("llama_index.GithubRepositoryReader.__init__", init_mock_reader)
     monkeypatch.setattr("llama_index.GithubRepositoryReader._load_data_from_branch", mock_load_data_from_branch)
 
+    def mock_query(self, question) -> MockQueryResponse:
+        return MockQueryResponse()
+
+    monkeypatch.setattr("llama_index.indices.query.base.BaseQueryEngine.query", mock_query)
+
 
 @pytest.fixture
 def mock_github(monkeypatch) -> None:
