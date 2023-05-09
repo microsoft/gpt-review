@@ -2,15 +2,18 @@
     "version": "0.1.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: Debug Tests",
             "type": "python",
             "request": "launch",
             "program": "${file}",
+            "purpose": [
+                "debug-test"
+            ],
             "console": "integratedTerminal",
-            "justMyCode": true,
-            "pythonArgs": [
-                "-Xfrozen_modules=off",
-            ]
+            "justMyCode": false,
+            "env": {
+                "PYTEST_ADDOPTS": "--no-cov"
+            }
         }
     ]
 }
