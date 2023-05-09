@@ -11,4 +11,4 @@ class CoveragePrompt(Prompt):
     prompt_prefix: str = """Generate unit test cases for the code submitted
 in the pull request, ensuring comprehensive coverage of all functions, methods, and scenarios to validate the
 correctness and reliability of the implementation."""
-   system_message: str = "You are an experienced software developer."
+    system_message: str = "You are an experienced software developer."
