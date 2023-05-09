@@ -112,7 +112,7 @@ REVIEW_COMMANDS = [
     CLICase("review diff --diff tests/mock.diff --config tests/config.summary.test.yml"),
 ]
 
-ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + REVIEW_COMMANDS
+ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + GITHUB_COMMANDS + REVIEW_COMMANDS
 ARGS_DICT = {arg.command: arg for arg in ARGS}
 
 MODULE_COMMANDS = [
