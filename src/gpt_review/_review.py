@@ -11,9 +11,9 @@ from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
-from gpt_review.prompts.bugs import BugPrompt
-from gpt_review.prompts.coverage import CoveragePrompt
-from gpt_review.prompts.summary import SummaryPrompt
+from gpt_review.prompts._bugs import BugPrompt
+from gpt_review.prompts._coverage import CoveragePrompt
+from gpt_review.prompts._summary import SummaryPrompt
 
 _CHECKS = {
     "SUMMARY_CHECKS": [

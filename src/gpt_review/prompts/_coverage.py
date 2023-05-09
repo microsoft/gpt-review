@@ -1,5 +1,5 @@
 """A prompt for the GPT Coverage task."""
-from gpt_review.prompts.prompt import Prompt
+from gpt_review.prompts._prompt import Prompt
 
 
 class CoveragePrompt(Prompt):
