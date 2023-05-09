@@ -1,0 +1,43 @@
+ReviewPrompt:
+  prompt_prefix: |
+    Summarize the following file changed in a pull request submitted by a developer on GitHub,
+    focusing on major modifications, additions, deletions, and any significant updates within the files. Do not include the
+    file name in the summary and list the summary with bullet points
+
+ReviewPrompt2:
+  system_message: You are an experienced software developer.
+  prompt_prefix: |
+    Summarize the following file changed in a pull request submitted by a developer on GitHub,
+    focusing on major modifications, additions, deletions, and any significant updates within the files.
+    Do not include the file name in the summary and list the summary with bullet points
+  examples:
+  - user: |
+      ```diff
+      diff --git a/.vscode/launch.json b/.vscode/launch.json
+      new file mode 100644
+      index 0000000..8d28b0c
+      --- /dev/null
+      +++ b/.vscode/launch.json
+      @@ -0,0 +1,19 @@
+      +{
+      +    "version": "0.1.0",
+      +    "configurations": [
+      +        {
+      +            "name": "Debug Tests",
+      +            "type": "python",
+      +            "request": "launch",
+      +            "program": "${file}",
+      +            "purpose": [
+      +                "debug-test"
+      +            ],
+      +            "console": "integratedTerminal",
+      +            "justMyCode": false,
+      +            "env": {
+      +                "PYTEST_ADDOPTS": "--no-cov -n0 --dist no"
+      +            }
+      +        }
+      +    ]
+      +}
+      \ No newline at end of file
+      ```
+    assistant: This adds a Debug Configuration for VS Code.
