@@ -109,6 +109,7 @@ REVIEW_COMMANDS = [
     CLICase("review --help"),
     CLICase("review diff --help"),
     CLICase("review diff --diff tests/mock.diff --config tests/config.summary.test.yml"),
+    CLICase("review diff --diff tests/mock.diff --config tests/config.summary.extra.yml"),
 ]
 
 ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + GITHUB_COMMANDS + REVIEW_COMMANDS

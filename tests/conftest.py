@@ -24,6 +24,7 @@ def mock_openai(monkeypatch) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "MOCK")
     monkeypatch.setenv("AZURE_OPENAI_API", "MOCK")
     monkeypatch.setenv("AZURE_OPENAI_API_KEY", "MOCK")
+    monkeypatch.setenv("FILE_SUMMARY_FULL", "true")
 
     class MockResponse:
         def __init__(self) -> None:
@@ -85,6 +86,8 @@ def mock_github(monkeypatch) -> None:
     Mock GitHub Functions with monkeypatch
     - requests.get
     """
+    monkeypatch.setenv("LINK", "https://github.com/microsoft/gpt-review/pull/1")
+    monkeypatch.setenv("GIT_COMMIT_HASH", "a9da0c1e65f1102bc2ae16abed7b6a66400a5bde")
 
     class MockResponse:
         def __init__(self) -> None:
@@ -96,7 +99,7 @@ def mock_github(monkeypatch) -> None:
     def mock_get(url, headers, timeout) -> MockResponse:
         return MockResponse()
 
-    def mock_put(url, headers, timeout) -> MockResponse:
+    def mock_put(url, headers, data, timeout) -> MockResponse:
         return MockResponse()
 
     def mock_post(url, headers, data, timeout) -> MockResponse:
@@ -105,6 +108,24 @@ def mock_github(monkeypatch) -> None:
     monkeypatch.setattr("requests.get", mock_get)
     monkeypatch.setattr("requests.put", mock_put)
     monkeypatch.setattr("requests.post", mock_post)
+
+
+@pytest.fixture
+def mock_github_comment(monkeypatch) -> None:
+    class MockCommentResponse:
+        def json(self) -> list:
+            return [
+                {
+                    "user": {"login": "github-actions[bot]"},
+                    "body": "Summary by GPT-4",
+                    "id": 1,
+                }
+            ]
+
+    def mock_get(url, headers, timeout) -> MockCommentResponse:
+        return MockCommentResponse()
+
+    monkeypatch.setattr("requests.get", mock_get)
 
 
 @pytest.fixture
@@ -150,3 +171,19 @@ def git_diff() -> str:
     with open("tests/mock.diff", "r") as diff_file:
         diff = diff_file.read()
     return diff
+
+
+@pytest.fixture
+def empty_summary(monkeypatch) -> None:
+    """Test empty summary."""
+    monkeypatch.setenv("FILE_SUMMARY", "false")
+    monkeypatch.setenv("TEST_SUMMARY", "false")
+    monkeypatch.setenv("BUG_SUMMARY", "false")
+    monkeypatch.setenv("RISK_SUMMARY", "false")
+    monkeypatch.setenv("FULL_SUMMARY", "false")
+
+
+@pytest.fixture
+def file_summary(monkeypatch) -> None:
+    """Test empty summary."""
+    monkeypatch.setenv("FILE_SUMMARY_FULL", "false")
