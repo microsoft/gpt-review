@@ -137,6 +137,7 @@ pythonpath = [
 testpaths = "tests"
 # junit_family = "xunit2"
 markers = [
+    "unit: marks as a offline and fast test",
     "integration: marks as integration test",
     "notebooks: marks as notebook test",
     "gpu: marks as gpu test",
