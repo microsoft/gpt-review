@@ -162,7 +162,7 @@ def git_diff() -> str:
     return diff
 
 
-@pytest.mark.fixture
+@pytest.fixture
 def empty_summary(monkeypatch) -> None:
     """Test empty summary."""
     monkeypatch.setenv("FILE_SUMMARY", "false")
