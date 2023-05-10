@@ -11,33 +11,38 @@ def get_pr_diff_test(starts_with, patch_repo=None, patch_pr=None) -> None:
 
 def post_pr_comment_test() -> None:
     """Test the GitHub API call."""
-    response = _GitHubClient._post_pr_comment(
-        "test",
-        git_commit_hash="a9da0c1e65f1102bc2ae16abed7b6a66400a5bde",
-        link="https://github.com/microsoft/gpt-review/pull/1",
-    )
+    response = _GitHubClient.post_pr_summary("test")
     assert response
 
 
-@pytest.mark.skip(reason="Creds for action missing on build server")
 @pytest.mark.integration
-def test_int_pr_diff() -> None:
+def test_int_pr_diff(mock_github) -> None:
     """Integration Test for GitHub API diff call."""
-    get_pr_diff_test("diff --git a/.devcontainer/Dockerfile b/.devcontainer/Dockerfile", "microsoft/gpt-review", 1)
+    get_pr_diff_test("diff --git a/README.md b/README.md", "microsoft/gpt-review", 1)
 
 
-def test_pr_diff(mock_github) -> None:
+def test_pr_diff(mock_openai, mock_github) -> None:
     """Unit Test for GitHub API diff call."""
     get_pr_diff_test("diff --git a/README.md b/README.md")
 
 
-@pytest.mark.skip(reason="Creds for action missing on build server")
 @pytest.mark.integration
-def test_int_pr_comment() -> None:
+def test_int_pr_comment(mock_github) -> None:
     """Integration Test for GitHub API comment call."""
     post_pr_comment_test()
 
 
-def test_pr_comment(mock_github) -> None:
+@pytest.mark.integration
+def test_int_pr_update(mock_github, mock_github_comment) -> None:
+    """Integration Test for updating GitHub API comment call."""
+    post_pr_comment_test()
+
+
+def test_pr_comment(mock_openai, mock_github) -> None:
     """Unit Test for GitHub API comment call."""
+    post_pr_comment_test()
+
+
+def test_pr_update(mock_openai, mock_github, mock_github_comment) -> None:
+    """Unit Test for updating GitHub API comment call."""
     post_pr_comment_test()

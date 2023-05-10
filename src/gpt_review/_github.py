@@ -45,7 +45,7 @@ class _GitHubClient(_RepositoryClient):
         return response.text
 
     @staticmethod
-    def _post_pr_comment(review, git_commit_hash=None, link=None, access_token=None) -> requests.Response:
+    def _post_pr_comment(review, git_commit_hash: str, link: str, access_token: str) -> requests.Response:
         """
         Post a comment to a PR.
 
@@ -58,18 +58,13 @@ class _GitHubClient(_RepositoryClient):
         Returns:
             requests.Response: The response.
         """
-        git_commit_hash = git_commit_hash or os.getenv("GIT_COMMIT_HASH")
         data = {"body": review, "commit_id": git_commit_hash, "event": "COMMENT"}
         data = json.dumps(data)
 
-        pr_link = link or os.getenv("LINK")
-        if not isinstance(pr_link, str):
-            raise ValueError("PR link not found, set the LINK environment variable.")
-        owner = pr_link.split("/")[-4]
-        repo = pr_link.split("/")[-3]
-        pr_number = pr_link.split("/")[-1]
+        owner = link.split("/")[-4]
+        repo = link.split("/")[-3]
+        pr_number = link.split("/")[-1]
 
-        access_token = access_token or os.getenv("GITHUB_TOKEN")
         headers = {
             "Accept": "application/vnd.github+json",
             "authorization": f"Bearer {access_token}",
@@ -109,20 +104,31 @@ class _GitHubClient(_RepositoryClient):
         return response
 
     @staticmethod
-    def post_pr_summary(pr_patch) -> None:
-        """Get a review of a PR.
+    def post_pr_summary(pr_patch) -> Dict[str, str]:
+        """
+        Get a review of a PR.
+
         Args:
             pr_patch (str): The patch of the PR.
+
         Returns:
-            str: The review of the PR.
+            Dict[str, str]: The review.
         """
         review = _summarize_files(pr_patch)
         logging.debug(review)
 
-        if os.getenv("LINK"):
-            _GitHubClient._post_pr_comment(review)
-        else:
-            logging.warning("No PR to post too")
+        link = os.getenv("LINK")
+        git_commit_hash = os.getenv("GIT_COMMIT_HASH")
+        access_token = os.getenv("GITHUB_TOKEN")
+
+        if link and git_commit_hash and access_token:
+            _GitHubClient._post_pr_comment(
+                review=review, git_commit_hash=git_commit_hash, link=link, access_token=access_token
+            )
+            return {"response": "PR posted"}
+
+        logging.warning("No PR to post too")
+        return {"response": "No PR to post too"}
 
 
 def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:

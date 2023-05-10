@@ -145,7 +145,7 @@ def _load_azure_openai_context() -> None:
     if os.getenv("AZURE_OPENAI_API"):
         openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
         openai.api_key = os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")  # type: ignore
-    else:
+    else:  # pragma: no cover
         kv_client = SecretClient(
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
         )
