@@ -28,3 +28,12 @@ def test_empty_summary(empty_summary, mock_openai) -> None:
 @pytest.mark.integration
 def test_int_empty_summary(empty_summary) -> None:
     get_review_test()
+
+
+def test_file_summary(file_summary, mock_openai) -> None:
+    get_review_test()
+
+
+@pytest.mark.integration
+def test_int_file_summary(file_summary, mock_openai) -> None:
+    get_review_test()

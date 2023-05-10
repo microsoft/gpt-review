@@ -14,6 +14,7 @@ def mock_openai(monkeypatch) -> None:
     monkeypatch.setenv("OPENAI_API_KEY", "MOCK")
     monkeypatch.setenv("AZURE_OPENAI_API", "MOCK")
     monkeypatch.setenv("AZURE_OPENAI_API_KEY", "MOCK")
+    monkeypatch.setenv("FILE_SUMMARY_FULL", "true")
 
     class MockResponse:
         def __init__(self) -> None:
@@ -168,3 +169,10 @@ def empty_summary(monkeypatch) -> None:
     monkeypatch.setenv("FILE_SUMMARY", "false")
     monkeypatch.setenv("TEST_SUMMARY", "false")
     monkeypatch.setenv("BUG_SUMMARY", "false")
+
+
+@pytest.fixture
+def file_summary(monkeypatch) -> None:
+    """Test empty summary."""
+    monkeypatch.setenv("FILE_SUMMARY", "true")
+    monkeypatch.setenv("FILE_SUMMARY_FULL", "false")
