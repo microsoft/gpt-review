@@ -19,3 +19,12 @@ def get_review_test() -> None:
         diff = f.read()
 
         _GitHubClient.post_pr_summary(diff)
+
+
+def test_empty_summary(empty_summary, mock_openai) -> None:
+    get_review_test()
+
+
+@pytest.mark.integration
+def test_int_empty_summary(empty_summary) -> None:
+    get_review_test()

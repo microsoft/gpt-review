@@ -160,3 +160,11 @@ def git_diff() -> str:
     with open("tests/mock.diff", "r") as diff_file:
         diff = diff_file.read()
     return diff
+
+
+@pytest.mark.fixture
+def empty_summary(monkeypatch) -> None:
+    """Test empty summary."""
+    monkeypatch.setenv("FILE_SUMMARY", "false")
+    monkeypatch.setenv("TEST_SUMMARY", "false")
+    monkeypatch.setenv("BUG_SUMMARY", "false")
