@@ -176,5 +176,4 @@ def empty_summary(monkeypatch) -> None:
 @pytest.fixture
 def file_summary(monkeypatch) -> None:
     """Test empty summary."""
-    monkeypatch.setenv("FILE_SUMMARY", "true")
     monkeypatch.setenv("FILE_SUMMARY_FULL", "false")
