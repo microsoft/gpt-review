@@ -105,11 +105,14 @@ class _GitHubClient(_RepositoryClient):
 
     @staticmethod
     def post_pr_summary(pr_patch) -> Dict[str, str]:
-        """Get a review of a PR.
+        """
+        Get a review of a PR.
+
         Args:
             pr_patch (str): The patch of the PR.
+
         Returns:
-            str: The review of the PR.
+            Dict[str, str]: The review.
         """
         review = _summarize_files(pr_patch)
         logging.debug(review)
