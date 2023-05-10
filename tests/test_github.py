@@ -11,11 +11,7 @@ def get_pr_diff_test(starts_with, patch_repo=None, patch_pr=None) -> None:
 
 def post_pr_comment_test() -> None:
     """Test the GitHub API call."""
-    response = _GitHubClient._post_pr_comment(
-        "test",
-        git_commit_hash="a9da0c1e65f1102bc2ae16abed7b6a66400a5bde",
-        link="https://github.com/microsoft/gpt-review/pull/1",
-    )
+    response = _GitHubClient.post_pr_summary("test")
     assert response
 
 

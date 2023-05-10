@@ -75,6 +75,8 @@ def mock_github(monkeypatch) -> None:
     Mock GitHub Functions with monkeypatch
     - requests.get
     """
+    monkeypatch.setenv("LINK", "https://github.com/microsoft/gpt-review/pull/1")
+    monkeypatch.setenv("GIT_COMMIT_HASH", "a9da0c1e65f1102bc2ae16abed7b6a66400a5bde")
 
     class MockResponse:
         def __init__(self) -> None:

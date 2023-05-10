@@ -107,7 +107,7 @@ class _GitHubClient(_RepositoryClient):
         return response
 
     @staticmethod
-    def post_pr_summary(pr_patch) -> None:
+    def post_pr_summary(pr_patch):
         """Get a review of a PR.
         Args:
             pr_patch (str): The patch of the PR.
@@ -118,7 +118,7 @@ class _GitHubClient(_RepositoryClient):
         logging.debug(review)
 
         if os.getenv("LINK"):
-            _GitHubClient._post_pr_comment(review)
+            return _GitHubClient._post_pr_comment(review)
         else:
             logging.warning("No PR to post too")
 
