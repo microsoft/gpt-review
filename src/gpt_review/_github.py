@@ -126,7 +126,16 @@ class _GitHubClient(_RepositoryClient):
 
 
 def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
-    """Review GitHub PR with Open AI, and post response as a comment."""
+    """Review GitHub PR with Open AI, and post response as a comment.
+
+    Args:
+        repository (str): The repo of the PR.
+        pull_request (str): The PR number.
+        access_token (str): The GitHub access token.
+
+    Returns:
+        Dict[str, str]: The response.
+    """
     diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
     _GitHubClient.post_pr_summary(diff)
     return {"response": "Review posted as a comment."}
