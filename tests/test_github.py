@@ -21,7 +21,7 @@ def test_int_pr_diff(mock_github) -> None:
     get_pr_diff_test("diff --git a/README.md b/README.md", "microsoft/gpt-review", 1)
 
 
-def test_pr_diff(mock_github) -> None:
+def test_pr_diff(mock_openai, mock_github) -> None:
     """Unit Test for GitHub API diff call."""
     get_pr_diff_test("diff --git a/README.md b/README.md")
 
