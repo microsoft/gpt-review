@@ -169,6 +169,8 @@ def empty_summary(monkeypatch) -> None:
     monkeypatch.setenv("FILE_SUMMARY", "false")
     monkeypatch.setenv("TEST_SUMMARY", "false")
     monkeypatch.setenv("BUG_SUMMARY", "false")
+    monkeypatch.setenv("RISK_SUMMARY", "false")
+    monkeypatch.setenv("FULL_SUMMARY", "false")
 
 
 @pytest.fixture
