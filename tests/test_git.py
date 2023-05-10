@@ -1,7 +1,7 @@
 """Test git functions."""
 import pytest
 
-from gpt_review._git import _commit
+from gpt_review._git import _commit, _find_git_dir
 
 
 def commit_test() -> None:
@@ -19,3 +19,10 @@ def test_commit(mock_openai: None, mock_git_commit: None) -> None:
 def test_int_commit(mock_git_commit: None) -> None:
     """Integration test for commit function."""
     commit_test()
+
+
+def test_find_git_dir():
+    _find_git_dir(path="tests")
+
+    with pytest.raises(FileNotFoundError):
+        _find_git_dir(path="/")
