@@ -1,15 +1,10 @@
 """Interface for a GPT Prompts."""
-import sys
 from dataclasses import dataclass
+from typing_extensions import Self
 
 from langchain.prompts import load_prompt, PromptTemplate
 
 import gpt_review.constants as C
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
 
 
 @dataclass
