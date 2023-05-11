@@ -133,7 +133,7 @@ def _ask(
             large=large,
             messages=messages,
         )
-    logging.info(response["response"])
+    logging.info(response)
     return {"response": response}
 
 

@@ -12,7 +12,7 @@ from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
-from gpt_review.prompts._prompt import BugYamlPrompt, CoverageYamlPrompt, SummaryYamlPrompt
+from gpt_review.prompts._prompt import load_bug_yaml, load_coverage_yaml, load_summary_yaml
 
 
 _CHECKS = {
@@ -118,7 +118,7 @@ def _summarize_file(diff) -> str:
         str: The summary of the file.
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
-    messages = SummaryYamlPrompt.load().format(diff=diff).to_messages()
+    messages = load_summary_yaml().format(diff=diff).to_messages()
 
     response = _ask(question=[], messages=messages, temperature=0.0)
     return f"""
@@ -157,7 +157,7 @@ def _summarize_test_coverage(git_diff) -> str:
 
         files[git_file.file_name] = git_file
 
-    messages = CoverageYamlPrompt.load().format(diff=git_diff).to_messages()
+    messages = load_coverage_yaml().format(diff=git_diff).to_messages()
 
     return _ask([], messages=messages, temperature=0.0, max_tokens=1500)["response"]
 
@@ -211,7 +211,7 @@ def _summarize_files(git_diff) -> str:
 """
 
     if os.getenv("BUG_SUMMARY", "true").lower() == "true":
-        messages = BugYamlPrompt.load().format(diff=git_diff).to_messages()
+        messages = load_bug_yaml().format(diff=git_diff).to_messages()
         pr_bugs = _ask([], messages=messages)["response"]
 
         summary += f"""
