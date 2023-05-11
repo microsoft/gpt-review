@@ -24,7 +24,7 @@ jobs:
         tools: ['black', 'bandit', 'pylint', 'flake8']
         include:
           - tools: pytest
-            args: -m not integration and not cli
+            args: -m unit
             flags: unittests
           - tools: pytest
             args: -m integration
@@ -61,7 +61,7 @@ jobs:
         uses: microsoft/action-python@0.6.3
         with:
           pytest: true
-          args: -m not integration and not cli
+          args: -m unit
           workdir: '.'
           testdir: 'tests'
           python_version: ${{ matrix.python }}
