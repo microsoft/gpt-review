@@ -1,24 +1,17 @@
 """Ask GPT a question."""
-import os
 from typing import Dict, List, Optional
-import yaml
 
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 from knack.util import CLIError
 
-import openai
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review._llama_index import _query_index
 from gpt_review._openai import _call_gpt
 import gpt_review.constants as C
-
-
-DEFAULT_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
+from gpt_review.context import _load_azure_openai_context
 
 
 def validate_parameter_range(namespace) -> None:
@@ -108,39 +101,6 @@ def _ask(
             messages=messages,
         )
     return {"response": response}
-
-
-def _load_azure_openai_context() -> None:
-    """
-    Load the Azure OpenAI context.
-
-    If the environment variables are not set, retrieve the values from Azure Key Vault.
-
-    Set both the environment variables and the openai package variables.
-    - Without setting the environment variables, the integration tests fail.
-    - Without setting the openai package variables, the cli tests fail.
-    """
-
-    azure_config_file = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
-    with open(azure_config_file, encoding="UTF-8") as file:
-        azure_config = yaml.load(file, Loader=yaml.SafeLoader)
-
-    openai.api_type = os.environ["OPENAI_API_TYPE"] = azure_config.get("azure_api_type") or "azure"
-    openai.api_version = os.environ["OPENAI_API_VERSION"] = (
-        azure_config.get("azure_api_version") or "2023-03-15-preview"
-    )
-
-    if os.getenv("AZURE_OPENAI_API"):
-        openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API") or azure_config.get(
-            "azure_api_base"
-        )
-        openai.api_key = os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")  # type: ignore
-    else:  # pragma: no cover
-        kv_client = SecretClient(
-            vault_url=os.getenv("AZURE_KEY_VAULT_URL", DEFAULT_KEY_VAULT), credential=DefaultAzureCredential()
-        )
-        openai.api_base = os.environ["OPENAI_API_BASE"] = kv_client.get_secret("azure-open-ai").value  # type: ignore
-        openai.api_key = os.environ["OPENAI_API_KEY"] = kv_client.get_secret("azure-openai-key").value  # type: ignore
 
 
 class AskCommandGroup(GPTCommandGroup):

@@ -1,28 +1,25 @@
 """Tests for the Open AI Wrapper."""
 import pytest
-import os
-import yaml
 from openai.error import RateLimitError
 
 from gpt_review._openai import _call_gpt, _get_engine
 import gpt_review.constants as C
+from gpt_review.context import _load_azure_openai_context
 
 
 def get_engine_test() -> None:
     prompt = "This is a test prompt"
 
-    AZURE_CONFIG_FILE = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
-    with open(AZURE_CONFIG_FILE) as f:
-        AZURE_CONFIG = yaml.load(f, Loader=yaml.SafeLoader)
+    context = _load_azure_openai_context()
 
     engine = _get_engine(prompt=prompt, max_tokens=1000, fast=True)
-    assert engine == AZURE_CONFIG.get("turbo_llm_model_deployment_id")
+    assert engine == context.turbo_llm_model_deployment_id
 
     engine = _get_engine(prompt=prompt, max_tokens=5000)
-    assert engine == AZURE_CONFIG.get("smart_llm_model_deployment_id")
+    assert engine == context.smart_llm_model_deployment_id
 
     engine = _get_engine(prompt=prompt, max_tokens=9000)
-    assert engine == AZURE_CONFIG.get("large_llm_model_deployment_id")
+    assert engine == context.large_llm_model_deployment_id
 
 
 def test_get_engine() -> None:

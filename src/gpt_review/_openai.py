@@ -1,13 +1,12 @@
 """Open AI API Call Wrapper."""
 import logging
 import time
-import os
-import yaml
 
 import openai
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
+from gpt_review.context import _load_azure_openai_context
 
 
 def _count_tokens(prompt) -> int:
@@ -39,21 +38,14 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
     Returns:
         str: The engine to use.
     """
-    azure_config_file = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
-    with open(azure_config_file, encoding="UTF-8") as file:
-        azure_config = yaml.load(file, Loader=yaml.SafeLoader)
-        azure_config_deployment_map = azure_config.get("azure_model_map", {})
+    context = _load_azure_openai_context()
 
     tokens = _count_tokens(prompt)
     if large or tokens + max_tokens > 8000:
-        return azure_config_deployment_map["large_llm_model_deployment_id"]
+        return context.large_llm_model_deployment_id
     if tokens + max_tokens > 4000:
-        return azure_config_deployment_map["smart_llm_model_deployment_id"]
-    return (
-        azure_config_deployment_map["turbo_llm_model_deployment_id"]
-        if fast
-        else azure_config_deployment_map["smart_llm_model_deployment_id"]
-    )
+        return context.smart_llm_model_deployment_id
+    return context.turbo_llm_model_deployment_id if fast else context.smart_llm_model_deployment_id
 
 
 def _call_gpt(
