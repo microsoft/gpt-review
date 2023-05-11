@@ -71,35 +71,14 @@ def _ask(
     fast: bool = False,
     large: bool = False,
     directory: Optional[str] = None,
+    refresh: bool = False,
     required_exts: Optional[List[str]] = None,
     hidden: bool = False,
     recursive: bool = False,
     repository: Optional[str] = None,
+    branch: str = "main",
 ) -> Dict[str, str]:
-    """Ask GPT a question.
-
-    Args:
-        question (List[str]): The question to ask GPT.
-        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to C.MAX_TOKENS_DEFAULT.
-        temperature (float, optional): Controls randomness. Defaults to C.TEMPERATURE_DEFAULT.
-        top_p (float, optional): Controls diversity via nucleus sampling. Defaults to C.TOP_P_DEFAULT.
-        frequency_penalty (float, optional): How much to penalize new tokens based on their existing frequency in the
-            text so far. Defaults to C.FREQUENCY_PENALTY_DEFAULT.
-        presence_penalty (float, optional): How much to penalize new tokens based on whether they appear in the text so
-            far. Defaults to C.PRESENCE_PENALTY_DEFAULT.
-        files (Optional[List[str]], optional): The files to search. Defaults to None.
-        messages ([type], optional): [description]. Defaults to None.
-        fast (bool, optional): Use the fast model. Defaults to False.
-        large (bool, optional): Use the large model. Defaults to False.
-        directory (Optional[str], optional): The directory to search. Defaults to None.
-        required_exts (Optional[List[str]], optional): The required file extensions. Defaults to None.
-        hidden (bool, optional): Include hidden files. Defaults to False.
-        recursive (bool, optional): Recursively search the directory. Defaults to False.
-        repository (Optional[str], optional): The repository to search. Defaults to None.
-
-    Returns:
-            Dict[str, str]: The response from GPT.
-    """
+    """Ask GPT a question."""
     _load_azure_openai_context()
 
     prompt = " ".join(question)
@@ -109,10 +88,12 @@ def _ask(
             prompt,
             files,
             input_dir=directory,
+            refresh=refresh,
             exclude_hidden=not hidden,
             recursive=recursive,
             required_exts=required_exts,
             repository=repository,
+            branch=branch,
             fast=fast,
             large=large,
         )
@@ -250,6 +231,13 @@ class AskCommandGroup(GPTCommandGroup):
                 help="Repository to index. Default: None.",
                 default=None,
                 options_list=("--repository", "-repo"),
+            )
+            args.argument(
+                "branch",
+                type=str,
+                help="Branch to index. Default: main.",
+                default="main",
+                options_list=("--branch", "-b"),
             )
             args.argument(
                 "refresh",
