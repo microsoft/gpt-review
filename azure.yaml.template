@@ -1,0 +1,8 @@
+azure_api_type: azure
+azure_api_base: base-url-for-azure-api
+azure_api_version: api-version-for-azure
+azure_model_map:
+    turbo_llm_model_deployment_id: turbo-model-id-for-azure
+    smart_llm_model_deployment_id: small-model-id-for-azure
+    large_llm_model_deployment_id: large-model-id-for-azure
+    embedding_model_deployment_id: embedding-model-id-for-azure

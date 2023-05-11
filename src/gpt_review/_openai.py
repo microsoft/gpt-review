@@ -1,6 +1,8 @@
 """Open AI API Call Wrapper."""
 import logging
 import time
+import os
+import yaml
 
 import openai
 from openai.error import RateLimitError
@@ -37,12 +39,21 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
     Returns:
         str: The engine to use.
     """
+    azure_config_file = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
+    with open(azure_config_file, encoding="UTF-8") as file:
+        azure_config = yaml.load(file, Loader=yaml.SafeLoader)
+        azure_config_deployment_map = azure_config.get("azure_model_map", {})
+
     tokens = _count_tokens(prompt)
     if large or tokens + max_tokens > 8000:
-        return "gpt-4-32k"
+        return azure_config_deployment_map["large_llm_model_deployment_id"]
     if tokens + max_tokens > 4000:
-        return "gpt-4"
-    return "gpt-35-turbo" if fast else "gpt-4"
+        return azure_config_deployment_map["smart_llm_model_deployment_id"]
+    return (
+        azure_config_deployment_map["turbo_llm_model_deployment_id"]
+        if fast
+        else azure_config_deployment_map["smart_llm_model_deployment_id"]
+    )
 
 
 def _call_gpt(

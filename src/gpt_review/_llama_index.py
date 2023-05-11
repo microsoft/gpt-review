@@ -4,6 +4,7 @@ import os
 from typing import List, Optional
 from typing_extensions import override
 import openai
+import yaml
 
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
@@ -121,8 +122,20 @@ def _load_service_context(fast: bool = False, large: bool = False) -> ServiceCon
     Returns:
         ServiceContext: The service context.
     """
+
+    azure_config_file = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
+    with open(azure_config_file, encoding="UTF-8") as file:
+        azure_config = yaml.load(file, Loader=yaml.SafeLoader)
+        azure_config_deployment_map = azure_config.get("azure_model_map", {})
+
     llm_type = AzureGPT35Turbo if fast else AzureChatOpenAI
-    llm_name = "gpt-35-turbo" if fast else "gpt-4-32k" if large else "gpt-4"
+    llm_name = (
+        azure_config_deployment_map["turbo_llm_model_deployment_id"]
+        if fast
+        else azure_config_deployment_map["large_llm_model_deployment_id"]
+        if large
+        else azure_config_deployment_map["smart_llm_model_deployment_id"]
+    )
     llm = llm_type(  # type: ignore
         deployment_name=llm_name,
         model_kwargs={

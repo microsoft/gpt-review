@@ -1,6 +1,8 @@
 """Ask GPT a question."""
 import os
 from typing import Dict, List, Optional
+import yaml
+
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
@@ -118,11 +120,20 @@ def _load_azure_openai_context() -> None:
     - Without setting the environment variables, the integration tests fail.
     - Without setting the openai package variables, the cli tests fail.
     """
-    openai.api_type = os.environ["OPENAI_API_TYPE"] = "azure"
-    openai.api_version = os.environ["OPENAI_API_VERSION"] = "2023-03-15-preview"
+
+    azure_config_file = os.path.join(os.path.dirname(__file__), "../..", "azure.yaml")
+    with open(azure_config_file, encoding="UTF-8") as file:
+        azure_config = yaml.load(file, Loader=yaml.SafeLoader)
+
+    openai.api_type = os.environ["OPENAI_API_TYPE"] = azure_config.get("azure_api_type") or "azure"
+    openai.api_version = os.environ["OPENAI_API_VERSION"] = (
+        azure_config.get("azure_api_version") or "2023-03-15-preview"
+    )
 
     if os.getenv("AZURE_OPENAI_API"):
-        openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API")  # type: ignore
+        openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API") or azure_config.get(
+            "azure_api_base"
+        )
         openai.api_key = os.environ["OPENAI_API_KEY"] = os.getenv("AZURE_OPENAI_API_KEY")  # type: ignore
     else:  # pragma: no cover
         kv_client = SecretClient(
