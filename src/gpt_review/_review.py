@@ -1,5 +1,4 @@
 """Basic functions for requesting review based goals from GPT-4."""
-import logging
 import os
 from dataclasses import dataclass
 from typing import Dict
@@ -118,9 +117,9 @@ def _summarize_file(diff) -> str:
         str: The summary of the file.
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
-    messages = load_summary_yaml().format(diff=diff).to_messages()
+    question = load_summary_yaml().format(diff=diff)
 
-    response = _ask(question=[], messages=messages, temperature=0.0)
+    response = _ask(question=[question], temperature=0.0)
     return f"""
 ### {git_file.file_name}
 {response}
@@ -157,9 +156,9 @@ def _summarize_test_coverage(git_diff) -> str:
 
         files[git_file.file_name] = git_file
 
-    messages = load_coverage_yaml().format(diff=git_diff).to_messages()
+    question = load_coverage_yaml().format(diff=git_diff)
 
-    return _ask([], messages=messages, temperature=0.0, max_tokens=1500)["response"]
+    return _ask([question], temperature=0.0, max_tokens=1500)["response"]
 
 
 def _summarize_risk(git_diff) -> str:
@@ -211,8 +210,8 @@ def _summarize_files(git_diff) -> str:
 """
 
     if os.getenv("BUG_SUMMARY", "true").lower() == "true":
-        messages = load_bug_yaml().format(diff=git_diff).to_messages()
-        pr_bugs = _ask([], messages=messages)["response"]
+        question = load_bug_yaml().format(diff=git_diff)
+        pr_bugs = _ask([question])["response"]
 
         summary += f"""
 ## Potential Bugs

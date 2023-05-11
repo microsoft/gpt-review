@@ -1,10 +1,16 @@
 """Interface for a GPT Prompts."""
+import sys
+from pathlib import Path
 from dataclasses import dataclass
-from typing_extensions import Self
 
 from langchain.prompts import load_prompt, PromptTemplate
 
 import gpt_review.constants as C
+
+if sys.version_info[:2] <= (3, 10):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 
 @dataclass
@@ -21,14 +27,17 @@ class LangChainPrompt(PromptTemplate):
 
 def load_bug_yaml() -> LangChainPrompt:
     """Load the bug yaml."""
-    return LangChainPrompt.load(C.BUG_PROMPT_YAML)
+    yaml_path = Path(__file__).parents[0].joinpath(C.BUG_PROMPT_YAML)
+    return LangChainPrompt.load(yaml_path)
 
 
 def load_coverage_yaml() -> LangChainPrompt:
     """Load the coverage yaml."""
-    return LangChainPrompt.load(C.COVERAGE_PROMPT_YAML)
+    yaml_path = Path(__file__).parents[0].joinpath(C.COVERAGE_PROMPT_YAML)
+    return LangChainPrompt.load(yaml_path)
 
 
 def load_summary_yaml() -> LangChainPrompt:
     """Load the summary yaml."""
-    return LangChainPrompt.load(C.SUMMARY_PROMPT_YAML)
+    yaml_path = Path(__file__).parents[0].joinpath(C.SUMMARY_PROMPT_YAML)
+    return LangChainPrompt.load(yaml_path)

@@ -24,14 +24,14 @@ dynamic = ["version"]
 dependencies = [
   'azure-identity',
   'azure-keyvault-secrets',
-  'llama-index>=0.6.0,<=0.6.4',
+  'llama-index>=0.6.0,<=0.6.2',
   'httpx',
   'GitPython',
   'knack',
   'openai',
   'requests',
   'pyyaml',
-  'typing_extensions>=4.5.0,<=4.5.0',
+  'typing_extensions; python_version <= "3.10"',
   'transformers; python_version <= "3.8"'
 ]
 
@@ -40,7 +40,7 @@ test = [
     "bandit[toml]==1.7.5",
     "black==23.3.0",
     "check-manifest==0.49",
-    "flake8-bugbear==23.5.9",
+    "flake8-bugbear==23.3.23",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
@@ -54,7 +54,8 @@ test = [
     "pytest-xdist",
     "pytest>=7.2.2",
     "pytest-github-actions-annotate-failures",
-    "shellcheck-py==0.9.0.2"
+    "shellcheck-py==0.9.0.2",
+    "requests-mock"
 ]
 
 [project.scripts]
@@ -136,7 +137,7 @@ executionEnvironments = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -n auto"
+addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration and not cli'"
 pythonpath = [
   "src"
 ]
