@@ -38,7 +38,7 @@ def _query_index(
     branch: str = "main",
     fast: bool = False,
     large: bool = False,
-    refresh: bool = False,
+    reset: bool = False,
 ) -> str:
     """
     Query a Vector Index with GPT.
@@ -53,7 +53,7 @@ def _query_index(
         repository (str): The repository to search. Format: owner/repo
         fast (bool, optional): Whether to use the fast model. Defaults to False.
         large (bool, optional): Whether to use the large model. Defaults to False.
-        refresh (bool, optional): Whether to refresh the index. Defaults to False.
+        reset (bool, optional): Whether to reset the index. Defaults to False.
 
     Returns:
         Dict[str, str]: The response.
@@ -69,7 +69,7 @@ def _query_index(
         owner, repo = repository.split("/")
         documents += GithubRepositoryReader(owner=owner, repo=repo, use_parser=False).load_data(branch=branch)
 
-    index = _load_index(documents, fast=fast, large=large, refresh=refresh)
+    index = _load_index(documents, fast=fast, large=large, reset=reset)
 
     return index.as_query_engine().query(question).response  # type: ignore
 
@@ -78,7 +78,7 @@ def _load_index(
     documents: List[Document],
     fast: bool = True,
     large: bool = True,
-    refresh: bool = False,
+    reset: bool = False,
     persist_dir: str = DEFAULT_PERSIST_DIR,
 ) -> BaseGPTIndex:
     """
@@ -88,7 +88,7 @@ def _load_index(
         documents (List[Document]): The documents to index.
         fast (bool, optional): Whether to use the fast model. Defaults to False.
         large (bool, optional): Whether to use the large model. Defaults to False.
-        refresh (bool, optional): Whether to refresh the index. Defaults to False.
+        reset (bool, optional): Whether to reset the index. Defaults to False.
         persist_dir (str, optional): The directory to persist the index to. Defaults to './storage'.
 
     Returns:
@@ -96,7 +96,7 @@ def _load_index(
     """
     service_context = _load_service_context(fast, large)
 
-    if os.path.isdir(f"{persist_dir}") and not refresh:
+    if os.path.isdir(f"{persist_dir}") and not reset:
         logger.info("Loading index from storage")
         storage_context = StorageContext.from_defaults(persist_dir=persist_dir)
         return load_index_from_storage(service_context=service_context, storage_context=storage_context)
