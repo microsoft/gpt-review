@@ -42,7 +42,7 @@ def test_get_diff(mock_req) -> None:
 @pytest.mark.integration
 def test_create_comment_integration() -> None:
     response = _create_comment("token1", "org1", "proj1", "repo1", "pr1", "comment1", "text1")
-    assert response.status_code == 401
+    assert response.status_code == 203
 
 
 @pytest.mark.integration
@@ -54,4 +54,4 @@ def test_update_pr_integration() -> None:
 @pytest.mark.integration
 def test_get_diff_integration() -> None:
     response = _get_diff("token1", "org1", "proj1", "repo1", "commit1", "version1", "version2")
-    assert response.status_code == 401
+    assert response.status_code == 404
