@@ -71,12 +71,15 @@ def _ask(
     fast: bool = False,
     large: bool = False,
     directory: Optional[str] = None,
+    reset: bool = False,
     required_exts: Optional[List[str]] = None,
     hidden: bool = False,
     recursive: bool = False,
     repository: Optional[str] = None,
+    branch: str = "main",
 ) -> Dict[str, str]:
-    """Ask GPT a question.
+    """
+    Ask GPT a question.
 
     Args:
         question (List[str]): The question to ask GPT.
@@ -92,6 +95,7 @@ def _ask(
         fast (bool, optional): Use the fast model. Defaults to False.
         large (bool, optional): Use the large model. Defaults to False.
         directory (Optional[str], optional): The directory to search. Defaults to None.
+        reset (bool, optional): Whether to reset the index. Defaults to False.
         required_exts (Optional[List[str]], optional): The required file extensions. Defaults to None.
         hidden (bool, optional): Include hidden files. Defaults to False.
         recursive (bool, optional): Recursively search the directory. Defaults to False.
@@ -109,10 +113,12 @@ def _ask(
             prompt,
             files,
             input_dir=directory,
+            reset=reset,
             exclude_hidden=not hidden,
             recursive=recursive,
             required_exts=required_exts,
             repository=repository,
+            branch=branch,
             fast=fast,
             large=large,
         )
@@ -252,8 +258,15 @@ class AskCommandGroup(GPTCommandGroup):
                 options_list=("--repository", "-repo"),
             )
             args.argument(
-                "refresh",
-                help="Refresh the index. Requires --directory, --files, or --repository.",
+                "branch",
+                type=str,
+                help="Branch to index. Default: main.",
+                default="main",
+                options_list=("--branch", "-b"),
+            )
+            args.argument(
+                "reset",
+                help="Reset the index, overwriting the directory. Requires --directory, --files, or --repository.",
                 default=False,
                 action="store_true",
             )
