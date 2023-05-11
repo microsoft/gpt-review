@@ -266,7 +266,7 @@ class AskCommandGroup(GPTCommandGroup):
             )
             args.argument(
                 "reset",
-                help="Rest the index by overwriting the storage directory. Requires --directory, --files, or --repository.",
+                help="Reset the index, overwriting the directory. Requires --directory, --files, or --repository.",
                 default=False,
                 action="store_true",
             )
