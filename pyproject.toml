@@ -40,7 +40,7 @@ test = [
     "bandit[toml]==1.7.5",
     "black==23.3.0",
     "check-manifest==0.49",
-    "flake8-bugbear==23.3.23",
+    "flake8-bugbear==23.5.9",
     "flake8-docstrings",
     "flake8-formatter_junit_xml",
     "flake8",
@@ -137,7 +137,7 @@ executionEnvironments = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m 'not integration and not cli'"
+addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -n auto"
 pythonpath = [
   "src"
 ]
