@@ -1,6 +1,6 @@
 import pytest
 
-from gpt_review._github import _GitHubClient
+from gpt_review.repositories._github import _GitHubClient
 
 
 def test_get_review(mock_openai) -> None:
