@@ -71,7 +71,30 @@ def _ask(
     recursive: bool = False,
     repository: Optional[str] = None,
 ) -> Dict[str, str]:
-    """Ask GPT a question."""
+    """Ask GPT a question.
+
+    Args:
+        question (List[str]): The question to ask GPT.
+        max_tokens (int, optional): The maximum number of tokens to generate. Defaults to C.MAX_TOKENS_DEFAULT.
+        temperature (float, optional): Controls randomness. Defaults to C.TEMPERATURE_DEFAULT.
+        top_p (float, optional): Controls diversity via nucleus sampling. Defaults to C.TOP_P_DEFAULT.
+        frequency_penalty (float, optional): How much to penalize new tokens based on their existing frequency in the
+            text so far. Defaults to C.FREQUENCY_PENALTY_DEFAULT.
+        presence_penalty (float, optional): How much to penalize new tokens based on whether they appear in the text so
+            far. Defaults to C.PRESENCE_PENALTY_DEFAULT.
+        files (Optional[List[str]], optional): The files to search. Defaults to None.
+        messages ([type], optional): [description]. Defaults to None.
+        fast (bool, optional): Use the fast model. Defaults to False.
+        large (bool, optional): Use the large model. Defaults to False.
+        directory (Optional[str], optional): The directory to search. Defaults to None.
+        required_exts (Optional[List[str]], optional): The required file extensions. Defaults to None.
+        hidden (bool, optional): Include hidden files. Defaults to False.
+        recursive (bool, optional): Recursively search the directory. Defaults to False.
+        repository (Optional[str], optional): The repository to search. Defaults to None.
+
+    Returns:
+            Dict[str, str]: The response from GPT.
+    """
     _load_azure_openai_context()
 
     prompt = " ".join(question)
