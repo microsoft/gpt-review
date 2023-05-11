@@ -1,0 +1,8 @@
+azure_api_type: azure
+azure_api_base: base-url-for-azure-api
+azure_api_version: 2023-03-15-preview
+azure_model_map:
+    turbo_llm_model_deployment_id: gpt-35-turbo
+    smart_llm_model_deployment_id: gpt-4
+    large_llm_model_deployment_id: gpt-4-32k
+    embedding_model_deployment_id: text-embedding-ada-002

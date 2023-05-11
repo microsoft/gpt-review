@@ -3,8 +3,8 @@ import logging
 import os
 from typing import List, Optional
 from typing_extensions import override
-import openai
 
+import openai
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import AzureOpenAI
@@ -23,6 +23,7 @@ from llama_index.indices.base import BaseGPTIndex
 from llama_index.storage.storage_context import DEFAULT_PERSIST_DIR
 
 import gpt_review.constants as C
+from gpt_review.context import _load_azure_openai_context
 
 logger = logging.getLogger(__name__)
 
@@ -121,8 +122,17 @@ def _load_service_context(fast: bool = False, large: bool = False) -> ServiceCon
     Returns:
         ServiceContext: The service context.
     """
+
+    context = _load_azure_openai_context()
+
     llm_type = AzureGPT35Turbo if fast else AzureChatOpenAI
-    llm_name = "gpt-35-turbo" if fast else "gpt-4-32k" if large else "gpt-4"
+    llm_name = (
+        context.turbo_llm_model_deployment_id
+        if fast
+        else context.large_llm_model_deployment_id
+        if large
+        else context.smart_llm_model_deployment_id
+    )
     llm = llm_type(  # type: ignore
         deployment_name=llm_name,
         model_kwargs={
