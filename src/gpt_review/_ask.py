@@ -95,7 +95,7 @@ def _ask(
         fast (bool, optional): Use the fast model. Defaults to False.
         large (bool, optional): Use the large model. Defaults to False.
         directory (Optional[str], optional): The directory to search. Defaults to None.
-        reset (bool, optional): Overwrite the existing storage directory.
+        reset (bool, optional): Whether to reset the index. Defaults to False.
         required_exts (Optional[List[str]], optional): The required file extensions. Defaults to None.
         hidden (bool, optional): Include hidden files. Defaults to False.
         recursive (bool, optional): Recursively search the directory. Defaults to False.
