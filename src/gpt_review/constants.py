@@ -23,3 +23,7 @@ PRESENCE_PENALTY_MIN = 0
 PRESENCE_PENALTY_MAX = 2
 
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", 10))
+
+BUG_PROMPT_YAML = os.getenv("BUG_PROMPT", "gpt_review/prompts/prompt_bug.yml")
+COVERAGE_PROMPT_YAML = os.getenv("COVERAGE_PROMPT", "gpt_review/prompts/prompt_coverage.yml")
+SUMMARY_PROMPT_YAML = os.getenv("SUMMARY_PROMPT", "gpt_review/prompts/prompt_summary.yml")

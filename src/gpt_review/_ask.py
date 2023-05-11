@@ -1,4 +1,5 @@
 """Ask GPT a question."""
+import logging
 import os
 from typing import Dict, List, Optional
 from knack import CLICommandsLoader
@@ -71,10 +72,12 @@ def _ask(
     fast: bool = False,
     large: bool = False,
     directory: Optional[str] = None,
+    refresh: bool = False,
     required_exts: Optional[List[str]] = None,
     hidden: bool = False,
     recursive: bool = False,
     repository: Optional[str] = None,
+    branch: str = "main",
 ) -> Dict[str, str]:
     """Ask GPT a question."""
     _load_azure_openai_context()
@@ -86,10 +89,12 @@ def _ask(
             prompt,
             files,
             input_dir=directory,
+            refresh=refresh,
             exclude_hidden=not hidden,
             recursive=recursive,
             required_exts=required_exts,
             repository=repository,
+            branch=branch,
             fast=fast,
             large=large,
         )
@@ -105,6 +110,7 @@ def _ask(
             large=large,
             messages=messages,
         )
+    logging.info(response["response"])
     return {"response": response}
 
 
@@ -227,6 +233,13 @@ class AskCommandGroup(GPTCommandGroup):
                 help="Repository to index. Default: None.",
                 default=None,
                 options_list=("--repository", "-repo"),
+            )
+            args.argument(
+                "branch",
+                type=str,
+                help="Branch to index. Default: main.",
+                default="main",
+                options_list=("--branch", "-b"),
             )
             args.argument(
                 "refresh",

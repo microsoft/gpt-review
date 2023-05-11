@@ -1,36 +1,34 @@
 """Interface for a GPT Prompts."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Self
+
+from langchain.prompts import load_prompt, PromptTemplate
+
+import gpt_review.constants as C
 
 
 @dataclass
-class Prompt:
-    """A prompt for the GPT-3 review task.
-    Attributes:
-        prompt_prefix (str): The prefix of the prompt.
-        prompt_suffix (str): The suffix of the prompt.
-        system_message (str): The system message to display.
-        examples (list): The examples to include in the message.
-        history: (list): Messages from previous conversation.
-    """
+class LangChainPrompt(PromptTemplate):
+    """A prompt for the GPT LangChain task."""
 
-    prompt_prefix: str = ""
-    prompt_suffix: str = ""
-    system_message: str = ""
-    examples: list = field(default_factory=list)
-    history: list = field(default_factory=list)
+    prompt_yaml: str
 
-    def get_messages(self, prompt_contents: str):
-        """Get the messages of the prompt.
-        Returns:
-            list: The messages of the prompt.
-        """
-        messages = []
-        if self.system_message != "":
-            messages += [{"role": "system", "content": self.system_message}]
+    @classmethod
+    def load(cls, prompt_yaml) -> Self:
+        """Load the prompt."""
+        return load_prompt(prompt_yaml)
 
-        messages += self.examples
-        messages += self.history
 
-        return messages + [
-            {"role": "user", "content": self.prompt_prefix + "\n" + prompt_contents + "\n" + self.prompt_suffix}
-        ]
+def load_bug_yaml() -> LangChainPrompt:
+    """Load the bug yaml."""
+    return LangChainPrompt.load(C.BUG_PROMPT_YAML)
+
+
+def load_coverage_yaml() -> LangChainPrompt:
+    """Load the coverage yaml."""
+    return LangChainPrompt.load(C.COVERAGE_PROMPT_YAML)
+
+
+def load_summary_yaml() -> LangChainPrompt:
+    """Load the summary yaml."""
+    return LangChainPrompt.load(C.SUMMARY_PROMPT_YAML)

@@ -71,7 +71,7 @@ def _query_index(
 
     index = _load_index(documents, fast=fast, large=large, refresh=refresh)
 
-    return index.as_query_engine().query(question).response  # type: ignore
+    return index.as_query_engine(response_mode="tree_summarize").query(question).response  # type: ignore
 
 
 def _load_index(
