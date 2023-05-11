@@ -83,8 +83,10 @@ def _ask(
         max_tokens (int, optional): The maximum number of tokens to generate. Defaults to C.MAX_TOKENS_DEFAULT.
         temperature (float, optional): Controls randomness. Defaults to C.TEMPERATURE_DEFAULT.
         top_p (float, optional): Controls diversity via nucleus sampling. Defaults to C.TOP_P_DEFAULT.
-        frequency_penalty (float, optional): How much to penalize new tokens based on their existing frequency in the text so far. Defaults to C.FREQUENCY_PENALTY_DEFAULT.
-        presence_penalty (float, optional): How much to penalize new tokens based on whether they appear in the text so far. Defaults to C.PRESENCE_PENALTY_DEFAULT.
+        frequency_penalty (float, optional): How much to penalize new tokens based on their existing frequency in the
+            text so far. Defaults to C.FREQUENCY_PENALTY_DEFAULT.
+        presence_penalty (float, optional): How much to penalize new tokens based on whether they appear in the text so
+            far. Defaults to C.PRESENCE_PENALTY_DEFAULT.
         files (Optional[List[str]], optional): The files to search. Defaults to None.
         messages ([type], optional): [description]. Defaults to None.
         fast (bool, optional): Use the fast model. Defaults to False.
