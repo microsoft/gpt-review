@@ -245,7 +245,15 @@ def _summarize_files(git_diff) -> str:
 
 
 def _review(diff: str = ".diff", config: str = "config.summary.yml") -> Dict[str, str]:
-    """Review a git diff from file"""
+    """Review a git diff from file
+
+    Args:
+        diff (str, optional): The diff to review. Defaults to ".diff".
+        config (str, optional): The config to use. Defaults to "config.summary.yml".
+
+    Returns:
+        Dict[str, str]: The response from GPT-4.
+    """
 
     # If config is a file, use it
 
