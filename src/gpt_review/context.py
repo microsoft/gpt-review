@@ -22,7 +22,7 @@ class Context:
     embedding_model_deployment_id: str = "text-embedding-ada-002"
 
 
-def load_context_file():
+def _load_context_file():
     """Import from yaml file and return the context."""
     context_file = os.getenv("CONTEXT_FILE", "azure.yaml")
     with open(context_file, "r", encoding="utf8") as file:
@@ -38,7 +38,7 @@ def _load_azure_openai_context() -> Context:
     - Without setting the openai package variables, the cli tests fail.
     """
 
-    azure_config = load_context_file() if os.path.exists(os.getenv("CONTEXT_FILE", C.AZURE_CONFIG_FILE)) else {}
+    azure_config = _load_context_file() if os.path.exists(os.getenv("CONTEXT_FILE", C.AZURE_CONFIG_FILE)) else {}
 
     openai.api_type = os.environ["OPENAI_API_TYPE"] = azure_config.get("azure_api_type", C.AZURE_API_TYPE)
     openai.api_version = os.environ["OPENAI_API_VERSION"] = azure_config.get("azure_api_version", C.AZURE_API_VERSION)
