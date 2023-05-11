@@ -46,7 +46,7 @@ def mock_openai(monkeypatch) -> None:
             assert isinstance(question, str)
             return MockQueryResponse()
 
-        def as_query_engine(self):
+        def as_query_engine(self, response_mode=None):
             return self
 
     def mock_create(
