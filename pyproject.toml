@@ -31,7 +31,7 @@ dependencies = [
   'openai',
   'requests',
   'pyyaml',
-  'typing_extensions',
+  'typing_extensions>=4.5.0,<=4.5.0',
   'transformers; python_version <= "3.8"'
 ]
 
