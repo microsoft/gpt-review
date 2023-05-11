@@ -27,11 +27,8 @@ class CLICase2(CLICase):
 
 
 SAMPLE_FILE = "src/gpt_review/__init__.py"
-
 QUESTION = "how are you"
-
 WHAT_LANGUAGE = "what programming language is this code written in?"
-
 HELP_TEXT = """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
                [--output {json,jsonc,yaml,yamlc,table,tsv,none}]
                [--query JMESPATH] [--max-tokens MAX_TOKENS]
@@ -85,11 +82,9 @@ gpt ask: error: argument --max-tokens: expected one argument
 gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
 """,
     ),
-    CLICase(f"ask --files {SAMPLE_FILE} --files {SAMPLE_FILE} what programming language is this code written in?"),
-    CLICase(f"ask --fast -f {SAMPLE_FILE} what programming language is this code written in?"),
-    CLICase(f"ask --files src/gpt_review/__init__.py --files src/gpt_review/__init__.py {WHAT_LANGUAGE}"),
-    CLICase(f"ask --fast -f src/gpt_review/__init__.py {WHAT_LANGUAGE}"),
-    CLICase(f"ask --fast -d src/gpt_review --recursive --hidden --required-exts .py {WHAT_LANGUAGE}"),
+    CLICase(f"ask --files {SAMPLE_FILE} --files {SAMPLE_FILE} {WHAT_LANGUAGE} --refresh?"),
+    CLICase(f"ask --fast -f {SAMPLE_FILE} {WHAT_LANGUAGE}?"),
+    CLICase(f"ask --fast -d src/gpt_review --refresh --recursive --hidden --required-exts .py {WHAT_LANGUAGE}"),
     CLICase(f"ask --fast -repo microsoft/gpt-review {WHAT_LANGUAGE}"),
 ]
 
