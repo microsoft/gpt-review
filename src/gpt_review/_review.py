@@ -1,6 +1,6 @@
 """Basic functions for requesting review based goals from GPT-4."""
-import logging
 import os
+from dataclasses import dataclass
 from typing import Dict
 
 import yaml
@@ -11,9 +11,8 @@ from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
-from gpt_review.prompts._bugs import BugPrompt
-from gpt_review.prompts._coverage import CoveragePrompt
-from gpt_review.prompts._summary import SummaryPrompt
+from gpt_review.prompts._prompt import load_bug_yaml, load_coverage_yaml, load_summary_yaml
+
 
 _CHECKS = {
     "SUMMARY_CHECKS": [
@@ -35,18 +34,12 @@ _CHECKS = {
 }
 
 
+@dataclass
 class GitFile:
     """A git file with its diff contents."""
 
-    def __init__(self, file_name, diff) -> None:
-        """Initialize a GitFile object.
-
-        Args:
-            file_name (str): The name of the file.
-            diff (str): The diff contents of the file.
-        """
-        self.file_name = file_name
-        self.diff = diff
+    file_name: str
+    diff: str
 
 
 def _request_goal(git_diff, goal, fast: bool = False, large: bool = False, temperature: float = 0) -> str:
@@ -69,9 +62,7 @@ def _request_goal(git_diff, goal, fast: bool = False, large: bool = False, tempe
 {git_diff}
 """
 
-    response = _ask([prompt], max_tokens=1500, fast=fast, large=large, temperature=temperature)
-    logging.info(response["response"])
-    return response["response"]
+    return _ask([prompt], max_tokens=1500, fast=fast, large=large, temperature=temperature)["response"]
 
 
 def _check_goals(git_diff, checks, indent="###") -> str:
@@ -126,8 +117,9 @@ def _summarize_file(diff) -> str:
         str: The summary of the file.
     """
     git_file = GitFile(diff.split(" b/")[0], diff)
-    messages = SummaryPrompt().get_messages(diff)
-    response = _ask(question=[], messages=messages, temperature=0.0)
+    question = load_summary_yaml().format(diff=diff)
+
+    response = _ask(question=[question], temperature=0.0)
     return f"""
 ### {git_file.file_name}
 {response}
@@ -164,25 +156,9 @@ def _summarize_test_coverage(git_diff) -> str:
 
         files[git_file.file_name] = git_file
 
-    messages = CoveragePrompt().get_messages(git_diff)
+    question = load_coverage_yaml().format(diff=git_diff)
 
-    return _ask([], messages=messages, temperature=0.0, max_tokens=1500)["response"]
-
-
-def _summarize_bugs_in_pr(git_diff) -> str:
-    """
-    Summarize bugs that may be introduced.
-
-    Args:
-        git_diff (str): The git diff to split.
-
-    Returns:
-        response (str): The response from GPT-4.
-    """
-    messages = BugPrompt().get_messages(git_diff)
-    response = _ask([], messages=messages)
-    logging.info(response["response"])
-    return response["response"]
+    return _ask([question], temperature=0.0, max_tokens=1500)["response"]
 
 
 def _summarize_risk(git_diff) -> str:
@@ -234,9 +210,12 @@ def _summarize_files(git_diff) -> str:
 """
 
     if os.getenv("BUG_SUMMARY", "true").lower() == "true":
+        question = load_bug_yaml().format(diff=git_diff)
+        pr_bugs = _ask([question])["response"]
+
         summary += f"""
 ## Potential Bugs
-{_summarize_bugs_in_pr(git_diff)}
+{pr_bugs}
 """
 
     summary += _summarize_risk(git_diff)
@@ -283,6 +262,7 @@ def _process_yaml(git_diff, yaml_file, headers=True) -> str:
         yaml_contents = file.read()
         config = yaml.safe_load(yaml_contents)
         report = config["report"]
+
         return _process_report(git_diff, report, headers=headers)
 
 

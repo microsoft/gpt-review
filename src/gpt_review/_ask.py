@@ -1,4 +1,5 @@
 """Ask GPT a question."""
+import logging
 from typing import Dict, List, Optional
 
 from knack import CLICommandsLoader
@@ -129,6 +130,7 @@ def _ask(
             large=large,
             messages=messages,
         )
+    logging.info(response)
     return {"response": response}
 
 
