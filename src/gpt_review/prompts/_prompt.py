@@ -1,36 +1,44 @@
 """Interface for a GPT Prompts."""
-from dataclasses import dataclass, field
+import os
+import sys
+from pathlib import Path
+from dataclasses import dataclass
+
+from langchain.prompts import load_prompt, PromptTemplate
+
+import gpt_review.constants as C
+
+if sys.version_info[:2] <= (3, 10):
+    from typing_extensions import Self
+else:
+    from typing import Self
 
 
 @dataclass
-class Prompt:
-    """A prompt for the GPT-3 review task.
-    Attributes:
-        prompt_prefix (str): The prefix of the prompt.
-        prompt_suffix (str): The suffix of the prompt.
-        system_message (str): The system message to display.
-        examples (list): The examples to include in the message.
-        history: (list): Messages from previous conversation.
-    """
+class LangChainPrompt(PromptTemplate):
+    """A prompt for the GPT LangChain task."""
 
-    prompt_prefix: str = ""
-    prompt_suffix: str = ""
-    system_message: str = ""
-    examples: list = field(default_factory=list)
-    history: list = field(default_factory=list)
+    prompt_yaml: str
 
-    def get_messages(self, prompt_contents: str):
-        """Get the messages of the prompt.
-        Returns:
-            list: The messages of the prompt.
-        """
-        messages = []
-        if self.system_message != "":
-            messages += [{"role": "system", "content": self.system_message}]
+    @classmethod
+    def load(cls, prompt_yaml) -> Self:
+        """Load the prompt."""
+        return load_prompt(prompt_yaml)
 
-        messages += self.examples
-        messages += self.history
 
-        return messages + [
-            {"role": "user", "content": self.prompt_prefix + "\n" + prompt_contents + "\n" + self.prompt_suffix}
-        ]
+def load_bug_yaml() -> LangChainPrompt:
+    """Load the bug yaml."""
+    yaml_path = os.getenv("PROMPT_BUG", str(Path(__file__).parents[0].joinpath(C.BUG_PROMPT_YAML)))
+    return LangChainPrompt.load(yaml_path)
+
+
+def load_coverage_yaml() -> LangChainPrompt:
+    """Load the coverage yaml."""
+    yaml_path = os.getenv("PROMPT_COVERAGE", str(Path(__file__).parents[0].joinpath(C.COVERAGE_PROMPT_YAML)))
+    return LangChainPrompt.load(yaml_path)
+
+
+def load_summary_yaml() -> LangChainPrompt:
+    """Load the summary yaml."""
+    yaml_path = os.getenv("PROMPT_SUMMARY", str(Path(__file__).parents[0].joinpath(C.SUMMARY_PROMPT_YAML)))
+    return LangChainPrompt.load(yaml_path)

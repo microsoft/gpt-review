@@ -1,0 +1,9 @@
+_type: prompt
+input_variables:
+    ["diff"]
+template: |
+  Summarize the following file changed in a pull request submitted by a developer on GitHub,
+  focusing on major modifications, additions, deletions, and any significant updates within the files.
+  Do not include the file name in the summary and list the summary with bullet points.
+
+  {diff}
