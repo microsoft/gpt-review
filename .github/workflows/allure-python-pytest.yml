@@ -1,7 +1,7 @@
 name: allure-python-pytest
 
 on:
-  push:
+  pull_request:
 
 jobs:
   autotests:
@@ -45,3 +45,8 @@ jobs:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
+
+      - uses: JoseThen/comment-pr@v1.1.1
+        with:
+          comment: 'This PR is the bees knees!'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
