@@ -21,6 +21,10 @@ jobs:
           pip install pytest allure-pytest
           pip install -e .[test]
 
+      - uses: Azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: Run Test
         run: pytest --alluredir=allure-results -m unit
 
