@@ -9,6 +9,9 @@ def commit_test() -> None:
     message = _commit()
     assert message
 
+    message = _commit(push=True, _all=True)
+    assert message
+
 
 def test_commit(mock_openai: None, mock_git_commit: None) -> None:
     """Unit test for commit function."""
@@ -21,7 +24,9 @@ def test_int_commit(mock_git_commit: None) -> None:
     commit_test()
 
 
-def test_find_git_dir():
+@pytest.mark.unit
+@pytest.mark.integration
+def test_find_git_dir() -> None:
     _find_git_dir(path="tests")
 
     with pytest.raises(FileNotFoundError):
