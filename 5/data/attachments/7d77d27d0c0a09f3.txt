@@ -1,0 +1,12 @@
+
+Group
+    gpt
+
+Subgroups:
+    git    [Preview]
+    github
+    review [Preview]
+
+Commands:
+    ask    [Preview] : Ask GPT a question.
+
