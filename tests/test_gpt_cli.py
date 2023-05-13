@@ -1,12 +1,13 @@
 """Pytest for gpt_review/main.py"""
-from dataclasses import dataclass
 import os
-import pytest
 import subprocess
 import sys
+from dataclasses import dataclass
 
-from gpt_review._gpt_cli import cli
+import pytest
+
 import gpt_review.constants as C
+from gpt_review._gpt_cli import cli
 
 
 @dataclass

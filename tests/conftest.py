@@ -1,7 +1,7 @@
-import pytest
-import yaml
 from collections import namedtuple
 
+import pytest
+import yaml
 from llama_index import SimpleDirectoryReader
 
 

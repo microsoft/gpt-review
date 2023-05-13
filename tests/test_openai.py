@@ -2,8 +2,8 @@
 import pytest
 from openai.error import RateLimitError
 
-from gpt_review._openai import _call_gpt, _get_model
 import gpt_review.constants as C
+from gpt_review._openai import _call_gpt, _get_model
 from gpt_review.context import _load_azure_openai_context
 
 
