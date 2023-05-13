@@ -24,7 +24,6 @@ jobs:
           pip install -e .[test]
 
       - name: Run Test
-        if: always()
         run: pytest --alluredir=allure-results -m unit
         continue-on-error: true
 
@@ -62,4 +61,4 @@ jobs:
             context: 'Test report'
             state: 'success'
             sha: ${{ github.event.pull_request.head.sha }}
-            target_url: microsoft.github.io/gpt-review/${{ github.run_number }}
+            target_url: https://microsoft.github.io/gpt-review/${{ github.run_number }}
