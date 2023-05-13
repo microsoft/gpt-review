@@ -50,7 +50,7 @@ def mock_openai(monkeypatch) -> None:
             return self
 
     def mock_create(
-        engine,
+        model,
         messages,
         temperature,
         max_tokens,

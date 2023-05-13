@@ -7,28 +7,28 @@ import gpt_review.constants as C
 from gpt_review.context import _load_azure_openai_context
 
 
-def get_engine_test() -> None:
+def get_model_test() -> None:
     prompt = "This is a test prompt"
 
     context = _load_azure_openai_context()
 
-    engine = _get_model(prompt=prompt, max_tokens=1000, fast=True)
-    assert engine == context.turbo_llm_model_deployment_id
+    model = _get_model(prompt=prompt, max_tokens=1000, fast=True)
+    assert model == context.turbo_llm_model_deployment_id
 
-    engine = _get_model(prompt=prompt, max_tokens=5000)
-    assert engine == context.smart_llm_model_deployment_id
+    model = _get_model(prompt=prompt, max_tokens=5000)
+    assert model == context.smart_llm_model_deployment_id
 
-    engine = _get_model(prompt=prompt, max_tokens=9000)
-    assert engine == context.large_llm_model_deployment_id
+    model = _get_model(prompt=prompt, max_tokens=9000)
+    assert model == context.large_llm_model_deployment_id
 
 
 def test_get_model() -> None:
-    get_engine_test()
+    get_model_test()
 
 
 @pytest.mark.integration
 def test_int_get_model() -> None:
-    get_engine_test()
+    get_model_test()
 
 
 def rate_limit_test(monkeypatch):
