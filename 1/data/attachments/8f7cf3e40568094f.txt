@@ -1,0 +1,7 @@
+
+Group
+    gpt review
+        WARNING: This command group is in preview. It may be changed/removed in a future release.
+Commands:
+    diff : Review a git diff from file  Args:     diff (str, optional): The diff to review.
+
