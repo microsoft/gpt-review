@@ -5,7 +5,7 @@ import openai
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
-from gpt_review.utils import retry_with_exponential_backoff
+from gpt_review.utils import _retry_with_exponential_backoff
 from gpt_review.context import _load_azure_openai_context
 
 
@@ -96,7 +96,7 @@ def _call_gpt(
         return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
         if retry < C.MAX_RETRIES:
-            retry_with_exponential_backoff(retry, error.headers["Retry-After"])
+            _retry_with_exponential_backoff(retry, error.headers["Retry-After"])
 
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
