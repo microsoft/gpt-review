@@ -22,4 +22,16 @@ PRESENCE_PENALTY_DEFAULT = 0
 PRESENCE_PENALTY_MIN = 0
 PRESENCE_PENALTY_MAX = 2
 
-MAX_RETRIES = int(os.getenv("MAX_RETRIES", 10))
+MAX_RETRIES = int(os.getenv("MAX_RETRIES", 15))
+
+AZURE_API_TYPE = "azure"
+AZURE_API_VERSION = "2023-03-15-preview"
+AZURE_CONFIG_FILE = "azure.yaml"
+AZURE_TURBO_MODEL = "gpt-35-turbo"
+AZURE_SMART_MODEL = "gpt-4"
+AZURE_LARGE_MODEL = "gpt-4-32k"
+AZURE_EMBEDDING_MODEL = "text-embedding-ada-002"
+
+BUG_PROMPT_YAML = "prompt_bug.yaml"
+COVERAGE_PROMPT_YAML = "prompt_coverage.yaml"
+SUMMARY_PROMPT_YAML = "prompt_summary.yaml"

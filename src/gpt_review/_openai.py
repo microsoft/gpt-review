@@ -6,6 +6,7 @@ from openai.error import RateLimitError
 
 import gpt_review.constants as C
 from gpt_review.utils import retry_with_exponential_backoff
+from gpt_review.context import _load_azure_openai_context
 
 
 def _count_tokens(prompt) -> int:
@@ -37,12 +38,14 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
     Returns:
         str: The engine to use.
     """
+    context = _load_azure_openai_context()
+
     tokens = _count_tokens(prompt)
     if large or tokens + max_tokens > 8000:
-        return "gpt-4-32k"
+        return context.large_llm_model_deployment_id
     if tokens + max_tokens > 4000:
-        return "gpt-4"
-    return "gpt-35-turbo" if fast else "gpt-4"
+        return context.smart_llm_model_deployment_id
+    return context.turbo_llm_model_deployment_id if fast else context.smart_llm_model_deployment_id
 
 
 def _call_gpt(
