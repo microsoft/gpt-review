@@ -53,7 +53,7 @@ jobs:
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
 
-      - uses: JoseThen/comment-pr@v1.1.1
+      - uses: github-actions-up-and-running/pr-comment@v1.0.0
         with:
-          comment: 'https://microsoft.github.io/gpt-review/${{ github.run_number }}'
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          message: 'https://microsoft.github.io/gpt-review/${{ github.run_number }}'
