@@ -6,7 +6,7 @@ from typing import Optional
 import gpt_review.constants as C
 
 
-def retry_with_exponential_backoff(current_retry: int, retry_after: Optional[str]) -> None:
+def _retry_with_exponential_backoff(current_retry: int, retry_after: Optional[str]) -> None:
     """
     Use exponential backoff to retry a request after specific time while staying under the retry count
 
