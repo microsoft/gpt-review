@@ -16,11 +16,8 @@ def _retry_with_exponential_backoff(current_retry: int, retry_after: Optional[st
     """
     logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", current_retry, C.MAX_RETRIES)
 
-    wait_time = int(
-        int(retry_after) * 2 * (1 + current_retry / C.MAX_RETRIES)
-        if retry_after
-        else current_retry * 2 * (1 + current_retry / C.MAX_RETRIES)
-    )
+    multiplication_factor = 2 * (1 + current_retry / C.MAX_RETRIES)
+    wait_time = int(retry_after) * multiplication_factor if retry_after else current_retry * multiplication_factor
 
     logging.warning("Waiting for %s seconds before retrying.", wait_time)
 
