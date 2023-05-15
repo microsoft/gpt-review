@@ -3,10 +3,10 @@ import logging
 import os
 from typing import Dict
 
+from git.repo import Repo
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
-from git.repo import Repo
 
 from gpt_review._command import GPTCommandGroup
 from gpt_review._review import _request_goal

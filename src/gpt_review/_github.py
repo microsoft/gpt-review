@@ -1,17 +1,17 @@
 """GitHub API helpers."""
-import logging
 import json
+import logging
 import os
 from typing import Dict
 
 import requests
-from knack.arguments import ArgumentsContext
 from knack import CLICommandsLoader
+from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review._review import _summarize_files
 from gpt_review._repository import _RepositoryClient
+from gpt_review._review import _summarize_files
 
 
 class _GitHubClient(_RepositoryClient):

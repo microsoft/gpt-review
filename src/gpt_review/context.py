@@ -1,10 +1,11 @@
 """Context for the Azure OpenAI API and the models."""
 import os
 from dataclasses import dataclass
-from azure.identity import DefaultAzureCredential
-from azure.keyvault.secrets import SecretClient
+
 import openai
 import yaml
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
 
 import gpt_review.constants as C
 
