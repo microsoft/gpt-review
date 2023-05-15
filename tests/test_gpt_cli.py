@@ -1,12 +1,13 @@
 """Pytest for gpt_review/main.py"""
-from dataclasses import dataclass
 import os
-import pytest
 import subprocess
 import sys
+from dataclasses import dataclass
 
-from gpt_review._gpt_cli import cli
+import pytest
+
 import gpt_review.constants as C
+from gpt_review._gpt_cli import cli
 
 
 @dataclass
@@ -28,7 +29,7 @@ class CLICase2(CLICase):
 
 SAMPLE_FILE = "src/gpt_review/__init__.py"
 QUESTION = "how are you"
-WHAT_LANGUAGE = "what programming language is this code written in?"
+WHAT_LANGUAGE = "'what programming language is this code written in?'"
 HELP_TEXT = """usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
                [--output {json,jsonc,yaml,yamlc,table,tsv,none}]
                [--query JMESPATH] [--max-tokens MAX_TOKENS]

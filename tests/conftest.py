@@ -1,7 +1,7 @@
-import pytest
-import yaml
 from collections import namedtuple
 
+import pytest
+import yaml
 from llama_index import SimpleDirectoryReader
 
 
@@ -50,7 +50,7 @@ def mock_openai(monkeypatch) -> None:
             return self
 
     def mock_create(
-        engine,
+        model,
         messages,
         temperature,
         max_tokens,

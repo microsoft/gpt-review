@@ -4,7 +4,7 @@ import os
 from typing import List, Optional
 
 import openai
-from langchain.chat_models import AzureChatOpenAI
+from langchain.chat_models import AzureChatOpenAI, ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import AzureOpenAI
 from llama_index import (
@@ -124,25 +124,37 @@ def _load_service_context(fast: bool = False, large: bool = False) -> ServiceCon
     """
 
     context = _load_azure_openai_context()
-
-    llm_type = AzureGPT35Turbo if fast else AzureChatOpenAI
-    llm_name = (
+    model_name = (
         context.turbo_llm_model_deployment_id
         if fast
         else context.large_llm_model_deployment_id
         if large
         else context.smart_llm_model_deployment_id
     )
-    llm = llm_type(  # type: ignore
-        deployment_name=llm_name,
-        model_kwargs={
-            "api_key": openai.api_key,
-            "api_base": openai.api_base,
-            "api_type": "azure",
-            "api_version": "2023-03-15-preview",
-        },
-        max_retries=C.MAX_RETRIES,
-    )
+
+    if openai.api_type == C.AZURE_API_TYPE:
+        llm_type = AzureGPT35Turbo if fast else AzureChatOpenAI
+        llm = llm_type(  # type: ignore
+            deployment_name=model_name,
+            model_kwargs={
+                "api_key": openai.api_key,
+                "api_base": openai.api_base,
+                "api_type": openai.api_type,
+                "api_version": openai.api_version,
+            },
+            max_retries=C.MAX_RETRIES,
+        )
+    else:
+        llm = ChatOpenAI(
+            model_name=model_name,
+            model_kwargs={
+                "api_key": openai.api_key,
+                "api_base": openai.api_base,
+                "api_type": openai.api_type,
+                "api_version": openai.api_version,
+            },
+            max_retries=C.MAX_RETRIES,
+        )
 
     llm_predictor = LLMPredictor(llm=llm)
 

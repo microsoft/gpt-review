@@ -22,9 +22,9 @@ def _count_tokens(prompt) -> int:
     return int(len(prompt) / 4 * 3)
 
 
-def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = False) -> str:
+def _get_model(prompt: str, max_tokens: int, fast: bool = False, large: bool = False) -> str:
     """
-    Get the Engine based on the prompt length.
+    Get the OpenAI model based on the prompt length.
     - when greater then 8k use gpt-4-32k
     - otherwise use gpt-4
     - enable fast to use gpt-35-turbo for small prompts
@@ -36,7 +36,7 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
         large (bool, optional): Whether to use the large model. Defaults to False.
 
     Returns:
-        str: The engine to use.
+        str: The model to use.
     """
     context = _load_azure_openai_context()
 
@@ -80,12 +80,12 @@ def _call_gpt(
     """
     messages = messages or [{"role": "user", "content": prompt}]
     try:
-        engine = _get_engine(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.info("Model Selected based on prompt size: %s", engine)
+        model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
+        logging.info(f"Model Selected based on prompt size: {model}")
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
         completion = openai.ChatCompletion.create(
-            engine=engine,
+            model=model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,

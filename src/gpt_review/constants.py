@@ -31,6 +31,7 @@ AZURE_TURBO_MODEL = "gpt-35-turbo"
 AZURE_SMART_MODEL = "gpt-4"
 AZURE_LARGE_MODEL = "gpt-4-32k"
 AZURE_EMBEDDING_MODEL = "text-embedding-ada-002"
+AZURE_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
 BUG_PROMPT_YAML = "prompt_bug.yaml"
 COVERAGE_PROMPT_YAML = "prompt_coverage.yaml"
