@@ -99,6 +99,7 @@ GIT_COMMANDS = [
     # CLICase("git commit"),
     # CLICase("git commit --large"),
     # CLICase("git commit --gpt4"),
+    # CLICase("git commit --push"),
 ]
 
 REVIEW_COMMANDS = [

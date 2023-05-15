@@ -136,13 +136,16 @@ def mock_git_commit(monkeypatch) -> None:
         def __init__(self) -> None:
             self.git = self
 
-        def commit(self, message) -> str:
+        def commit(self, message, push: bool = False) -> str:
             return "test commit response"
 
         def diff(self, message, cached) -> str:
             return "test diff response"
 
-    def mock_init(cls):
+        def push(self) -> str:
+            return "test push response"
+
+    def mock_init(cls) -> MockGit:
         return MockGit()
 
     monkeypatch.setattr("git.repo.Repo.init", mock_init)
