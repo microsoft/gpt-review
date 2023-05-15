@@ -4,9 +4,6 @@ branding:
   icon: 'eye'
   color: 'gray-dark'
 inputs:
-  GIT_COMMIT_HASH:
-    description: 'SHA of the pull request-head to attach a review comment'
-    required: true
   GITHUB_TOKEN:
     description: 'Derivative token for using the GitHub REST API'
     required: true
@@ -16,65 +13,27 @@ inputs:
   OPENAI_ORG_KEY:
     description: 'OpenAI Organization ID'
     required: true
-  PR_NUMBER:
-    description: 'The pull request id (ie: 17)'
-    required: true
-  PR_TITLE:
-    description: 'The pull request title'
-    required: true
-  REPOSITORY_NAME:
-    description: 'The repository name (ie: octocat/hello-world)'
-    required: true
   AZURE_OPENAI_API:
     description: 'URL of custom Azure Open AI API'
     required: false
   AZURE_OPENAI_API_KEY:
     description: 'Key of custom Azure Open AI API'
     required: false
-  FULL_SUMMARY:
-    description: 'Include summary of all changes (limited to first 32k tokens)'
-    default: true
-    required: false
-    type: string
-  FILE_SUMMARY:
-    description: 'Include summary of changed file'
-    default: false
-    required: false
-    type: string
-  FILE_SUMMARY_FULL:
-    description: 'Include individual summary of each changed file'
-    default: true
-    required: false
-    type: string
-  TEST_SUMMARY:
-    description: 'Include summary of test coverage'
-    default: true
-    required: false
-    type: string
-  BUG_SUMMARY:
-    description: 'Include summary of potential bugs'
-    default: false
-    required: false
-    type: string
-  RISK_SUMMARY:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
-  RISK_BREAKING:
-    description: 'Include summary of potential breaking changes'
-    default: false
-    required: false
-    type: string
 
 runs:
   using: "composite"
   steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v2
         with:
           python-version: 3.11
-      - name: Install
+
+      - name: Install gpt-review
         shell: bash
         run: |
           sudo apt-get update
@@ -94,21 +53,21 @@ runs:
             --repository $PATCH_REPO
         env:
           ACTION_REF: ${{ github.action_ref || env.BRANCH }}
-          GIT_COMMIT_HASH: ${{ inputs.GIT_COMMIT_HASH }}
+          GIT_COMMIT_HASH: ${{ github.event.pull_request.head.sha }}
           GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-          LINK: "https://github.com/${{ inputs.REPOSITORY_NAME }}/pull/${{ inputs.PR_NUMBER }}"
+          LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
           OPENAI_API_KEY: ${{ inputs.OPENAI_API_KEY }}
           OPENAI_ORG_KEY: ${{ inputs.OPENAI_ORG_KEY }}
-          PR_TITLE: ${{ inputs.PR_TITLE }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
           BRANCH:  ${{ env.BRANCH }}
           AZURE_OPENAI_API_KEY: ${{ inputs.AZURE_OPENAI_API_KEY || '' }}
           AZURE_OPENAI_API: ${{ inputs.AZURE_OPENAI_API || '' }}
           PATCH_PR: ${{ github.event.pull_request.number }}
           PATCH_REPO: ${{ github.repository }}
-          FULL_SUMMARY: ${{ inputs.FULL_SUMMARY }}
-          FILE_SUMMARY: ${{ inputs.FILE_SUMMARY }}
-          TEST_SUMMARY: ${{ inputs.TEST_SUMMARY }}
-          BUG_SUMMARY: ${{ inputs.BUG_SUMMARY }}
-          RISK_SUMMARY: ${{ inputs.RISK_SUMMARY }}
-          RISK_BREAKING: ${{ inputs.RISK_BREAKING }}
+          FULL_SUMMARY: true
+          FILE_SUMMARY: false
+          TEST_SUMMARY: false
+          BUG_SUMMARY: false
+          RISK_SUMMARY: false
+          RISK_BREAKING: false
 
