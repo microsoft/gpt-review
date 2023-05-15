@@ -1,7 +1,7 @@
 """The GPT CLI configuration and utilities."""
-from collections import OrderedDict
 import os
 import sys
+from collections import OrderedDict
 
 from knack import CLI, CLICommandsLoader
 

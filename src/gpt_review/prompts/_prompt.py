@@ -1,10 +1,10 @@
 """Interface for a GPT Prompts."""
 import os
 import sys
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 
-from langchain.prompts import load_prompt, PromptTemplate
+from langchain.prompts import PromptTemplate, load_prompt
 
 import gpt_review.constants as C
 
