@@ -2,7 +2,6 @@
 import logging
 import os
 from typing import List, Optional
-from typing_extensions import override
 
 import openai
 from langchain.chat_models import AzureChatOpenAI
@@ -12,8 +11,8 @@ from llama_index import (
     Document,
     GithubRepositoryReader,
     GPTVectorStoreIndex,
-    LLMPredictor,
     LangchainEmbedding,
+    LLMPredictor,
     ServiceContext,
     SimpleDirectoryReader,
     StorageContext,
@@ -21,6 +20,7 @@ from llama_index import (
 )
 from llama_index.indices.base import BaseGPTIndex
 from llama_index.storage.storage_context import DEFAULT_PERSIST_DIR
+from typing_extensions import override
 
 import gpt_review.constants as C
 from gpt_review.context import _load_azure_openai_context

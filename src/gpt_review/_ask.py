@@ -7,11 +7,10 @@ from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 from knack.util import CLIError
 
-
+import gpt_review.constants as C
 from gpt_review._command import GPTCommandGroup
 from gpt_review._llama_index import _query_index
 from gpt_review._openai import _call_gpt
-import gpt_review.constants as C
 from gpt_review.context import _load_azure_openai_context
 
 
