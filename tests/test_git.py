@@ -9,7 +9,7 @@ def commit_test() -> None:
     message = _commit()
     assert message
 
-    message = _commit(push=True, _all=True)
+    message = _commit(push=True)
     assert message
 
 

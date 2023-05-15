@@ -136,7 +136,7 @@ def mock_git_commit(monkeypatch) -> None:
         def __init__(self) -> None:
             self.git = self
 
-        def commit(self, message, all: bool = False, push: bool = False) -> str:
+        def commit(self, message, push: bool = False) -> str:
             return "test commit response"
 
         def diff(self, message, cached) -> str:
