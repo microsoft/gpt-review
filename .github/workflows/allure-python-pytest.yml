@@ -46,11 +46,10 @@ jobs:
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           destination_dir: test-reports/${{ github.head_ref }}
-        env:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
+          publish_dir: allure-history
+          publish_barnch: gh-pages
 
       - uses: JoseThen/comment-pr@v1.1.1
         with:
