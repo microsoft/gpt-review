@@ -1,0 +1,12 @@
+usage: gpt ask [-h] [--verbose] [--debug] [--only-show-errors]
+               [--output {json,jsonc,yaml,yamlc,table,tsv,none}]
+               [--query JMESPATH] [--max-tokens MAX_TOKENS]
+               [--temperature TEMPERATURE] [--top-p TOP_P]
+               [--frequency-penalty FREQUENCY_PENALTY]
+               [--presence-penalty PRESENCE_PENALTY] [--files FILES]
+               [--messages MESSAGES] [--fast] [--large]
+               [--directory DIRECTORY] [--reset]
+               [--required-exts REQUIRED_EXTS] [--hidden] [--recursive]
+               [--repository REPOSITORY] [--branch BRANCH]
+               <QUESTION> [<QUESTION> ...]
+gpt ask: error: argument --max-tokens: invalid int value: "'test'"
