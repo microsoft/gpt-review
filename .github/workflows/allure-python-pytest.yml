@@ -49,8 +49,8 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-history
           publish_barnch: gh-pages
-
-      - uses: JoseThen/comment-pr@v1.1.1
+      - uses: phulsechinmay/rewritable-pr-comment@v0.3.0
         with:
-          comment: '[Pull Request Test Summary](https://microsoft.github.io/gpt-review/${{ github.run_number }})'
+          message: '[Pull Request Test Summary](https://microsoft.github.io/gpt-review/${{ github.run_number }})'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_IDENTIFIER: "test-output-report"
