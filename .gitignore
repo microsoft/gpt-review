@@ -137,6 +137,8 @@ bin
 obj
 appsettings.json
 local.settings.json
+*.deb
+.venvs
 
 # Azurite artifacts
 __blobstorage__
