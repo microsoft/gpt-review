@@ -7,10 +7,17 @@ import openai
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import AzureOpenAI
-from llama_index import (Document, GithubRepositoryReader, GPTVectorStoreIndex,
-                         LangchainEmbedding, LLMPredictor, ServiceContext,
-                         SimpleDirectoryReader, StorageContext,
-                         load_index_from_storage)
+from llama_index import (
+    Document,
+    GithubRepositoryReader,
+    GPTVectorStoreIndex,
+    LangchainEmbedding,
+    LLMPredictor,
+    ServiceContext,
+    SimpleDirectoryReader,
+    StorageContext,
+    load_index_from_storage,
+)
 from llama_index.indices.base import BaseGPTIndex
 from llama_index.storage.storage_context import DEFAULT_PERSIST_DIR
 from typing_extensions import override
