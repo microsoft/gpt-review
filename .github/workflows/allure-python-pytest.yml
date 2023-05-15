@@ -52,5 +52,5 @@ jobs:
 
       - uses: JoseThen/comment-pr@v1.1.1
         with:
-          comment: 'This PR is the bees knees!'
+          comment: '[Pull Request Test Summary](https://microsoft.github.io/gpt-review/${{ github.run_number }})'
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
