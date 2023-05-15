@@ -1,6 +1,6 @@
 import pytest
 
-from gpt_review.repositories._github import _GitHubClient
+from gpt_review.repositories.github import GitHubClient
 
 
 def test_get_review(mock_openai) -> None:
@@ -18,7 +18,7 @@ def get_review_test() -> None:
     with open("tests/mock.diff", "r") as f:
         diff = f.read()
 
-        _GitHubClient.post_pr_summary(diff)
+        GitHubClient.post_pr_summary(diff)
 
 
 def test_empty_summary(empty_summary, mock_openai) -> None:
