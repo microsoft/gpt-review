@@ -406,7 +406,7 @@ class DevOpsClient(_DevOpsClient):
                 repo = link.split("/")[5]
                 pr_id = link.split("/")[7]
 
-            _DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
+            DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
                 pull_request_id=pr_id,
                 description=review,
             )
