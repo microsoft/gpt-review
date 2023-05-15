@@ -127,7 +127,7 @@ class GitHubClient(_RepositoryClient):
         access_token = os.getenv("GITHUB_TOKEN")
 
         if link and git_commit_hash and access_token:
-            _GitHubClient._post_pr_comment(
+            GitHubClient._post_pr_comment(
                 review=review, git_commit_hash=git_commit_hash, link=link, access_token=access_token
             )
             return {"response": "PR posted"}
@@ -135,21 +135,26 @@ class GitHubClient(_RepositoryClient):
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
 
+    @staticmethod
+    def _review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
+        """Review GitHub PR with Open AI, and post response as a comment.
 
-def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
-    """Review GitHub PR with Open AI, and post response as a comment.
+        Args:
+            repository (str): The repo of the PR.
+            pull_request (str): The PR number.
+            access_token (str): The GitHub access token.
 
-    Args:
-        repository (str): The repo of the PR.
-        pull_request (str): The PR number.
-        access_token (str): The GitHub access token.
+        Returns:
+            Dict[str, str]: The response.
+        """
+        diff = GitHubClient.get_pr_diff(repository, pull_request, access_token)
+        GitHubClient.post_pr_summary(diff)
+        return {"response": "Review posted as a comment."}
 
-    Returns:
-        Dict[str, str]: The response.
-    """
-    diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
-    _GitHubClient.post_pr_summary(diff)
-    return {"response": "Review posted as a comment."}
+    @staticmethod
+    def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+        """"""
+        raise NotImplementedError
 
 
 class GitHubCommandGroup(GPTCommandGroup):
@@ -157,8 +162,8 @@ class GitHubCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader) -> None:
-        with CommandGroup(loader, "github", "gpt_review.repositories._github#{}", is_preview=True) as group:
-            group.command("review", "_github_review", is_preview=True)
+        with CommandGroup(loader, "github", "gpt_review.repositories.github.GitHubClient#{}", is_preview=True) as group:
+            group.command("review", "_review", is_preview=True)
 
     @staticmethod
     def load_arguments(loader: CLICommandsLoader) -> None:
