@@ -1,11 +1,11 @@
 """Open AI API Call Wrapper."""
 import logging
-import time
 
 import openai
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
+from gpt_review.utils import _retry_with_exponential_backoff
 from gpt_review.context import _load_azure_openai_context
 
 
@@ -22,9 +22,9 @@ def _count_tokens(prompt) -> int:
     return int(len(prompt) / 4 * 3)
 
 
-def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = False) -> str:
+def _get_model(prompt: str, max_tokens: int, fast: bool = False, large: bool = False) -> str:
     """
-    Get the Engine based on the prompt length.
+    Get the OpenAI model based on the prompt length.
     - when greater then 8k use gpt-4-32k
     - otherwise use gpt-4
     - enable fast to use gpt-35-turbo for small prompts
@@ -36,7 +36,7 @@ def _get_engine(prompt: str, max_tokens: int, fast: bool = False, large: bool = 
         large (bool, optional): Whether to use the large model. Defaults to False.
 
     Returns:
-        str: The engine to use.
+        str: The model to use.
     """
     context = _load_azure_openai_context()
 
@@ -80,12 +80,12 @@ def _call_gpt(
     """
     messages = messages or [{"role": "user", "content": prompt}]
     try:
-        engine = _get_engine(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.info("Model Selected based on prompt size: %s", engine)
+        model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
+        logging.info(f"Model Selected based on prompt size: {model}")
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
         completion = openai.ChatCompletion.create(
-            engine=engine,
+            model=model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
@@ -96,12 +96,7 @@ def _call_gpt(
         return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
         if retry < C.MAX_RETRIES:
-            logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
-
-            wait_time = int(error.headers["Retry-After"]) if error.headers["Retry-After"] else retry * 10
-            logging.warning("Waiting for %s seconds before retrying.", wait_time)
-
-            time.sleep(wait_time)
+            _retry_with_exponential_backoff(retry, error.headers["Retry-After"])
 
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error

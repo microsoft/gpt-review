@@ -1,4 +1,5 @@
 # gpt-review
+
 <p align="center">
 <a href="https://github.com/microsoft/gpt-review/actions"><img alt="Actions Status" src="https://github.com/microsoft/gpt-review/workflows/Python%20CI/badge.svg"></a>
 <a href="https://codecov.io/gh/microsoft/gpt-review"><img alt="Coverage Status" src="https://codecov.io/gh/microsoft/gpt-review/branch/main/graph/badge.svg"></a>
@@ -10,25 +11,39 @@
 
 A Python based CLI and GitHub Action to use Open AI or Azure Open AI models to review contents of pull requests.
 
-## How to install CLI:
+## How to install CLI
 
-Install the package via `pip` and set the environment variables for your OpenAI API Key and Organization ID.
-To use Azure OpenAI, set the environment variable `AZURE_OPENAI_API_URL` and `AZURE_OPENAI_API_URL_KEY` to the URL and key for your Azure OpenAI API.
-
+First, install the package via `pip`:
 
 ```bash
 pip install gpt-review
-
-export AZURE_OPENAI_API=<your azure api url>
-export AZURE_OPENAI_API_KEY=<your azure key>
 ```
 
-Or use Azure Key Vault to secure your API Key. Create secrets for the url named `azure-open-ai`, and for the API Key named `azure-openai-key`.
-```bash
-export AZURE_KEY_VAULT_URL=https://<keyvault_name>.vault.azure.net/
+### GPT API credentials
 
-az login
-```
+You will need to provide an OpenAI API key to use this CLI tool. In order of precedence, it will check the following methods:
+
+1. Presence of a context file at `azure.yaml` or wherever `CONTEXT_FILE` points to. See `azure.yaml.template` for an example.
+
+2. `AZURE_OPENAI_API_URL` and `AZURE_OPENAI_API_KEY` to connect to an Azure OpenAI API:
+
+    ```bash
+    export AZURE_OPENAI_API=<your azure api url>
+    export AZURE_OPENAI_API_KEY=<your azure key>
+    ```
+
+3. `OPENAI_API_KEY` for direct use of the OpenAI API
+
+    ```bash
+    export OPENAI_API_KEY=<your openai key>
+    ```
+
+4. `AZURE_KEY_VAULT_URL` to use Azure Key Vault. Put secrets for the url at `azure-open-ai` and the API Key `azure-openai-key`, then run:
+
+    ```bash
+    export AZURE_KEY_VAULT_URL=https://<keyvault_name>.vault.azure.net/
+    az login
+    ```
 
 ## Main Commands
 
@@ -94,6 +109,7 @@ gpt COMMAND --help
 Replace COMMAND with one of the main commands listed above (e.g., 'ask').
 
 ## Developer Setup
+
 To install the package in development mode, with additional packages for testing, run the following command:
 
 ```bash

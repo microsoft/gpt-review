@@ -1,7 +1,7 @@
-import pytest
-import yaml
 from collections import namedtuple
 
+import pytest
+import yaml
 from llama_index import SimpleDirectoryReader
 
 
@@ -50,7 +50,7 @@ def mock_openai(monkeypatch) -> None:
             return self
 
     def mock_create(
-        engine,
+        model,
         messages,
         temperature,
         max_tokens,
@@ -136,13 +136,16 @@ def mock_git_commit(monkeypatch) -> None:
         def __init__(self) -> None:
             self.git = self
 
-        def commit(self, message) -> str:
+        def commit(self, message, push: bool = False) -> str:
             return "test commit response"
 
         def diff(self, message, cached) -> str:
             return "test diff response"
 
-    def mock_init(cls):
+        def push(self) -> str:
+            return "test push response"
+
+    def mock_init(cls) -> MockGit:
         return MockGit()
 
     monkeypatch.setattr("git.repo.Repo.init", mock_init)
