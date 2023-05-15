@@ -1,11 +1,11 @@
 """Open AI API Call Wrapper."""
 import logging
-import time
 
 import openai
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
+from gpt_review.utils import _retry_with_exponential_backoff
 from gpt_review.context import _load_azure_openai_context
 
 
@@ -96,12 +96,7 @@ def _call_gpt(
         return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
         if retry < C.MAX_RETRIES:
-            logging.warning("Call to GPT failed due to rate limit, retry attempt %s of %s", retry, C.MAX_RETRIES)
-
-            wait_time = int(error.headers["Retry-After"]) if error.headers["Retry-After"] else retry * 10
-            logging.warning("Waiting for %s seconds before retrying.", wait_time)
-
-            time.sleep(wait_time)
+            _retry_with_exponential_backoff(retry, error.headers["Retry-After"])
 
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
