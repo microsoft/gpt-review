@@ -120,7 +120,10 @@ class GitCommandGroup(GPTCommandGroup):
             )
             args.argument(
                 "_all",
-                help="Tell the command to automatically stage files that have been modified and deleted, but new files you have not told Git about are not affected.",
+                help=(
+                    "Tell the command to automatically stage files that have been modified and deleted, but new files"
+                    " you have not told Git about are not affected."
+                ),
                 default=False,
                 action="store_true",
                 options_list=("--all", "-a"),
