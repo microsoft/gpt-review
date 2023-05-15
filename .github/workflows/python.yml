@@ -92,7 +92,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-history
-          publish_barnch: gh-pages
+
       - uses: everpcpc/comment-on-pr-action@v1
         with:
           body: '[Pull Request Test Summary](https://microsoft.github.io/gpt-review/${{ github.run_number }})'
