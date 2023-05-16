@@ -351,7 +351,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         self, original_content: Optional[str], changed_content: Optional[str], file_path: str, condensed=False
     ) -> List[str]:
         left = original_content.splitlines() if original_content else []
-        right = changed_content if changed_content else []
+        right = changed_content.splitlines() if changed_content else []
         return self._create_patch_list(left, right, file_path, condensed)
 
     def _create_patch_list(self, left: List[str], right: List[str], file_path: str, condensed=False) -> List[str]:
