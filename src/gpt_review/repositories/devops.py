@@ -17,6 +17,7 @@ from azure.devops.v7_1.git.models import (
     GitPullRequestCommentThread,
     GitTargetVersionDescriptor,
     GitVersionDescriptor,
+    CommentThreadContext,
 )
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
@@ -246,12 +247,12 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return self._get_patch(thread_context=thread.thread_context, pull_request_event=pull_request_event)
 
-    def _get_patch(self, thread_context, pull_request_event) -> List[str]:
+    def _get_patch(self, thread_context: CommentThreadContext, pull_request_event) -> List[str]:
         """
         Get the patch for a given thread context.
 
         Args:
-            thread_context (ThreadContext): The thread context.
+            thread_context (CommentThreadContext): The thread context.
             pull_request_event (PullRequestEvent): The pull request event.
 
         Returns:
@@ -293,6 +294,8 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             right_selection = self._get_selection(
                 changed_content, thread_context.right_file_start.line, thread_context.right_file_end.line
             )
+
+        return left_selection, right_selection
 
         if left_selection or right_selection:
             return left_selection, right_selection

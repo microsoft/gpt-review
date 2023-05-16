@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from typing import Literal
 
 import pytest
 import requests_mock
@@ -10,6 +11,7 @@ from azure.devops.v7_1.git.models import (
     GitPullRequest,
     GitPullRequestCommentThread,
     GitTargetVersionDescriptor,
+    CommentThreadContext,
 )
 
 from gpt_review.repositories.devops import DevOpsClient, DevOpsFunction, _comment
@@ -323,12 +325,15 @@ def mock_ado_client(monkeypatch) -> None:
         def get_pull_request_thread(
             self, repository_id, pull_request_id, thread_id, project=None, iteration=None, base_iteration=None
         ) -> GitPullRequestCommentThread:
-            return GitPullRequestCommentThread()
+            return GitPullRequestCommentThread(thread_context=CommentThreadContext())
 
         def update_pull_request(
             self, git_pull_request_to_update, repository_id, pull_request_id, project=None
         ) -> GitPullRequest:
             return GitPullRequest()
+
+        def get_item_content(self, repository_id="", path="", project="", version_descriptor=None, **kwargs):
+            return bytes("mock content", "utf-8").split()
 
         def get_commit_diffs(
             self,
@@ -417,21 +422,21 @@ def test_process_payload_integration() -> None:
     process_payload_test()
 
 
-def get_patch_test(devops_client: DevOpsClient) -> None:
+def get_patch_test(devops_client: DevOpsClient, expected_len: int) -> None:
     comment_id = LONG_PAYLOAD["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
     patch = devops_client.get_patch(
         pull_request_event=LONG_PAYLOAD["resource"], pull_request_id=PR_ID, comment_id=comment_id
     )
-    assert len(patch) == 64
+    assert len(patch) == expected_len
 
 
-def test_get_patch(mock_openai, devops_client: DevOpsClient) -> None:
-    get_patch_test(devops_client)
+def test_get_patch(mock_openai, mock_ado_client: None, devops_client: DevOpsClient) -> None:
+    get_patch_test(devops_client, 1)
 
 
 @pytest.mark.integration
 def test_get_patch_integration(devops_client: DevOpsClient) -> None:
-    get_patch_test(devops_client)
+    get_patch_test(devops_client, 64)
 
 
 def get_patch_pr_comment_test(devops_function: DevOpsFunction, expected_len: int) -> None:
