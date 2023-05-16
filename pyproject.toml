@@ -121,6 +121,10 @@ ignore = [
     "W391", # Covered by Pylint trailing-newlines
 ]
 
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests", "azure"]
+
 [tool.pyright]
 include = ["src"]
 exclude = [

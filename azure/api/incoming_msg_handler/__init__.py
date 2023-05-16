@@ -1,9 +1,11 @@
 """Azure DevOps API incoming message handler."""
+from __future__ import annotations
+
 import os
-from gpt_review.repositories.devops import DevOpsFunction
 
 import azure.functions as func
 
+from gpt_review.repositories.devops import DevOpsFunction
 
 HANDLER = DevOpsFunction(
     pat=os.environ["ADO_TOKEN"],
