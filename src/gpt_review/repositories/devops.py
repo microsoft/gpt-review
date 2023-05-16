@@ -268,11 +268,13 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         left_selection, right_selection = self._calculate_selection(thread_context, original_content, changed_content)
 
-        return self._create_patch(left_selection or [], right_selection or [], thread_context.file_path)
+        return self._create_patch(
+            "\n".join(left_selection) or [], "\n".join(right_selection) or [], thread_context.file_path
+        )
 
     def _calculate_selection(self, thread_context, original_content, changed_content):
-        left_selection = None
-        right_selection = None
+        left_selection = []
+        right_selection = []
         if original_content and thread_context.left_file_start and thread_context.left_file_end:
             left_selection = self._get_selection(
                 original_content, thread_context.left_file_start.line, thread_context.left_file_end.line
