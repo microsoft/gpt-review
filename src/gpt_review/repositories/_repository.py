@@ -1,6 +1,5 @@
 """Abstract class for a repository client."""
 from abc import abstractmethod
-from typing import Dict
 
 
 class _RepositoryClient:
