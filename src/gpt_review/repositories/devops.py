@@ -308,7 +308,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             raise ValueError("pull_request_event.pullRequest is required")
 
         git_changes = self.get_changed_blobs(pull_request_event["pullRequest"])
-        return [
+        changes = [
             self._get_change(
                 git_change,
                 pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"],
@@ -316,6 +316,8 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             )
             for git_change in git_changes
         ]
+
+        return changes
 
     def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> List[str]:
         lines = file_contents.splitlines()
@@ -334,7 +336,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         return lines[line_start - 1 : line_end]
 
     def _get_change(self, git_change, source_commit_head, condensed=False) -> List[str]:
-        return self._get_git_change(git_change["item"]["path"], source_commit_head, condensed)
+        return "\n".join(self._get_git_change(git_change["item"]["path"], source_commit_head, condensed))
 
     def _get_git_change(self, file_path, source_commit_head, condensed=False) -> List[str]:
         try:

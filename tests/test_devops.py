@@ -431,7 +431,8 @@ def test_get_patch_integration(devops_client: DevOpsClient) -> None:
 
 def get_patch_pr_comment_test(devops_client: DevOpsClient) -> None:
     patch = devops_client.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
-    assert len(patch) == 3
+    patch = "\n".join(patch)
+    assert len(patch) == 3348
 
 
 def test_get_patch_pr_comment(devops_client: DevOpsClient) -> None:
