@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from typing import Dict, Iterable, List, Tuple, Optional
+from urllib.parse import urlparse
 
 from azure.devops.connection import Connection
 from azure.devops.exceptions import AzureDevOpsServiceError
@@ -442,7 +443,9 @@ class DevOpsClient(_DevOpsClient):
         if link and access_token:
             review = _summarize_files(diff)
 
-            if "dev.azure.com" in link:
+            parsed_url = urlparse(link)
+
+            if "dev.azure.com" in parsed_url.netloc:
                 org = link.split("/")[3]
                 project = link.split("/")[4]
                 repo = link.split("/")[6]
@@ -653,7 +656,9 @@ def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, acc
         response = _ask(
             question=question,
         )
-        if "dev.azure.com" in link:
+        parsed_url = urlparse(link)
+
+        if "dev.azure.com" in parsed_url.netloc:
             org = link.split("/")[3]
             project = link.split("/")[4]
             repo = link.split("/")[6]
