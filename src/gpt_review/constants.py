@@ -1,4 +1,6 @@
 """Contains constants for minimum and maximum values of various parameters used in GPT Review."""
+from __future__ import annotations
+
 import os
 import sys
 

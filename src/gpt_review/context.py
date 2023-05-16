@@ -1,4 +1,6 @@
 """Context for the Azure OpenAI API and the models."""
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 

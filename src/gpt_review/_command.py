@@ -1,4 +1,6 @@
 """Interface for GPT CLI command groups."""
+from __future__ import annotations
+
 from knack import CLICommandsLoader
 
 

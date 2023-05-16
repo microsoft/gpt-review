@@ -1,10 +1,12 @@
 """Azure DevOps Package Wrappers to Simplify Usage."""
+from __future__ import annotations
+
 import abc
 import itertools
 import json
 import logging
 import os
-from typing import Dict, Iterable, List, Tuple, Optional
+from typing import Dict, Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
 
 from azure.devops.connection import Connection
@@ -12,11 +14,8 @@ from azure.devops.exceptions import AzureDevOpsServiceError
 from azure.devops.v7_1.git.git_client import GitClient
 from azure.devops.v7_1.git.models import (
     Comment,
-    CommentThreadContext,
     GitBaseVersionDescriptor,
-    GitCommitDiffs,
     GitPullRequest,
-    GitPullRequestCommentThread,
     GitTargetVersionDescriptor,
     GitVersionDescriptor,
 )
@@ -24,6 +23,7 @@ from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 from msrest.authentication import BasicAuthentication
+
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
@@ -259,10 +259,10 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 repository_id=self.repository_id,
                 project=self.project,
                 diff_common_commit=False,
-                base_version=GitBaseVersionDescriptor(
+                base_version_descriptor=GitBaseVersionDescriptor(
                     base_version=pull_request["lastMergeSourceCommit"]["commitId"], base_version_type="commit"
                 ),
-                target_version=GitTargetVersionDescriptor(
+                target_version_descriptor=GitTargetVersionDescriptor(
                     target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
                 ),
             )
@@ -513,7 +513,7 @@ class DevOpsFunction(DevOpsClient):
 
         try:
             diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
-        except:
+        except Exception:
             diff = self.get_patches(pull_request_event=payload["resource"])
 
         logging.info("Copilot diff: %s", diff)
