@@ -10,8 +10,8 @@ from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review.repositories._repository import _RepositoryClient
 from gpt_review._review import _summarize_files
+from gpt_review.repositories._repository import _RepositoryClient
 
 
 class GitHubClient(_RepositoryClient):
