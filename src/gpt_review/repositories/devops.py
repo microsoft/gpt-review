@@ -7,6 +7,7 @@ import os
 from typing import Dict, Iterable, Iterator, List, Optional
 
 from azure.devops.connection import Connection
+from azure.devops.exceptions import AzureDevOpsServiceError
 from azure.devops.v7_1.git.git_client import GitClient
 from azure.devops.v7_1.git.models import (
     Comment,
@@ -30,6 +31,8 @@ from gpt_review.repositories._repository import _RepositoryClient
 
 MIN_CONTEXT_LINES = 5
 SURROUNDING_CONTEXT = 5
+
+MAX_CHANGES_AT_A_TIME = 100  # Replace with your value
 
 
 class _DevOpsClient(_RepositoryClient, abc.ABC):
@@ -99,33 +102,29 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             repository_id=self.repository_id, pull_request_id=pull_request_id, thread_id=thread_id, project=self.project
         )
 
-    def _get_changed_blobs(
-        self,
-        sha1: str,
-        download: bool = None,
-        file_name: str = None,
-        resolve_lfs: bool = None,
-    ) -> GitBlobRef:
-        """
-        Get the changed blobs in a commit.
+    def get_changed_blobs(self, pull_request: GitPullRequest, cancellation_token=None):
+        changed_paths = []
+        commit_diff_within_pr = None
 
-        Args:
-            sha1 (str): The SHA1 of the commit.
-            download (bool): Whether to download the blob.
-            file_name (str): The name of the file.
-            resolve_lfs (bool): Whether to resolve LFS.
+        skip = 0
+        while True:
+            commit_diff_within_pr = self._get_commit_diff(
+                diff_common_commit=False,
+                base_version=GitBaseVersionDescriptor(
+                    base_version=pull_request["lastMergeSourceCommit"]["commitId"], base_version_type="commit"
+                ),
+                target_version=GitTargetVersionDescriptor(
+                    target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
+                ),
+            )
+            changed_paths.extend(
+                [change for change in commit_diff_within_pr.changes if "isFolder" not in change["item"]]
+            )
+            skip += len(commit_diff_within_pr.changes)
+            if commit_diff_within_pr.all_changes_included:
+                break
 
-        Returns:
-            GitBlobRef: The response from the API.
-        """
-        return self.client.get_blob(
-            repository_id=self.repository_id,
-            project=self.project,
-            sha1=sha1,
-            download=download,
-            file_name=file_name,
-            resolve_lfs=resolve_lfs,
-        )
+        return changed_paths
 
     def update_pr(self, pull_request_id, title=None, description=None) -> GitPullRequest:
         """
@@ -295,7 +294,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             return left_selection, right_selection
         raise ValueError("Both left and right selection cannot be None")
 
-    async def get_patches(self, pull_request_event, condensed=False) -> Iterable[List[str]]:
+    def get_patches(self, pull_request_event, condensed=False) -> Iterable[List[str]]:
         """
         Get the patches for a given pull request event.
 
@@ -310,17 +309,15 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         if not pull_request_id:
             raise ValueError("pull_request_event.pullRequest is required")
 
-        git_changes = await self.client.get_changed_blobs_async(pull_request_event["pullRequest"])
-        all_patches = []
-
-        for git_change in git_changes:
-            all_patches.append(
-                await self._get_change_async(
-                    git_change, pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"], condensed
-                )
+        git_changes = self.get_changed_blobs(pull_request_event["pullRequest"])
+        return [
+            self._get_change(
+                git_change,
+                pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"],
+                condensed,
             )
-
-        return all_patches
+            for git_change in git_changes
+        ]
 
     def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> List[str]:
         lines = file_contents.splitlines()
@@ -338,13 +335,17 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return lines[line_start - 1 : line_end]
 
-    async def _get_change_async(self, git_change, source_commit_head, condensed=False) -> List[str]:
-        return await self._get_git_change_async(self.client, git_change.item.path, source_commit_head, condensed)
+    def _get_change(self, git_change, source_commit_head, condensed=False) -> List[str]:
+        return self._get_git_change(git_change["item"]["path"], source_commit_head, condensed)
 
-    async def _get_git_change_async(self, git_client, file_path, source_commit_head, condensed=False) -> List[str]:
-        original_content = git_client.read_all_text_async(file_path, check_if_exists=True)
-        changed_content = git_client.read_all_text_async(file_path, commit_id=source_commit_head, check_if_exists=True)
-        return self._create_patch(await original_content, await changed_content, file_path, condensed)
+    def _get_git_change(self, file_path, source_commit_head, condensed=False) -> List[str]:
+        try:
+            original_content = self.read_all_text(file_path, check_if_exists=True)
+        except AzureDevOpsServiceError:
+            # File Not Found
+            original_content = ""
+        changed_content = self.read_all_text(file_path, commit_id=source_commit_head, check_if_exists=True)
+        return self._create_patch(original_content, changed_content, file_path, condensed)
 
     def _create_patch(
         self, original_content: Optional[str], changed_content: Optional[str], file_path: str, condensed=False
@@ -509,7 +510,12 @@ class DevOpsFunction(DevOpsClient):
 
         comment_id = self._get_comment_id(payload)
 
-        diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
+        try:
+            diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
+        except:
+            diff = self.get_patches(pull_request_event=payload["resource"])
+
+        logging.info("Copilot diff: %s", diff)
         diff = "\n".join(diff)
 
         question = f"""
@@ -518,7 +524,6 @@ class DevOpsFunction(DevOpsClient):
     {_DevOpsClient.process_comment_payload(body)}
     """
 
-        logging.info("Copilot diff: %s", diff)
         response = _ask(
             question=question,
             max_tokens=500,

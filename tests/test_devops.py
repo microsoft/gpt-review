@@ -165,6 +165,132 @@ LONG_PAYLOAD = {
     "createdDate": "2023-05-13T00:31:02.6421816Z",
 }
 
+PR_COMMENT_PAYLOAD = {
+    "id": "851991af-ce4b-4463-83d4-eb4733559f14",
+    "eventType": "ms.vss-code.git-pullrequest-comment-event",
+    "publisherId": "tfs",
+    "message": {"text": "Daniel Ciborowski has replied to a pull request comment"},
+    "detailedMessage": {"text": "Daniel Ciborowski has replied to a pull request comment\r\ncopilot: test\r\n"},
+    "resource": {
+        "comment": {
+            "id": 5,
+            "parentCommentId": 1,
+            "author": {
+                "displayName": "Daniel Ciborowski",
+                "url": "https://spsprodwus23.vssps.visualstudio.com/A41b4f3ee-c651-4a14-9847-b7cbb5315b80/_apis/Identities/0ef5b3af-3e01-48fd-9bd3-2f701c8fdebe",
+                "_links": {
+                    "avatar": {
+                        "href": "https://msazure.visualstudio.com/_apis/GraphProfile/MemberAvatars/aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4"
+                    }
+                },
+                "id": "0ef5b3af-3e01-48fd-9bd3-2f701c8fdebe",
+                "uniqueName": "dciborow@microsoft.com",
+                "imageUrl": "https://msazure.visualstudio.com/_apis/GraphProfile/MemberAvatars/aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4",
+                "descriptor": "aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4",
+            },
+            "content": "copilot: test",
+            "publishedDate": "2023-05-16T01:22:28.67Z",
+            "lastUpdatedDate": "2023-05-16T01:22:28.67Z",
+            "lastContentUpdatedDate": "2023-05-16T01:22:28.67Z",
+            "commentType": "text",
+            "usersLiked": [],
+            "_links": {
+                "self": {
+                    "href": "https://msazure.visualstudio.com/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3/pullRequests/8111242/threads/141607999/comments/5"
+                },
+                "repository": {
+                    "href": "https://msazure.visualstudio.com/b32aa71e-8ed2-41b2-9d77-5bc261222004/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3"
+                },
+                "threads": {
+                    "href": "https://msazure.visualstudio.com/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3/pullRequests/8111242/threads/141607999"
+                },
+                "pullRequests": {"href": "https://msazure.visualstudio.com/_apis/git/pullRequests/8111242"},
+            },
+        },
+        "pullRequest": {
+            "repository": {
+                "id": "612d9367-8ab6-4929-abe6-b5b5ad7b5ad3",
+                "name": "Azure-Gaming",
+                "url": "https://msazure.visualstudio.com/b32aa71e-8ed2-41b2-9d77-5bc261222004/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3",
+                "project": {
+                    "id": "b32aa71e-8ed2-41b2-9d77-5bc261222004",
+                    "name": "One",
+                    "description": "MSAzure/One is the VSTS project containing all Azure team code bases and work items.\nPlease see https://aka.ms/azaccess for work item and source access policies.",
+                    "url": "https://msazure.visualstudio.com/_apis/projects/b32aa71e-8ed2-41b2-9d77-5bc261222004",
+                    "state": "wellFormed",
+                    "revision": 307071,
+                    "visibility": "organization",
+                    "lastUpdateTime": "2023-05-15T17:47:30.807Z",
+                },
+                "size": 508859977,
+                "remoteUrl": "https://msazure.visualstudio.com/DefaultCollection/One/_git/Azure-Gaming",
+                "sshUrl": "msazure@vs-ssh.visualstudio.com:v3/msazure/One/Azure-Gaming",
+                "webUrl": "https://msazure.visualstudio.com/DefaultCollection/One/_git/Azure-Gaming",
+                "isDisabled": False,
+                "isInMaintenance": False,
+            },
+            "pullRequestId": 8111242,
+            "codeReviewId": 8886256,
+            "status": "active",
+            "createdBy": {
+                "displayName": "Daniel Ciborowski",
+                "url": "https://spsprodwus23.vssps.visualstudio.com/A41b4f3ee-c651-4a14-9847-b7cbb5315b80/_apis/Identities/0ef5b3af-3e01-48fd-9bd3-2f701c8fdebe",
+                "_links": {
+                    "avatar": {
+                        "href": "https://msazure.visualstudio.com/_apis/GraphProfile/MemberAvatars/aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4"
+                    }
+                },
+                "id": "0ef5b3af-3e01-48fd-9bd3-2f701c8fdebe",
+                "uniqueName": "dciborow@microsoft.com",
+                "imageUrl": "https://msazure.visualstudio.com/_api/_common/identityImage?id=0ef5b3af-3e01-48fd-9bd3-2f701c8fdebe",
+                "descriptor": "aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4",
+            },
+            "creationDate": "2023-05-15T03:32:53.2319611Z",
+            "title": "Added __init__.py",
+            "description": "Added __init__.py",
+            "sourceRefName": "refs/heads/dciborow/python-sample",
+            "targetRefName": "refs/heads/main",
+            "mergeStatus": "succeeded",
+            "isDraft": False,
+            "mergeId": "762c15e2-0877-45d3-bec1-4257f94438b1",
+            "lastMergeSourceCommit": {
+                "commitId": "b7017e51b312116557fa2769a4a8e5310c9d51f4",
+                "url": "https://msazure.visualstudio.com/b32aa71e-8ed2-41b2-9d77-5bc261222004/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3/commits/b7017e51b312116557fa2769a4a8e5310c9d51f4",
+            },
+            "lastMergeTargetCommit": {
+                "commitId": "36f9a015ee220516f5f553faaa1898ab10972536",
+                "url": "https://msazure.visualstudio.com/b32aa71e-8ed2-41b2-9d77-5bc261222004/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3/commits/36f9a015ee220516f5f553faaa1898ab10972536",
+            },
+            "lastMergeCommit": {
+                "commitId": "84a8d5cc827b85271dda7f865c8516ddcc2ba941",
+                "author": {
+                    "name": "Daniel Ciborowski",
+                    "email": "dciborow@microsoft.com",
+                    "date": "2023-05-15T03:54:44Z",
+                },
+                "committer": {
+                    "name": "Daniel Ciborowski",
+                    "email": "dciborow@microsoft.com",
+                    "date": "2023-05-15T03:54:44Z",
+                },
+                "comment": "Merge pull request 8111242 from dciborow/python-sample into main",
+                "url": "https://msazure.visualstudio.com/b32aa71e-8ed2-41b2-9d77-5bc261222004/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3/commits/84a8d5cc827b85271dda7f865c8516ddcc2ba941",
+            },
+            "reviewers": [],
+            "url": "https://msazure.visualstudio.com/b32aa71e-8ed2-41b2-9d77-5bc261222004/_apis/git/repositories/612d9367-8ab6-4929-abe6-b5b5ad7b5ad3/pullRequests/8111242",
+            "supportsIterations": True,
+            "artifactId": "vstfs:///Git/PullRequestId/b32aa71e-8ed2-41b2-9d77-5bc261222004%2f612d9367-8ab6-4929-abe6-b5b5ad7b5ad3%2f8111242",
+        },
+    },
+    "resourceVersion": "2.0",
+    "resourceContainers": {
+        "collection": {"id": "41bf5486-7392-4b7a-a7e3-a735c767e3b3", "baseUrl": "https://msazure.visualstudio.com/"},
+        "account": {"id": "41b4f3ee-c651-4a14-9847-b7cbb5315b80", "baseUrl": "https://msazure.visualstudio.com/"},
+        "project": {"id": "b32aa71e-8ed2-41b2-9d77-5bc261222004", "baseUrl": "https://msazure.visualstudio.com/"},
+    },
+    "createdDate": "2023-05-16T01:22:34.9492237Z",
+}
+
 
 @pytest.fixture
 def mock_req():
@@ -301,3 +427,17 @@ def test_get_patch(devops_client: DevOpsClient) -> None:
 @pytest.mark.integration
 def test_get_patch_integration(devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
+
+
+def get_patch_pr_comment_test(devops_client: DevOpsClient) -> None:
+    patch = devops_client.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
+    assert len("\n".join(patch)) == 9185
+
+
+def test_get_patch_pr_comment(devops_client: DevOpsClient) -> None:
+    get_patch_pr_comment_test(devops_client)
+
+
+@pytest.mark.integration
+def test_get_patch_pr_comment_integration(devops_client: DevOpsClient) -> None:
+    get_patch_pr_comment_test(devops_client)
