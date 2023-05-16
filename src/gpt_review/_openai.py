@@ -1,4 +1,5 @@
 """Open AI API Call Wrapper."""
+import os
 import logging
 
 import openai
