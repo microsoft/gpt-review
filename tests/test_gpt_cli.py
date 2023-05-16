@@ -94,6 +94,11 @@ GITHUB_COMMANDS = [
     CLICase("github review"),
 ]
 
+DEVOPS_COMMANDS = [
+    CLICase("ado review --help"),
+    CLICase("ado review"),
+]
+
 GIT_COMMANDS = [
     CLICase("git commit --help"),
     # CLICase("git commit"),
@@ -109,7 +114,7 @@ REVIEW_COMMANDS = [
     CLICase("review diff --diff tests/mock.diff --config tests/config.summary.extra.yml"),
 ]
 
-ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + GITHUB_COMMANDS + REVIEW_COMMANDS
+ARGS = ROOT_COMMANDS + ASK_COMMANDS + GIT_COMMANDS + GITHUB_COMMANDS + DEVOPS_COMMANDS + REVIEW_COMMANDS
 ARGS_DICT = {arg.command: arg for arg in ARGS}
 
 MODULE_COMMANDS = [

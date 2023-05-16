@@ -617,67 +617,67 @@ class DevOpsClient(_DevOpsClient):
             str: The diff of the PR.
         """
 
-    @staticmethod
-    def _review(diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
-        """Review Azure DevOps PR with Open AI, and post response as a comment.
 
-        Args:
-            link (str): The link to the PR.
-            access_token (str): The Azure DevOps access token.
+def _review(diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+    """Review Azure DevOps PR with Open AI, and post response as a comment.
 
-        Returns:
-            Dict[str, str]: The response.
-        """
-        # diff = _DevOpsClient.get_pr_diff(repository, pull_request, access_token)
+    Args:
+        link (str): The link to the PR.
+        access_token (str): The Azure DevOps access token.
+
+    Returns:
+        Dict[str, str]: The response.
+    """
+    # diff = _DevOpsClient.get_pr_diff(repository, pull_request, access_token)
+    with open(diff, "r", encoding="utf8") as file:
+        diff_contents = file.read()
+
+    DevOpsClient.post_pr_summary(diff_contents, link, access_token)
+    return {"response": "Review posted as a comment."}
+
+
+def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+    """Review Azure DevOps PR with Open AI, and post response as a comment.
+
+    Args:
+        question (str): The question to ask.
+        comment_id (int): The comment ID.
+        diff(str): The diff file.
+        link (str): The link to the PR.
+        access_token (str): The Azure DevOps access token.
+
+    Returns:
+        Dict[str, str]: The response.
+    """
+    # diff = _DevOpsClient.get_pr_diff(repository, pull_request, access_token)
+
+    if os.path.exists(diff):
         with open(diff, "r", encoding="utf8") as file:
             diff_contents = file.read()
+            question = f"{diff_contents}\n{question}"
 
-        DevOpsClient.post_pr_summary(diff_contents, link, access_token)
-        return {"response": "Review posted as a comment."}
+    link = os.getenv("LINK", link)
+    access_token = os.getenv("ADO_TOKEN", access_token)
 
-    @staticmethod
-    def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
-        """Review Azure DevOps PR with Open AI, and post response as a comment.
-
-        Args:
-            question (str): The question to ask.
-            comment_id (int): The comment ID.
-            diff(str): The diff file.
-            link (str): The link to the PR.
-            access_token (str): The Azure DevOps access token.
-
-        Returns:
-            Dict[str, str]: The response.
-        """
-        # diff = _DevOpsClient.get_pr_diff(repository, pull_request, access_token)
-
-        if os.path.exists(diff):
-            with open(diff, "r", encoding="utf8") as file:
-                diff_contents = file.read()
-                question = f"{diff_contents}\n{question}"
-
-        link = os.getenv("LINK", link)
-        access_token = os.getenv("ADO_TOKEN", access_token)
-
-        if link and access_token:
-            response = _ask(
-                question=question,
-            )
-            if "dev.azure.com" in link:
-                org = link.split("/")[3]
-                project = link.split("/")[4]
-                repo = link.split("/")[6]
-                pr_id = link.split("/")[8]
-            else:
-                org = link.split("/")[2].split(".")[0]
-                project = link.split("/")[3]
-                repo = link.split("/")[5]
-                pr_id = link.split("/")[7]
-
-        DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).create_comment(
-            pull_request_id=pr_id, comment_id=comment_id, text=response["response"]
+    if link and access_token:
+        response = _ask(
+            question=question,
         )
-        return {"response": "Review posted as a comment.", "text": response["response"]}
+        if "dev.azure.com" in link:
+            org = link.split("/")[3]
+            project = link.split("/")[4]
+            repo = link.split("/")[6]
+            pr_id = link.split("/")[8]
+        else:
+            org = link.split("/")[2].split(".")[0]
+            project = link.split("/")[3]
+            repo = link.split("/")[5]
+            pr_id = link.split("/")[7]
+
+    DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).create_comment(
+        pull_request_id=pr_id, comment_id=comment_id, text=response["response"]
+    )
+    return {"response": "Review posted as a comment.", "text": response["response"]}
 
 
 class DevOpsCommandGroup(GPTCommandGroup):
@@ -685,7 +685,7 @@ class DevOpsCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader) -> None:
-        with CommandGroup(loader, "ado", "gpt_review.repositories.devops.DevOpsClient#{}", is_preview=True) as group:
+        with CommandGroup(loader, "ado", "gpt_review.repositories.devops#{}", is_preview=True) as group:
             group.command("review", "_review", is_preview=True)
             group.command("comment", "_comment", is_preview=True)
 

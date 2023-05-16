@@ -277,7 +277,7 @@ def process_payload_test() -> None:
     DevOpsClient._comment(question, comment_id=COMMENT_ID, link=link)
 
 
-def test_process_payload(mock_ado_client: None) -> None:
+def test_process_payload(mock_openai, mock_ado_client: None) -> None:
     process_payload_test()
 
 

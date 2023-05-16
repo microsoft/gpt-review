@@ -85,7 +85,7 @@ def _call_gpt(
 
         logging.info("Prompt sent to GPT: %s\n", prompt)
         completion = openai.ChatCompletion.create(
-            model=model,
+            deployment_id=model,
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,

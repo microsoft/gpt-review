@@ -42,16 +42,19 @@ def _load_azure_openai_context() -> Context:
 
     if azure_config.get("azure_api_type"):
         openai.api_type = os.environ["OPENAI_API_TYPE"] = azure_config.get("azure_api_type")
+    elif os.getenv("AZURE_OPENAI_API"):
+        openai.api_type = os.environ["OPENAI_API_TYPE"] = C.AZURE_API_TYPE
     elif "OPENAI_API_TYPE" in os.environ:
         openai.api_type = os.environ["OPENAI_API_TYPE"]
 
     if azure_config.get("azure_api_version"):
         openai.api_version = os.environ["OPENAI_API_VERSION"] = azure_config.get("azure_api_version")
+    elif os.getenv("AZURE_OPENAI_API"):
+        openai.api_version = os.environ["OPENAI_API_VERSION"] = C.AZURE_API_VERSION
     elif "OPENAI_API_VERSION" in os.environ:
         openai.api_version = os.environ["OPENAI_API_VERSION"]
 
-    if openai.api_type == C.AZURE_API_TYPE or (not openai.api_type and os.getenv("AZURE_OPENAI_API")):
-        openai.api_type = os.environ["OPENAI_API_TYPE"] = C.AZURE_API_TYPE
+    if os.getenv("AZURE_OPENAI_API"):
         openai.api_base = os.environ["OPENAI_API_BASE"] = os.getenv("AZURE_OPENAI_API") or azure_config.get(
             "azure_api_base"
         )
