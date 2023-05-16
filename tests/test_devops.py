@@ -378,13 +378,13 @@ def test_update_pr(mock_ado_client: None, devops_client: DevOpsClient) -> None:
 
 
 @pytest.mark.integration
-def test_create_comment_integration(devops_client: DevOpsClient) -> None:
+def test_int_create_comment(devops_client: DevOpsClient) -> None:
     response = devops_client.create_comment(pull_request_id=PR_ID, comment_id=COMMENT_ID, text="text1")
     assert isinstance(response, Comment)
 
 
 @pytest.mark.integration
-def test_update_pr_integration(devops_client: DevOpsClient) -> None:
+def test_int_update_pr(devops_client: DevOpsClient) -> None:
     response = devops_client.update_pr(PR_ID, description="description1")
     assert isinstance(response, GitPullRequest)
     response = devops_client.update_pr(PR_ID, title="Sample PR Title")
@@ -402,7 +402,7 @@ def test_process_payload(mock_openai: None, mock_ado_client: None) -> None:
 
 
 @pytest.mark.integration
-def test_process_payload_integration() -> None:
+def test_int_process_payload() -> None:
     process_payload_test()
 
 
@@ -419,7 +419,7 @@ def test_get_patch(mock_openai: None, mock_ado_client: None, devops_client: DevO
 
 
 @pytest.mark.integration
-def test_get_patch_integration(devops_client: DevOpsClient) -> None:
+def test_int_get_patch(devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client, 64)
 
 
@@ -434,5 +434,5 @@ def test_get_patch_pr_comment(mock_openai: None, mock_ado_client: None, devops_f
 
 
 @pytest.mark.integration
-def test_get_patch_pr_comment_integration(devops_function: DevOpsFunction) -> None:
+def test_int_get_patch_pr_comment(devops_function: DevOpsFunction) -> None:
     get_patch_pr_comment_test(devops_function, 3348)

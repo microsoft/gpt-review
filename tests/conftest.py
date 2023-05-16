@@ -7,7 +7,7 @@ from llama_index import SimpleDirectoryReader
 
 def pytest_collection_modifyitems(items):
     for item in items:
-        if "_int_" in item.nodeid or "integration" in item.nodeid:
+        if "_int_" in item.nodeid:
             item.add_marker(pytest.mark.integration)
         elif "_cli_" in item.nodeid:
             item.add_marker(pytest.mark.cli)
