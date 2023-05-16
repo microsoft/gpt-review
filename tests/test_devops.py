@@ -340,7 +340,7 @@ def mock_ado_client(monkeypatch) -> None:
             base_version_descriptor=None,
             target_version_descriptor=None,
         ) -> GitCommitDiffs:
-            return GitCommitDiffs()
+            return GitCommitDiffs(changes=[], all_changes_included=True)
 
     def mock_client(self) -> MockDevOpsClient:
         return MockDevOpsClient()
@@ -425,7 +425,7 @@ def get_patch_test(devops_client: DevOpsClient) -> None:
     assert len(patch) == 64
 
 
-def test_get_patch(mock_openai, mock_ado_client: None, devops_client: DevOpsClient) -> None:
+def test_get_patch(mock_openai, devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
 
 
@@ -434,16 +434,16 @@ def test_get_patch_integration(devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
 
 
-def get_patch_pr_comment_test(mock_ado_client: None, devops_function: DevOpsFunction) -> None:
+def get_patch_pr_comment_test(devops_function: DevOpsFunction, expected_len: int) -> None:
     patch = devops_function.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
     patch = "\n".join(patch)
-    assert len(patch) == 3348
+    assert len(patch) == expected_len
 
 
-def test_get_patch_pr_comment(mock_openai, devops_function: DevOpsFunction) -> None:
-    get_patch_pr_comment_test(devops_function)
+def test_get_patch_pr_comment(mock_openai: None, mock_ado_client: None, devops_function: DevOpsFunction) -> None:
+    get_patch_pr_comment_test(devops_function, 0)
 
 
 @pytest.mark.integration
 def test_get_patch_pr_comment_integration(devops_function: DevOpsFunction) -> None:
-    get_patch_pr_comment_test(devops_function)
+    get_patch_pr_comment_test(devops_function, 3348)
