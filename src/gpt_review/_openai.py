@@ -79,20 +79,34 @@ def _call_gpt(
         str: The response from GPT.
     """
     messages = messages or [{"role": "user", "content": prompt}]
+    logging.debug("Prompt sent to GPT: %s\n", prompt)
+
     try:
         model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.info(f"Model Selected based on prompt size: {model}")
+        logging.debug(f"Model Selected based on prompt size: {model}")
 
-        logging.info("Prompt sent to GPT: %s\n", prompt)
-        completion = openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            top_p=top_p,
-            frequency_penalty=frequency_penalty,
-            presence_penalty=presence_penalty,
-        )
+        if os.environ["OPENAI_API_TYPE"] == C.AZURE_API_TYPE:
+            logging.debug("Using Azure Open AI.")
+            completion = openai.ChatCompletion.create(
+                deployment_id=model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+            )
+        else:
+            logging.debug("Using Open AI.")
+            completion = openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                frequency_penalty=frequency_penalty,
+                presence_penalty=presence_penalty,
+            )
         return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
         if retry < C.MAX_RETRIES:
