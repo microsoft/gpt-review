@@ -255,16 +255,12 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         if not pull_request:
             raise ValueError("pull_request_event.pullRequest is required")
 
-        original_content_task = self.read_all_text(path=thread_context.file_path, check_if_exists=True)
-        changed_content_task = self.read_all_text(
+        original_content = self.read_all_text(path=thread_context.file_path, check_if_exists=True)
+        changed_content = self.read_all_text(
             path=thread_context.file_path,
             commit_id=pull_request["lastMergeSourceCommit"]["commitId"],
             check_if_exists=True,
         )
-        # original_content = await original_content_task
-        # changed_content = await changed_content_task
-        original_content = original_content_task
-        changed_content = changed_content_task
 
         left_selection, right_selection = self._calculate_selection(thread_context, original_content, changed_content)
 
