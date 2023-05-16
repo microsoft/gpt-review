@@ -516,7 +516,7 @@ class DevOpsFunction(DevOpsClient):
 
         try:
             diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
-        except TypeError:
+        except AttributeError:
             diff = self.get_patches(pull_request_event=payload["resource"])
 
         logging.info("Copilot diff: %s", diff)
