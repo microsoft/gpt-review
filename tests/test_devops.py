@@ -359,17 +359,17 @@ def devops_function() -> DevOpsFunction:
     return DevOpsFunction(TOKEN, ORG, PROJECT, REPO)
 
 
-def test_create_comment(devops_client: DevOpsClient, mock_ado_client: None) -> None:
+def test_create_comment(mock_ado_client: None, devops_client: DevOpsClient) -> None:
     response = devops_client.create_comment(pull_request_id=PR_ID, comment_id=COMMENT_ID, text="text1")
     assert isinstance(response, Comment)
 
 
-def test_update_pr(devops_client: DevOpsClient, mock_ado_client: None) -> None:
+def test_update_pr(mock_ado_client: None, devops_client: DevOpsClient) -> None:
     response = devops_client.update_pr(pull_request_id=PR_ID, title="title1", description="description1")
     assert isinstance(response, GitPullRequest)
 
 
-def test_get_diff(devops_client: DevOpsClient, mock_ado_client: None) -> None:
+def test_get_diff(mock_ado_client: None, devops_client: DevOpsClient) -> None:
     response = devops_client._get_commit_diff(
         diff_common_commit=True,
         base_version=GitBaseVersionDescriptor(version=SOURCE, version_type="commit"),
@@ -425,7 +425,7 @@ def get_patch_test(devops_client: DevOpsClient) -> None:
     assert len(patch) == 64
 
 
-def test_get_patch(mock_openai, devops_client: DevOpsClient) -> None:
+def test_get_patch(mock_openai, mock_ado_client: None, devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
 
 
@@ -434,7 +434,7 @@ def test_get_patch_integration(devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
 
 
-def get_patch_pr_comment_test(devops_function: DevOpsFunction) -> None:
+def get_patch_pr_comment_test(mock_ado_client: None, devops_function: DevOpsFunction) -> None:
     patch = devops_function.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
     patch = "\n".join(patch)
     assert len(patch) == 3348
