@@ -336,20 +336,6 @@ def mock_ado_client(monkeypatch) -> None:
         def get_item_content(self, repository_id="", path="", project="", version_descriptor=None, **kwargs):
             return bytes("mock content", "utf-8").split()
 
-        def get_commit_diffs(
-            self,
-            repository_id="",
-            project=None,
-            diff_common_commit=None,
-            top=None,
-            skip=None,
-            base_version_descriptor=None,
-            target_version_descriptor=None,
-            base_version=None,
-            target_version=None,
-        ) -> GitCommitDiffs:
-            return GitCommitDiffs(changes=[], all_changes_included=True)
-
     def mock_client(self) -> MockDevOpsClient:
         return MockDevOpsClient()
 
@@ -375,15 +361,6 @@ def test_create_comment(mock_ado_client: None, devops_client: DevOpsClient) -> N
 def test_update_pr(mock_ado_client: None, devops_client: DevOpsClient) -> None:
     response = devops_client.update_pr(pull_request_id=PR_ID, title="title1", description="description1")
     assert isinstance(response, GitPullRequest)
-
-
-def test_get_diff(mock_ado_client: None, devops_client: DevOpsClient) -> None:
-    response = devops_client.client.get_commit_diffs(
-        diff_common_commit=True,
-        base_version=GitBaseVersionDescriptor(version=SOURCE, version_type="commit"),
-        target_version=GitTargetVersionDescriptor(target_version=TARGET, target_version_type="commit"),
-    )
-    assert isinstance(response, GitCommitDiffs)
 
 
 @pytest.mark.integration
