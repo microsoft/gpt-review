@@ -27,12 +27,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest allure-pytest
 
-      - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.6.3
-        with:
-          pytest: true
-          args: -m unit --alluredir=allure-results
-
       - uses: Azure/login@v1.4.6
         if: ${{ matrix.flags == 'integration' }}
         with:
@@ -41,7 +35,7 @@ jobs:
         uses: microsoft/action-python@0.6.3
         with:
           pytest: true
-          args: ${{ matrix.args }}
+          args: '${{ matrix.args }} --alluredir=allure-results'
           workdir: '.'
           testdir: 'tests'
           python_version: ${{ matrix.python }}
