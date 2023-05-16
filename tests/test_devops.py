@@ -301,6 +301,8 @@ def mock_req():
 
 @pytest.fixture
 def mock_ado_client(monkeypatch) -> None:
+    monkeypatch.setenv("ADO_TOKEN", "MOCK_TOKEN")
+
     @dataclass
     class MockResponse:
         text: str
