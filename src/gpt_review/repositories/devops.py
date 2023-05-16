@@ -1,35 +1,28 @@
 """Azure DevOps Package Wrappers to Simplify Usage."""
 import abc
 import itertools
-import logging
 import json
+import logging
 import os
-from typing import Dict, Iterator, List, Optional, Iterable
-
-from msrest.authentication import BasicAuthentication
-
-from knack.arguments import ArgumentsContext
-from knack import CLICommandsLoader
-from knack.commands import CommandGroup
+from typing import Dict, Iterable, Iterator, List, Optional
 
 from azure.devops.connection import Connection
-from azure.devops.v7_1.git.models import (
-    Comment,
-    GitCommitDiffs,
-    GitBaseVersionDescriptor,
-    GitTargetVersionDescriptor,
-    GitBlobRef,
-    GitVersionDescriptor,
-    GitPullRequest,
-    GitPullRequestCommentThread,
-)
 from azure.devops.v7_1.git.git_client import GitClient
+from azure.devops.v7_1.git.models import (Comment, GitBaseVersionDescriptor,
+                                          GitBlobRef, GitCommitDiffs,
+                                          GitPullRequest,
+                                          GitPullRequestCommentThread,
+                                          GitTargetVersionDescriptor,
+                                          GitVersionDescriptor)
+from knack import CLICommandsLoader
+from knack.arguments import ArgumentsContext
+from knack.commands import CommandGroup
+from msrest.authentication import BasicAuthentication
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
 from gpt_review._review import _summarize_files
 from gpt_review.repositories._repository import _RepositoryClient
-
 
 MIN_CONTEXT_LINES = 5
 SURROUNDING_CONTEXT = 5

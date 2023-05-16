@@ -96,7 +96,7 @@ GITHUB_COMMANDS = [
 
 DEVOPS_COMMANDS = [
     CLICase("ado review --help"),
-    CLICase("ado review"),
+    CLICase("ado review --diff tests/mock.diff"),
 ]
 
 GIT_COMMANDS = [

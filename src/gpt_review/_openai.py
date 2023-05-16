@@ -5,8 +5,8 @@ import openai
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
-from gpt_review.utils import _retry_with_exponential_backoff
 from gpt_review.context import _load_azure_openai_context
+from gpt_review.utils import _retry_with_exponential_backoff
 
 
 def _count_tokens(prompt) -> int:

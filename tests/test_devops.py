@@ -1,18 +1,18 @@
 import os
+from dataclasses import dataclass
+
 import pytest
 import requests_mock
-
-from dataclasses import dataclass
 from azure.devops.v7_1.git.models import (
+    Comment,
     GitBaseVersionDescriptor,
-    GitTargetVersionDescriptor,
     GitCommitDiffs,
     GitPullRequest,
-    Comment,
     GitPullRequestCommentThread,
+    GitTargetVersionDescriptor,
 )
 
-from gpt_review.repositories.devops import DevOpsClient
+from gpt_review.repositories.devops import DevOpsClient, _comment
 
 # Azure Devops PAT requires
 # - Code: 'Read','Write'
@@ -274,7 +274,7 @@ def test_get_diff_integration(devops_client: DevOpsClient) -> None:
 def process_payload_test() -> None:
     question = DevOpsClient.process_comment_payload(SAMPLE_PAYLOAD)
     link = "https://msazure.visualstudio.com/One/_git/Azure-Gaming/pullrequest/8063875"
-    DevOpsClient._comment(question, comment_id=COMMENT_ID, link=link)
+    _comment(question, comment_id=COMMENT_ID, link=link)
 
 
 def test_process_payload(mock_openai, mock_ado_client: None) -> None:

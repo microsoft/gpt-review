@@ -10,7 +10,8 @@ from knack.commands import CommandGroup
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
-from gpt_review.prompts._prompt import load_bug_yaml, load_coverage_yaml, load_summary_yaml
+from gpt_review.prompts._prompt import (load_bug_yaml, load_coverage_yaml,
+                                        load_summary_yaml)
 
 _CHECKS = {
     "SUMMARY_CHECKS": [

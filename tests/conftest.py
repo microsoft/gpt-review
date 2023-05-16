@@ -7,7 +7,7 @@ from llama_index import SimpleDirectoryReader
 
 def pytest_collection_modifyitems(items):
     for item in items:
-        if "_int_" in item.nodeid:
+        if "_int_" in item.nodeid or "integration" in item.nodeid:
             item.add_marker(pytest.mark.integration)
         elif "_cli_" in item.nodeid:
             item.add_marker(pytest.mark.cli)
@@ -50,13 +50,14 @@ def mock_openai(monkeypatch) -> None:
             return self
 
     def mock_create(
-        model,
-        messages,
-        temperature,
-        max_tokens,
-        top_p,
-        frequency_penalty,
-        presence_penalty,
+        model=None,
+        deployment_id=None,
+        messages=[],
+        temperature=0,
+        max_tokens=500,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
     ) -> MockResponse:
         return MockResponse()
 
