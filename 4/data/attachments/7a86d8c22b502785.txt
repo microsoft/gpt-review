@@ -1,3 +1,0 @@
-{
-  "response": "\n# Summary by GPT-4\n['test']\n## Overview\n['test']\n### Suggestions\n['test']"
-}
