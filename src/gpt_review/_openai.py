@@ -1,4 +1,5 @@
 """Open AI API Call Wrapper."""
+import os
 import logging
 import os
 
@@ -80,12 +81,14 @@ def _call_gpt(
         str: The response from GPT.
     """
     messages = messages or [{"role": "user", "content": prompt}]
+    logging.debug("Prompt sent to GPT: %s\n", prompt)
+
     try:
         model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.info("Model Selected based on prompt size: %s", model)
+        logging.debug(f"Model Selected based on prompt size: {model}")
 
-        logging.info("Prompt sent to GPT: %s\n", prompt)
         if os.environ["OPENAI_API_TYPE"] == C.AZURE_API_TYPE:
+            logging.debug("Using Azure Open AI.")
             completion = openai.ChatCompletion.create(
                 deployment_id=model,
                 messages=messages,
@@ -96,6 +99,7 @@ def _call_gpt(
                 presence_penalty=presence_penalty,
             )
         else:
+            logging.debug("Using Open AI.")
             completion = openai.ChatCompletion.create(
                 model=model,
                 messages=messages,
