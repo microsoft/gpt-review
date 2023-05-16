@@ -1,17 +1,16 @@
 import os
 from dataclasses import dataclass
-from typing import Literal
 
 import pytest
 import requests_mock
 from azure.devops.v7_1.git.models import (
     Comment,
+    CommentThreadContext,
     GitBaseVersionDescriptor,
     GitCommitDiffs,
     GitPullRequest,
     GitPullRequestCommentThread,
     GitTargetVersionDescriptor,
-    CommentThreadContext,
 )
 
 from gpt_review.repositories.devops import DevOpsClient, DevOpsFunction, _comment
@@ -413,7 +412,7 @@ def process_payload_test() -> None:
     _comment(question, comment_id=COMMENT_ID, link=link)
 
 
-def test_process_payload(mock_openai, mock_ado_client: None) -> None:
+def test_process_payload(mock_openai: None, mock_ado_client: None) -> None:
     process_payload_test()
 
 
@@ -430,7 +429,7 @@ def get_patch_test(devops_client: DevOpsClient, expected_len: int) -> None:
     assert len(patch) == expected_len
 
 
-def test_get_patch(mock_openai, mock_ado_client: None, devops_client: DevOpsClient) -> None:
+def test_get_patch(mock_openai: None, mock_ado_client: None, devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client, 1)
 
 

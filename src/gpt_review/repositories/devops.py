@@ -11,13 +11,13 @@ from azure.devops.exceptions import AzureDevOpsServiceError
 from azure.devops.v7_1.git.git_client import GitClient
 from azure.devops.v7_1.git.models import (
     Comment,
+    CommentThreadContext,
     GitBaseVersionDescriptor,
     GitCommitDiffs,
     GitPullRequest,
     GitPullRequestCommentThread,
     GitTargetVersionDescriptor,
     GitVersionDescriptor,
-    CommentThreadContext,
 )
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
@@ -673,10 +673,11 @@ def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, acc
             repo = link.split("/")[5]
             pr_id = link.split("/")[7]
 
-    DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).create_comment(
-        pull_request_id=pr_id, comment_id=comment_id, text=response["response"]
-    )
-    return {"response": "Review posted as a comment.", "text": response["response"]}
+        DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).create_comment(
+            pull_request_id=pr_id, comment_id=comment_id, text=response["response"]
+        )
+        return {"response": "Review posted as a comment.", "text": response["response"]}
+    raise ValueError("LINK and ADO_TOKEN must be set.")
 
 
 class DevOpsCommandGroup(GPTCommandGroup):
