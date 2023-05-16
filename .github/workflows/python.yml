@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ADO_TOKEN: ${{ secrets.ADO_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
