@@ -23,11 +23,29 @@ jobs:
       fail-fast: false
       matrix:
         tools: ['black', 'bandit', 'pylint', 'flake8']
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: ${{ matrix.tools }}
+        uses: microsoft/action-python@0.6.3
+        with:
+          ${{ matrix.tools }}: true
+          workdir: '.'
+          testdir: 'tests'
+          python_version: '3.11.3'
+
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ['3.8', '3.9', '3.10', '3.11']
+        args: ['-m unit']
+        flags: ['unittests']
         include:
-          - tools: pytest
-            args: -m unit
-            flags: unittests
-          - tools: pytest
+          - python: 3.11
             args: -m integration
             flags: integration
     steps:
@@ -38,35 +56,15 @@ jobs:
         if: ${{ matrix.flags == 'integration' }}
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.6.3
-        with:
-          ${{ matrix.tools }}: true
-          args: ${{ matrix.args }}
-          workdir: '.'
-          testdir: 'tests'
-          python_version: '3.11.3'
-          flags: ${{ matrix.flags }}
-
-  unit-tests:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        python: ['3.8', '3.9', '3.10', '3.11']
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: ${{ matrix.tools }}
+      - name: ${{ matrix.flags }}-${{ matrix.python }}
         uses: microsoft/action-python@0.6.3
         with:
           pytest: true
-          args: -m unit
+          args: ${{ matrix.args }}
           workdir: '.'
           testdir: 'tests'
           python_version: ${{ matrix.python }}
-          flags: unittests-${{ matrix.python }}
+          flags: ${{ matrix.flags }}-${{ matrix.python }}
 
   publish:
     runs-on: ubuntu-latest
