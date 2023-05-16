@@ -52,7 +52,7 @@ def mock_openai(monkeypatch) -> None:
     def mock_create(
         model=None,
         deployment_id=None,
-        messages=[],
+        messages=None,
         temperature=0,
         max_tokens=500,
         top_p=1,

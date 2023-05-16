@@ -237,148 +237,11 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             List[str]: The diff of the pull request.
         """
-        context = ContextProvider(self)
         thread = self._get_comment_thread(pull_request_id=pull_request_id, thread_id=comment_id)
 
-        return context.get_patch(thread_context=thread.thread_context, pull_request_event=pull_request_event)
+        return self._get_patch(thread_context=thread.thread_context, pull_request_event=pull_request_event)
 
-    def handle(self, msg) -> None:
-        """
-        The main function for the Azure Function.
-
-        Args:
-            msg (func.QueueMessage): The Service Bus message.
-        """
-        body = msg.get_body().decode("utf-8")
-        logging.info("Python ServiceBus queue trigger processed message: %s", body)
-        if "copilot:summary" in body:
-            self._process_summary(body)
-        elif "copilot:" in body:
-            self._process_comment(body)
-
-    def _process_comment(self, body) -> None:
-        """
-        Process a comment from Copilot.
-
-        Args:
-            body (str): The Service Bus payload.
-        """
-        logging.info("Copilot Comment Alert Triggered")
-        payload = json.loads(body)
-
-        pr_id = self._get_pr_id(payload)
-
-        comment_id = self._get_comment_id(payload)
-
-        diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
-        diff = "\n".join(diff)
-
-        question = f"""
-    {diff}
-
-    {_DevOpsClient.process_comment_payload(body)}
-    """
-
-        logging.info("Copilot diff: %s", diff)
-        response = _ask(
-            question=question,
-            max_tokens=500,
-        )
-        self.create_comment(pull_request_id=pr_id, comment_id=comment_id, text=response["response"])
-
-    def _get_comment_id(self, payload) -> int:
-        """
-        Get the comment ID from the payload.
-
-        Args:
-            payload (dict): The payload from the Service Bus.
-
-        Returns:
-            int: The comment ID.
-        """
-        comment_id = payload["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
-        logging.info("Copilot Commet ID: %s", comment_id)
-        return comment_id
-
-    def _process_summary(self, body) -> None:
-        """
-        Process a summary from Copilot.
-
-        Args:
-            body (str): The Service Bus payload.
-        """
-        logging.info("Copilot Summary Alert Triggered")
-        payload = json.loads(body)
-
-        pr_id = self._get_pr_id(payload)
-
-        link = self._get_link(pr_id)
-
-        if "comment" in payload["resource"]:
-            self._post_summary(payload, pr_id, link)
-        else:
-            logging.info("Copilot Update from Updated PR")
-
-    def _get_link(self, pr_id) -> str:
-        link = f"https://{self.org}.visualstudio.com/{self.project}/_git/{self.repository_id}/pullrequest/{pr_id}"
-        logging.info("Copilot Link: %s", link)
-        return link
-
-    def _get_pr_id(self, payload) -> int:
-        """
-        Get the pull request ID from the Service Bus payload.
-
-        Args:
-            payload (dict): The Service Bus payload.
-
-        Returns:
-            int: The pull request ID.
-        """
-        if "pullRequestId" in payload:
-            pr_id = payload["resource"]["pullRequestId"]
-        else:
-            pr_id = payload["resource"]["pullRequest"]["pullRequestId"]
-        logging.info("Copilot PR ID: %s", pr_id)
-        return pr_id
-
-    def _post_summary(self, payload, pr_id, link) -> None:
-        """
-        Process a summary from Copilot.
-
-        Args:
-            payload (dict): The Service Bus payload.
-            pr_id (str): The Azure DevOps pull request ID.
-            link (str): The link to the PR.
-        """
-        comment_id = payload["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
-        logging.info("Copilot Commet ID: %s", comment_id)
-
-        os.putenv("RISK_SUMMARY", "false")
-        os.putenv("FILE_SUMMARY_FULL", "false")
-        os.putenv("TEST_SUMMARY", "false")
-        os.putenv("BUG_SUMMARY", "false")
-        os.putenv("SUMMARY_SUGGEST", "false")
-
-        diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
-        diff = "\n".join(diff)
-        logging.info("Copilot diff: %s", diff)
-
-        self.post_pr_summary(diff, link=link)
-
-
-class ContextProvider:
-    """Provides context for a given line in a file."""
-
-    def __init__(self, devops_client: _DevOpsClient) -> None:
-        """
-        Initialize a new instance of ContextProvider.
-
-        Args:
-            devops_client (_DevOpsClient): The DevOps client.
-        """
-        self.devops_client = devops_client
-
-    def get_patch(self, thread_context, pull_request_event) -> List[str]:
+    def _get_patch(self, thread_context, pull_request_event) -> List[str]:
         """
         Get the patch for a given thread context.
 
@@ -393,8 +256,8 @@ class ContextProvider:
         if not pull_request:
             raise ValueError("pull_request_event.pullRequest is required")
 
-        original_content_task = self.devops_client.read_all_text(path=thread_context.file_path, check_if_exists=True)
-        changed_content_task = self.devops_client.read_all_text(
+        original_content_task = self.read_all_text(path=thread_context.file_path, check_if_exists=True)
+        changed_content_task = self.read_all_text(
             path=thread_context.file_path,
             commit_id=pull_request["lastMergeSourceCommit"]["commitId"],
             check_if_exists=True,
@@ -447,7 +310,7 @@ class ContextProvider:
         if not pull_request_id:
             raise ValueError("pull_request_event.pullRequest is required")
 
-        git_changes = await self.devops_client.get_changed_blobs_async(pull_request_event["pullRequest"])
+        git_changes = await self.client.get_changed_blobs_async(pull_request_event["pullRequest"])
         all_patches = []
 
         for git_change in git_changes:
@@ -476,7 +339,7 @@ class ContextProvider:
         return lines[line_start - 1 : line_end]
 
     async def _get_change_async(self, git_change, source_commit_head, condensed=False) -> List[str]:
-        return await self._get_git_change_async(self.devops_client, git_change.item.path, source_commit_head, condensed)
+        return await self._get_git_change_async(self.client, git_change.item.path, source_commit_head, condensed)
 
     async def _get_git_change_async(self, git_client, file_path, source_commit_head, condensed=False) -> List[str]:
         original_content = git_client.read_all_text_async(file_path, check_if_exists=True)
@@ -613,6 +476,133 @@ class DevOpsClient(_DevOpsClient):
         Returns:
             str: The diff of the PR.
         """
+
+
+class DevOpsFunction(DevOpsClient):
+    """Azure Function for process Service Messages from Azure DevOps."""
+
+    def handle(self, msg) -> None:
+        """
+        The main function for the Azure Function.
+
+        Args:
+            msg (func.QueueMessage): The Service Bus message.
+        """
+        body = msg.get_body().decode("utf-8")
+        logging.info("Python ServiceBus queue trigger processed message: %s", body)
+        if "copilot:summary" in body:
+            self._process_summary(body)
+        elif "copilot:" in body:
+            self._process_comment(body)
+
+    def _process_comment(self, body) -> None:
+        """
+        Process a comment from Copilot.
+
+        Args:
+            body (str): The Service Bus payload.
+        """
+        logging.info("Copilot Comment Alert Triggered")
+        payload = json.loads(body)
+
+        pr_id = self._get_pr_id(payload)
+
+        comment_id = self._get_comment_id(payload)
+
+        diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
+        diff = "\n".join(diff)
+
+        question = f"""
+    {diff}
+
+    {_DevOpsClient.process_comment_payload(body)}
+    """
+
+        logging.info("Copilot diff: %s", diff)
+        response = _ask(
+            question=question,
+            max_tokens=500,
+        )
+        self.create_comment(pull_request_id=pr_id, comment_id=comment_id, text=response["response"])
+
+    def _get_comment_id(self, payload) -> int:
+        """
+        Get the comment ID from the payload.
+
+        Args:
+            payload (dict): The payload from the Service Bus.
+
+        Returns:
+            int: The comment ID.
+        """
+        comment_id = payload["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
+        logging.info("Copilot Commet ID: %s", comment_id)
+        return comment_id
+
+    def _process_summary(self, body) -> None:
+        """
+        Process a summary from Copilot.
+
+        Args:
+            body (str): The Service Bus payload.
+        """
+        logging.info("Copilot Summary Alert Triggered")
+        payload = json.loads(body)
+
+        pr_id = self._get_pr_id(payload)
+
+        link = self._get_link(pr_id)
+
+        if "comment" in payload["resource"]:
+            self._post_summary(payload, pr_id, link)
+        else:
+            logging.info("Copilot Update from Updated PR")
+
+    def _get_link(self, pr_id) -> str:
+        link = f"https://{self.org}.visualstudio.com/{self.project}/_git/{self.repository_id}/pullrequest/{pr_id}"
+        logging.info("Copilot Link: %s", link)
+        return link
+
+    def _get_pr_id(self, payload) -> int:
+        """
+        Get the pull request ID from the Service Bus payload.
+
+        Args:
+            payload (dict): The Service Bus payload.
+
+        Returns:
+            int: The pull request ID.
+        """
+        if "pullRequestId" in payload:
+            pr_id = payload["resource"]["pullRequestId"]
+        else:
+            pr_id = payload["resource"]["pullRequest"]["pullRequestId"]
+        logging.info("Copilot PR ID: %s", pr_id)
+        return pr_id
+
+    def _post_summary(self, payload, pr_id, link) -> None:
+        """
+        Process a summary from Copilot.
+
+        Args:
+            payload (dict): The Service Bus payload.
+            pr_id (str): The Azure DevOps pull request ID.
+            link (str): The link to the PR.
+        """
+        comment_id = payload["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
+        logging.info("Copilot Commet ID: %s", comment_id)
+
+        os.putenv("RISK_SUMMARY", "false")
+        os.putenv("FILE_SUMMARY_FULL", "false")
+        os.putenv("TEST_SUMMARY", "false")
+        os.putenv("BUG_SUMMARY", "false")
+        os.putenv("SUMMARY_SUGGEST", "false")
+
+        diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
+        diff = "\n".join(diff)
+        logging.info("Copilot diff: %s", diff)
+
+        self.post_pr_summary(diff, link=link)
 
 
 def _review(diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
