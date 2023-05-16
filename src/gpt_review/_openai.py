@@ -84,7 +84,7 @@ def _call_gpt(
 
     try:
         model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.debug(f"Model Selected based on prompt size: {model}")
+        logging.debug("Model Selected based on prompt size: %s", model)
 
         if os.environ["OPENAI_API_TYPE"] == C.AZURE_API_TYPE:
             logging.debug("Using Azure Open AI.")
