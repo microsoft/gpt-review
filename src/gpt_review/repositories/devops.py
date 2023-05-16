@@ -8,12 +8,16 @@ from typing import Dict, Iterable, Iterator, List, Optional
 
 from azure.devops.connection import Connection
 from azure.devops.v7_1.git.git_client import GitClient
-from azure.devops.v7_1.git.models import (Comment, GitBaseVersionDescriptor,
-                                          GitBlobRef, GitCommitDiffs,
-                                          GitPullRequest,
-                                          GitPullRequestCommentThread,
-                                          GitTargetVersionDescriptor,
-                                          GitVersionDescriptor)
+from azure.devops.v7_1.git.models import (
+    Comment,
+    GitBaseVersionDescriptor,
+    GitBlobRef,
+    GitCommitDiffs,
+    GitPullRequest,
+    GitPullRequestCommentThread,
+    GitTargetVersionDescriptor,
+    GitVersionDescriptor,
+)
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup

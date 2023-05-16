@@ -151,9 +151,11 @@ def _review(repository=None, pull_request=None, access_token=None) -> Dict[str, 
     GitHubClient.post_pr_summary(diff)
     return {"response": "Review posted as a comment."}
 
+
 def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
     """"""
     raise NotImplementedError
+
 
 class GitHubCommandGroup(GPTCommandGroup):
     """Ask Command Group."""
