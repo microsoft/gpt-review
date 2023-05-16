@@ -12,7 +12,7 @@ from azure.devops.v7_1.git.models import (
     GitTargetVersionDescriptor,
 )
 
-from gpt_review.repositories.devops import DevOpsClient, _comment
+from gpt_review.repositories.devops import DevOpsClient, DevOpsFunction, _comment
 
 # Azure Devops PAT requires
 # - Code: 'Read','Write'
@@ -354,6 +354,11 @@ def devops_client() -> DevOpsClient:
     return DevOpsClient(TOKEN, ORG, PROJECT, REPO)
 
 
+@pytest.fixture
+def devops_function() -> DevOpsFunction:
+    return DevOpsFunction(TOKEN, ORG, PROJECT, REPO)
+
+
 def test_create_comment(devops_client: DevOpsClient, mock_ado_client: None) -> None:
     response = devops_client.create_comment(pull_request_id=PR_ID, comment_id=COMMENT_ID, text="text1")
     assert isinstance(response, Comment)
@@ -420,7 +425,7 @@ def get_patch_test(devops_client: DevOpsClient) -> None:
     assert len(patch) == 64
 
 
-def test_get_patch(devops_client: DevOpsClient) -> None:
+def test_get_patch(mock_openai, devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
 
 
@@ -429,16 +434,16 @@ def test_get_patch_integration(devops_client: DevOpsClient) -> None:
     get_patch_test(devops_client)
 
 
-def get_patch_pr_comment_test(devops_client: DevOpsClient) -> None:
-    patch = devops_client.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
+def get_patch_pr_comment_test(devops_function: DevOpsFunction) -> None:
+    patch = devops_function.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
     patch = "\n".join(patch)
     assert len(patch) == 3348
 
 
-def test_get_patch_pr_comment(devops_client: DevOpsClient) -> None:
-    get_patch_pr_comment_test(devops_client)
+def test_get_patch_pr_comment(mock_openai, devops_function: DevOpsFunction) -> None:
+    get_patch_pr_comment_test(devops_function)
 
 
 @pytest.mark.integration
-def test_get_patch_pr_comment_integration(devops_client: DevOpsClient) -> None:
-    get_patch_pr_comment_test(devops_client)
+def test_get_patch_pr_comment_integration(devops_function: DevOpsFunction) -> None:
+    get_patch_pr_comment_test(devops_function)
