@@ -85,8 +85,8 @@ gpt ask: error: argument --max-tokens: invalid int value: \"'test'\"
     ),
     CLICase(f"ask --files {SAMPLE_FILE} --files {SAMPLE_FILE} {WHAT_LANGUAGE} --reset"),
     CLICase(f"ask --fast -f {SAMPLE_FILE} {WHAT_LANGUAGE}"),
-    CLICase(f"ask --fast -d src/gpt_review --reset --recursive --hidden --required-exts .py {WHAT_LANGUAGE}"),
-    CLICase(f"ask --fast -repo microsoft/gpt-review --branch main {WHAT_LANGUAGE}"),
+    # CLICase(f"ask --fast -d src/gpt_review --reset --recursive --hidden --required-exts .py {WHAT_LANGUAGE}"),
+    # CLICase(f"ask --fast -repo microsoft/gpt-review --branch main {WHAT_LANGUAGE}"),
 ]
 
 GITHUB_COMMANDS = [

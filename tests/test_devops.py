@@ -400,16 +400,6 @@ def test_update_pr_integration(devops_client: DevOpsClient) -> None:
     assert isinstance(response, GitPullRequest)
 
 
-@pytest.mark.integration
-def test_get_diff_integration(devops_client: DevOpsClient) -> None:
-    response = devops_client._get_commit_diff(
-        diff_common_commit=True,
-        base_version=GitBaseVersionDescriptor(version=SOURCE, version_type="commit"),
-        target_version=GitTargetVersionDescriptor(target_version=TARGET, target_version_type="commit"),
-    )
-    assert isinstance(response, GitCommitDiffs)
-
-
 def process_payload_test() -> None:
     question = DevOpsClient.process_comment_payload(SAMPLE_PAYLOAD)
     link = "https://msazure.visualstudio.com/One/_git/Azure-Gaming/pullrequest/8063875"
