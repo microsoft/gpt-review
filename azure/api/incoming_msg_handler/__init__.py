@@ -1,6 +1,4 @@
 """Azure DevOps API incoming message handler."""
-from __future__ import annotations
-
 import os
 
 import azure.functions as func

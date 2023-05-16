@@ -1,6 +1,4 @@
 """The GPT CLI entry point."""
-from __future__ import annotations
-
 import sys
 
 from knack.help_files import helps

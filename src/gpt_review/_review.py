@@ -1,6 +1,4 @@
 """Basic functions for requesting review based goals from GPT-4."""
-from __future__ import annotations
-
 import os
 from dataclasses import dataclass
 from typing import Dict

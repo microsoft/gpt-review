@@ -1,6 +1,4 @@
 """Azure DevOps Package Wrappers to Simplify Usage."""
-from __future__ import annotations
-
 import abc
 import itertools
 import json
