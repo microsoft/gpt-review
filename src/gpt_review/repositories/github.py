@@ -10,11 +10,11 @@ from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review._repository import _RepositoryClient
+from gpt_review.repositories._repository import _RepositoryClient
 from gpt_review._review import _summarize_files
 
 
-class _GitHubClient(_RepositoryClient):
+class GitHubClient(_RepositoryClient):
     """GitHub client."""
 
     @staticmethod
@@ -122,7 +122,7 @@ class _GitHubClient(_RepositoryClient):
         access_token = os.getenv("GITHUB_TOKEN")
 
         if link and git_commit_hash and access_token:
-            _GitHubClient._post_pr_comment(
+            GitHubClient._post_pr_comment(
                 review=review, git_commit_hash=git_commit_hash, link=link, access_token=access_token
             )
             return {"response": "PR posted"}
@@ -142,8 +142,8 @@ def _github_review(repository=None, pull_request=None, access_token=None) -> Dic
     Returns:
         Dict[str, str]: The response.
     """
-    diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
-    _GitHubClient.post_pr_summary(diff)
+    diff = GitHubClient.get_pr_diff(repository, pull_request, access_token)
+    GitHubClient.post_pr_summary(diff)
     return {"response": "Review posted as a comment."}
 
 

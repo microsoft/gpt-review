@@ -8,7 +8,7 @@ from knack import CLI, CLICommandsLoader
 from gpt_review import __version__
 from gpt_review._ask import AskCommandGroup
 from gpt_review._git import GitCommandGroup
-from gpt_review._github import GitHubCommandGroup
+from gpt_review.repositories.github import GitHubCommandGroup
 from gpt_review._review import ReviewCommandGroup
 
 CLI_NAME = "gpt"
