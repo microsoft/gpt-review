@@ -336,6 +336,20 @@ def mock_ado_client(monkeypatch) -> None:
         def get_item_content(self, repository_id="", path="", project="", version_descriptor=None, **kwargs):
             return bytes("mock content", "utf-8").split()
 
+        def get_commit_diffs(
+            self,
+            repository_id="",
+            project=None,
+            diff_common_commit=None,
+            top=None,
+            skip=None,
+            base_version_descriptor=None,
+            target_version_descriptor=None,
+            base_version=None,
+            target_version=None,
+        ) -> GitCommitDiffs:
+            return GitCommitDiffs(changes=[], all_changes_included=True)
+
     def mock_client(self) -> MockDevOpsClient:
         return MockDevOpsClient()
 
