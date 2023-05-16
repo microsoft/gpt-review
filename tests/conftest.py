@@ -50,13 +50,14 @@ def mock_openai(monkeypatch) -> None:
             return self
 
     def mock_create(
-        model,
-        messages,
-        temperature,
-        max_tokens,
-        top_p,
-        frequency_penalty,
-        presence_penalty,
+        model=None,
+        deployment_id=None,
+        messages=None,
+        temperature=0,
+        max_tokens=500,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
     ) -> MockResponse:
         return MockResponse()
 
