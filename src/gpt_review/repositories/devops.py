@@ -12,7 +12,6 @@ from azure.devops.v7_1.git.git_client import GitClient
 from azure.devops.v7_1.git.models import (
     Comment,
     GitBaseVersionDescriptor,
-    GitBlobRef,
     GitCommitDiffs,
     GitPullRequest,
     GitPullRequestCommentThread,
@@ -31,8 +30,6 @@ from gpt_review.repositories._repository import _RepositoryClient
 
 MIN_CONTEXT_LINES = 5
 SURROUNDING_CONTEXT = 5
-
-MAX_CHANGES_AT_A_TIME = 100  # Replace with your value
 
 
 class _DevOpsClient(_RepositoryClient, abc.ABC):
@@ -102,7 +99,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             repository_id=self.repository_id, pull_request_id=pull_request_id, thread_id=thread_id, project=self.project
         )
 
-    def get_changed_blobs(self, pull_request: GitPullRequest, cancellation_token=None):
+    def get_changed_blobs(self, pull_request: GitPullRequest):
+        """
+        Get the changed blobs in a pull request.
+
+        Args:
+            pull_request (GitPullRequest): The pull request.
+
+        Returns:
+            List[Dict[str, str]]: The changed blobs.
+        """
         changed_paths = []
         commit_diff_within_pr = None
 
@@ -308,7 +314,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             raise ValueError("pull_request_event.pullRequest is required")
 
         git_changes = self.get_changed_blobs(pull_request_event["pullRequest"])
-        changes = [
+        return [
             self._get_change(
                 git_change,
                 pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"],
@@ -316,8 +322,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             )
             for git_change in git_changes
         ]
-
-        return changes
 
     def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> List[str]:
         lines = file_contents.splitlines()

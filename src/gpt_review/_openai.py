@@ -1,6 +1,6 @@
 """Open AI API Call Wrapper."""
-import os
 import logging
+import os
 
 import openai
 from openai.error import RateLimitError
