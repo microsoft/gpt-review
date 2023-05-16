@@ -4,7 +4,7 @@ import itertools
 import json
 import logging
 import os
-from typing import Dict, Iterable, Iterator, List, Optional
+from typing import Dict, Iterable, List, Tuple, Optional
 
 from azure.devops.connection import Connection
 from azure.devops.exceptions import AzureDevOpsServiceError
@@ -85,54 +85,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             new_comment, self.repository_id, pull_request_id, comment_id, project=self.project
         )
 
-    def _get_comment_thread(self, pull_request_id: str, thread_id: str) -> GitPullRequestCommentThread:
-        """
-        Get a comment thread.
-
-        Args:
-            pull_request_id (str): The Azure DevOps pull request ID.
-            thread_id (str): The Azure DevOps thread ID.
-
-        Returns:
-            GitPullRequestCommentThread: The response from the API.
-        """
-        return self.client.get_pull_request_thread(
-            repository_id=self.repository_id, pull_request_id=pull_request_id, thread_id=thread_id, project=self.project
-        )
-
-    def get_changed_blobs(self, pull_request: GitPullRequest):
-        """
-        Get the changed blobs in a pull request.
-
-        Args:
-            pull_request (GitPullRequest): The pull request.
-
-        Returns:
-            List[Dict[str, str]]: The changed blobs.
-        """
-        changed_paths = []
-        commit_diff_within_pr = None
-
-        skip = 0
-        while True:
-            commit_diff_within_pr = self._get_commit_diff(
-                diff_common_commit=False,
-                base_version=GitBaseVersionDescriptor(
-                    base_version=pull_request["lastMergeSourceCommit"]["commitId"], base_version_type="commit"
-                ),
-                target_version=GitTargetVersionDescriptor(
-                    target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
-                ),
-            )
-            changed_paths.extend(
-                [change for change in commit_diff_within_pr.changes if "isFolder" not in change["item"]]
-            )
-            skip += len(commit_diff_within_pr.changes)
-            if commit_diff_within_pr.all_changes_included:
-                break
-
-        return changed_paths
-
     def update_pr(self, pull_request_id, title=None, description=None) -> GitPullRequest:
         """
         Update a pull request.
@@ -150,31 +102,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             repository_id=self.repository_id,
             project=self.project,
             pull_request_id=pull_request_id,
-        )
-
-    def _get_commit_diff(
-        self,
-        diff_common_commit: bool,
-        base_version: GitBaseVersionDescriptor,
-        target_version: GitTargetVersionDescriptor,
-    ) -> GitCommitDiffs:
-        """
-        Get the diff between two commits.
-
-        Args:
-            diff_common_commit (bool): Whether to diff the common commit.
-            base_version (GitBaseVersionDescriptor): The base version.
-            target_version (GitTargetVersionDescriptor): The target version.
-
-        Returns:
-            Response: The response from the API.
-        """
-        return self.client.get_commit_diffs(
-            repository_id=self.repository_id,
-            project=self.project,
-            diff_common_commit=diff_common_commit,
-            base_version_descriptor=base_version,
-            target_version_descriptor=target_version,
         )
 
     def read_all_text(
@@ -203,20 +130,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         )
         return "".join(byte.decode("utf-8") for byte in byte_iterator)
 
-    async def read_all_text_async(self, path: str, commit_id, **kwargs) -> Iterator[bytes]:
-        """
-        Read all text from a file asynchronously.
-
-        Args:
-            path (str): The path to the file.
-            commit_id (str): The commit ID.
-            **kwargs: Any additional keyword arguments.
-
-        Returns:
-            Iterator[bytes]: The bytes of the file.
-        """
-        return await self.client.read_all_text(path=path, commit_id=commit_id, **kwargs)
-
     @staticmethod
     def process_comment_payload(payload: str) -> str:
         """
@@ -243,21 +156,14 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             List[str]: The diff of the pull request.
         """
-        thread = self._get_comment_thread(pull_request_id=pull_request_id, thread_id=comment_id)
+        thread = self.client.get_pull_request_thread(
+            repository_id=self.repository_id,
+            pull_request_id=pull_request_id,
+            thread_id=comment_id,
+            project=self.project,
+        )
+        thread_context = thread.thread_context
 
-        return self._get_patch(thread_context=thread.thread_context, pull_request_event=pull_request_event)
-
-    def _get_patch(self, thread_context: CommentThreadContext, pull_request_event) -> List[str]:
-        """
-        Get the patch for a given thread context.
-
-        Args:
-            thread_context (CommentThreadContext): The thread context.
-            pull_request_event (PullRequestEvent): The pull request event.
-
-        Returns:
-            List[str]: The patch.
-        """
         pull_request = pull_request_event["pullRequest"]
         if not pull_request:
             raise ValueError("pull_request_event.pullRequest is required")
@@ -275,7 +181,18 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             "\n".join(left_selection) or [], "\n".join(right_selection) or [], thread_context.file_path
         )
 
-    def _calculate_selection(self, thread_context, original_content, changed_content):
+    def _calculate_selection(self, thread_context, original_content, changed_content) -> Tuple[List[str], List[str]]:
+        """
+        Calculate the selection for a given thread context.
+
+        Args:
+            thread_context (CommentThreadContext): The thread context.
+            original_content (str): The original content.
+            changed_content (str): The changed content.
+
+        Returns:
+            Tuple[List[str], List[str]]: The left and right selections.
+        """
         left_selection = []
         right_selection = []
         if original_content and thread_context.left_file_start and thread_context.left_file_end:
@@ -296,10 +213,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             )
 
         return left_selection, right_selection
-
-        if left_selection or right_selection:
-            return left_selection, right_selection
-        raise ValueError("Both left and right selection cannot be None")
 
     def get_patches(self, pull_request_event, condensed=False) -> Iterable[List[str]]:
         """
@@ -325,6 +238,41 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             )
             for git_change in git_changes
         ]
+
+    def get_changed_blobs(self, pull_request: GitPullRequest):
+        """
+        Get the changed blobs in a pull request.
+
+        Args:
+            pull_request (GitPullRequest): The pull request.
+
+        Returns:
+            List[Dict[str, str]]: The changed blobs.
+        """
+        changed_paths = []
+        commit_diff_within_pr = None
+
+        skip = 0
+        while True:
+            commit_diff_within_pr = self.client.get_commit_diffs(
+                repository_id=self.repository_id,
+                project=self.project,
+                diff_common_commit=False,
+                base_version=GitBaseVersionDescriptor(
+                    base_version=pull_request["lastMergeSourceCommit"]["commitId"], base_version_type="commit"
+                ),
+                target_version=GitTargetVersionDescriptor(
+                    target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
+                ),
+            )
+            changed_paths.extend(
+                [change for change in commit_diff_within_pr.changes if "isFolder" not in change["item"]]
+            )
+            skip += len(commit_diff_within_pr.changes)
+            if commit_diff_within_pr.all_changes_included:
+                break
+
+        return changed_paths
 
     def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> List[str]:
         lines = file_contents.splitlines()
@@ -357,11 +305,35 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
     def _create_patch(
         self, original_content: Optional[str], changed_content: Optional[str], file_path: str, condensed=False
     ) -> List[str]:
+        """
+        Create a patch for a given file.
+
+        Args:
+            original_content (Optional[str]): The original content.
+            changed_content (Optional[str]): The changed content.
+            file_path (str): The file path.
+            condensed (bool, optional): If True, returns a condensed version of the patch. Defaults to False.
+
+        Returns:
+            List[str]: The patch.
+        """
         left = original_content.splitlines() if original_content else []
         right = changed_content.splitlines() if changed_content else []
         return self._create_patch_list(left, right, file_path, condensed)
 
     def _create_patch_list(self, left: List[str], right: List[str], file_path: str, condensed=False) -> List[str]:
+        """
+        Create a patch list for a given file.
+
+        Args:
+            left (List[str]): The left side of the patch.
+            right (List[str]): The right side of the patch.
+            file_path (str): The file path.
+            condensed (bool, optional): If True, returns a condensed version of the patch. Defaults to False.
+
+        Returns:
+            List[str]: The patch list.
+        """
         needed_changes = self._calculate_minimum_change_needed(left, right)
         line, row = 1, 1
         patch = []
@@ -393,6 +365,15 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         return patch
 
     def _get_condensed_patch(self, patch: List[str]) -> List[str]:
+        """
+        Get a condensed version of the patch.
+
+        Args:
+            patch (List[str]): The patch.
+
+        Returns:
+            List[str]: The condensed patch.
+        """
         buffer = []
         result = []
         trailing_context = 0
@@ -412,6 +393,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         return result
 
     def _calculate_minimum_change_needed(self, left: List[str], right: List[str]) -> List[List[int]]:
+        """
+        Calculate the minimum change needed to transform the left side to the right side.
+
+        Args:
+            left (List[str]): The left side of the patch.
+            right (List[str]): The right side of the patch.
+
+        Returns:
+            List[List[int]]: The minimum change needed.
+        """
         changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
 
         for i, j in itertools.product(range(len(left) + 1), range(len(right) + 1)):

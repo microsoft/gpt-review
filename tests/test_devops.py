@@ -338,13 +338,15 @@ def mock_ado_client(monkeypatch) -> None:
 
         def get_commit_diffs(
             self,
-            repository_id,
+            repository_id="",
             project=None,
             diff_common_commit=None,
             top=None,
             skip=None,
             base_version_descriptor=None,
             target_version_descriptor=None,
+            base_version=None,
+            target_version=None,
         ) -> GitCommitDiffs:
             return GitCommitDiffs(changes=[], all_changes_included=True)
 
@@ -376,7 +378,7 @@ def test_update_pr(mock_ado_client: None, devops_client: DevOpsClient) -> None:
 
 
 def test_get_diff(mock_ado_client: None, devops_client: DevOpsClient) -> None:
-    response = devops_client._get_commit_diff(
+    response = devops_client.client.get_commit_diffs(
         diff_common_commit=True,
         base_version=GitBaseVersionDescriptor(version=SOURCE, version_type="commit"),
         target_version=GitTargetVersionDescriptor(target_version=TARGET, target_version_type="commit"),
