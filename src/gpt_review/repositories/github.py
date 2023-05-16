@@ -104,17 +104,22 @@ class GitHubClient(_RepositoryClient):
         return response
 
     @staticmethod
-    def post_pr_summary(pr_patch) -> Dict[str, str]:
+    def post_pr_summary(diff) -> Dict[str, str]:
         """
         Get a review of a PR.
 
+        Requires the following environment variables:
+            - LINK: The link to the PR.
+            - GIT_COMMIT_HASH: The git commit hash.
+            - GITHUB_TOKEN: The GitHub access token.
+
         Args:
-            pr_patch (str): The patch of the PR.
+            diff (str): The patch of the PR.
 
         Returns:
             Dict[str, str]: The review.
         """
-        review = _summarize_files(pr_patch)
+        review = _summarize_files(diff)
         logging.debug(review)
 
         link = os.getenv("LINK")
@@ -131,7 +136,7 @@ class GitHubClient(_RepositoryClient):
         return {"response": "No PR to post too"}
 
 
-def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
+def _review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment.
 
     Args:
@@ -147,13 +152,18 @@ def _github_review(repository=None, pull_request=None, access_token=None) -> Dic
     return {"response": "Review posted as a comment."}
 
 
+def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+    """"""
+    raise NotImplementedError
+
+
 class GitHubCommandGroup(GPTCommandGroup):
     """Ask Command Group."""
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader) -> None:
-        with CommandGroup(loader, "github", "gpt_review.repositories.github#{}") as group:
-            group.command("review", "_github_review", is_preview=True)
+        with CommandGroup(loader, "github", "gpt_review.repositories.github#{}", is_preview=True) as group:
+            group.command("review", "_review", is_preview=True)
 
     @staticmethod
     def load_arguments(loader: CLICommandsLoader) -> None:
