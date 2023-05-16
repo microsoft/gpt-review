@@ -5,6 +5,21 @@ jobs:
     permissions: write-all
     runs-on: ubuntu-latest
     name: OpenAI PR Comment
+    env:
+      GIT_COMMIT_HASH: ${{ github.event.pull_request.head.sha }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      REPOSITORY_NAME: ${{ github.repository }}
+      AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+      FILE_SUMMARY: false
+      TEST_SUMMARY: false
+      BUG_SUMMARY: false
+      RISK_SUMMARY: false
+      RISK_BREAKING: false
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -24,7 +39,7 @@ jobs:
           python3 -m venv .env
           source .env/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install gpt-review
+          python -m pip install gpt-review\
 
       - run: |
           source .env/bin/activate
@@ -33,6 +48,10 @@ jobs:
             --access-token $GITHUB_TOKEN \
             --pull-request $PR_NUMBER \
             --repository $REPOSITORY_NAME
+        continue-on-error: true
+
+      - run: |
+          source .env/bin/activate
 
           pip install -e .
 
@@ -40,17 +59,3 @@ jobs:
             --access-token $GITHUB_TOKEN \
             --pull-request $PR_NUMBER \
             --repository $REPOSITORY_NAME
-        env:
-          GIT_COMMIT_HASH: ${{ github.event.pull_request.head.sha }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          REPOSITORY_NAME: ${{ github.repository }}
-          AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
-          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-          LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-          FILE_SUMMARY: false
-          TEST_SUMMARY: false
-          BUG_SUMMARY: false
-          RISK_SUMMARY: false
-          RSIK_BREAKING: false
