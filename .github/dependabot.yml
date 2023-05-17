@@ -24,3 +24,5 @@ updates:
   schedule:
     interval: daily
     time: "13:00"
+  commit-message:
+    prefix: "fix: "
