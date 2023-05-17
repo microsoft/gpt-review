@@ -11,9 +11,8 @@ updates:
     interval: daily
     time: "13:00"
   open-pull-requests-limit: 10
-  assignees:
-  - dciborow
-  - danay1999
+  reviewers:
+  - Azure-Core-GPT-Review
   commit-message:
     prefix: "fix: "
   allow:
@@ -26,3 +25,5 @@ updates:
     time: "13:00"
   commit-message:
     prefix: "fix: "
+  reviewers:
+  - Azure-Core-GPT-Review
