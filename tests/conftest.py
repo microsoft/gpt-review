@@ -1,8 +1,14 @@
 from collections import namedtuple
+import sys
 
 import pytest
 import yaml
 from llama_index import SimpleDirectoryReader
+
+
+@pytest.fixture(scope="session", autouse=True)
+def log_global_env_facts(record_testsuite_property):
+    record_testsuite_property("PYTHON", f"{sys.version_info[0]}.{sys.version_info[1]}")
 
 
 def pytest_collection_modifyitems(items):
