@@ -1,13 +1,13 @@
 """Open AI API Call Wrapper."""
-import os
 import logging
+import os
 
 import openai
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
-from gpt_review.utils import _retry_with_exponential_backoff
 from gpt_review.context import _load_azure_openai_context
+from gpt_review.utils import _retry_with_exponential_backoff
 
 
 def _count_tokens(prompt) -> int:
@@ -84,7 +84,7 @@ def _call_gpt(
 
     try:
         model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
-        logging.debug(f"Model Selected based on prompt size: {model}")
+        logging.debug("Model Selected based on prompt size: %s", model)
 
         if os.environ["OPENAI_API_TYPE"] == C.AZURE_API_TYPE:
             logging.debug("Using Azure Open AI.")

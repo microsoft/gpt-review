@@ -10,11 +10,11 @@ from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
 
 from gpt_review._command import GPTCommandGroup
-from gpt_review._repository import _RepositoryClient
 from gpt_review._review import _summarize_files
+from gpt_review.repositories._repository import _RepositoryClient
 
 
-class _GitHubClient(_RepositoryClient):
+class GitHubClient(_RepositoryClient):
     """GitHub client."""
 
     @staticmethod
@@ -104,17 +104,22 @@ class _GitHubClient(_RepositoryClient):
         return response
 
     @staticmethod
-    def post_pr_summary(pr_patch) -> Dict[str, str]:
+    def post_pr_summary(diff) -> Dict[str, str]:
         """
         Get a review of a PR.
 
+        Requires the following environment variables:
+            - LINK: The link to the PR.
+            - GIT_COMMIT_HASH: The git commit hash.
+            - GITHUB_TOKEN: The GitHub access token.
+
         Args:
-            pr_patch (str): The patch of the PR.
+            diff (str): The patch of the PR.
 
         Returns:
             Dict[str, str]: The review.
         """
-        review = _summarize_files(pr_patch)
+        review = _summarize_files(diff)
         logging.debug(review)
 
         link = os.getenv("LINK")
@@ -122,7 +127,7 @@ class _GitHubClient(_RepositoryClient):
         access_token = os.getenv("GITHUB_TOKEN")
 
         if link and git_commit_hash and access_token:
-            _GitHubClient._post_pr_comment(
+            GitHubClient._post_pr_comment(
                 review=review, git_commit_hash=git_commit_hash, link=link, access_token=access_token
             )
             return {"response": "PR posted"}
@@ -131,7 +136,7 @@ class _GitHubClient(_RepositoryClient):
         return {"response": "No PR to post too"}
 
 
-def _github_review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
+def _review(repository=None, pull_request=None, access_token=None) -> Dict[str, str]:
     """Review GitHub PR with Open AI, and post response as a comment.
 
     Args:
@@ -142,9 +147,14 @@ def _github_review(repository=None, pull_request=None, access_token=None) -> Dic
     Returns:
         Dict[str, str]: The response.
     """
-    diff = _GitHubClient.get_pr_diff(repository, pull_request, access_token)
-    _GitHubClient.post_pr_summary(diff)
+    diff = GitHubClient.get_pr_diff(repository, pull_request, access_token)
+    GitHubClient.post_pr_summary(diff)
     return {"response": "Review posted as a comment."}
+
+
+def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+    """"""
+    raise NotImplementedError
 
 
 class GitHubCommandGroup(GPTCommandGroup):
@@ -152,8 +162,8 @@ class GitHubCommandGroup(GPTCommandGroup):
 
     @staticmethod
     def load_command_table(loader: CLICommandsLoader) -> None:
-        with CommandGroup(loader, "github", "gpt_review._github#{}") as group:
-            group.command("review", "_github_review", is_preview=True)
+        with CommandGroup(loader, "github", "gpt_review.repositories.github#{}", is_preview=True) as group:
+            group.command("review", "_review", is_preview=True)
 
     @staticmethod
     def load_arguments(loader: CLICommandsLoader) -> None:

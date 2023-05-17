@@ -1,17 +1,17 @@
 import pytest
 
-from gpt_review._github import _GitHubClient
+from gpt_review.repositories.github import GitHubClient
 
 
 def get_pr_diff_test(starts_with, patch_repo=None, patch_pr=None) -> None:
     """Test the GitHub API call."""
-    diff = _GitHubClient.get_pr_diff(patch_repo=patch_repo, patch_pr=patch_pr)
+    diff = GitHubClient.get_pr_diff(patch_repo=patch_repo, patch_pr=patch_pr)
     assert diff.startswith(starts_with)
 
 
 def post_pr_comment_test() -> None:
     """Test the GitHub API call."""
-    response = _GitHubClient.post_pr_summary("test")
+    response = GitHubClient.post_pr_summary("test")
     assert response
 
 

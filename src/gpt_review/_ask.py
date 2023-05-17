@@ -101,7 +101,7 @@ def _ask(
     """
     _load_azure_openai_context()
 
-    prompt = " ".join(question)
+    prompt = "".join(question)
 
     if files or directory or repository:
         response = _query_index(

@@ -131,3 +131,17 @@ dmypy.json
 
 # Default Directory for llama index files
 storage/
+
+# Azure Functions artifacts
+bin
+obj
+appsettings.json
+local.settings.json
+*.deb
+.venvs
+
+# Azurite artifacts
+__blobstorage__
+__queuestorage__
+__azurite_db*__.json
+.python_packages
