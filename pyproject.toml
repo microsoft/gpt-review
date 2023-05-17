@@ -23,8 +23,9 @@ requires-python = ">=3.8.1"
 dynamic = ["version"]
 dependencies = [
   'azure-devops',
-  'azure-functions; python_version <= "3.10"',
+  'azure-functions',
   'azure-identity',
+  'azure-keyvault',
   'azure-keyvault-secrets',
   'llama-index>=0.6.0,<=0.6.8',
   'httpx',
@@ -145,7 +146,7 @@ executionEnvironments = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -n auto"
+addopts = "--cov-report xml:coverage.xml --cov src --cov-fail-under 0 --cov-append -m unit"
 pythonpath = [
   "src"
 ]

@@ -62,7 +62,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         self.project = project
         self.repository_id = repository_id
 
-    def create_comment(self, pull_request_id: int, comment_id: int, text) -> Comment:
+    def create_comment(self, pull_request_id: int, comment_id: int, text: str, **kwargs) -> Comment:
         """
         Create a comment on a pull request.
 
@@ -74,16 +74,17 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             pull_request_id (int): The Azure DevOps pull request ID.
             comment_id (int): The Azure DevOps comment ID.
             text (str): The text of the comment.
+            **kwargs: Any additional keyword arguments.
 
         Returns:
             Comment: The response from the API.
         """
         new_comment = Comment(content=text)
         return self.client.create_comment(
-            new_comment, self.repository_id, pull_request_id, comment_id, project=self.project
+            new_comment, self.repository_id, pull_request_id, comment_id, project=self.project, **kwargs
         )
 
-    def update_pr(self, pull_request_id, title=None, description=None) -> GitPullRequest:
+    def update_pr(self, pull_request_id, title=None, description=None, **kwargs) -> GitPullRequest:
         """
         Update a pull request.
 
@@ -91,6 +92,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             pull_request_id (str): The Azure DevOps pull request ID.
             title (str): The title of the pull request.
             description (str): The description of the pull request.
+            **kwargs: Any additional keyword arguments.
 
         Returns:
             GitPullRequest: The response from the API.
@@ -100,6 +102,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             repository_id=self.repository_id,
             project=self.project,
             pull_request_id=pull_request_id,
+            **kwargs,
         )
 
     def read_all_text(
@@ -153,32 +156,18 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             List[str]: The diff of the pull request.
         """
-        thread = self.client.get_pull_request_thread(
+        thread_context = self.client.get_pull_request_thread(
             repository_id=self.repository_id,
             pull_request_id=pull_request_id,
             thread_id=comment_id,
             project=self.project,
-        )
-        thread_context = thread.thread_context
+        ).thread_context
 
-        pull_request = pull_request_event["pullRequest"]
-        if not pull_request:
-            raise ValueError("pull_request_event.pullRequest is required")
+        left_selection, right_selection = self._calculate_selection(thread_context, pull_request_event)
 
-        original_content = self.read_all_text(path=thread_context.file_path, check_if_exists=True)
-        changed_content = self.read_all_text(
-            path=thread_context.file_path,
-            commit_id=pull_request["lastMergeSourceCommit"]["commitId"],
-            check_if_exists=True,
-        )
+        return self._create_patch(left_selection, right_selection, thread_context.file_path)
 
-        left_selection, right_selection = self._calculate_selection(thread_context, original_content, changed_content)
-
-        return self._create_patch(
-            "\n".join(left_selection) or [], "\n".join(right_selection) or [], thread_context.file_path
-        )
-
-    def _calculate_selection(self, thread_context, original_content, changed_content) -> Tuple[List[str], List[str]]:
+    def _calculate_selection(self, thread_context, pull_request) -> Tuple[str, str]:
         """
         Calculate the selection for a given thread context.
 
@@ -190,26 +179,51 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             Tuple[List[str], List[str]]: The left and right selections.
         """
-        left_selection = []
-        right_selection = []
-        if original_content and thread_context.left_file_start and thread_context.left_file_end:
-            left_selection = self._get_selection(
+
+        original_content = self.read_all_text(path=thread_context.file_path, check_if_exists=True)
+        changed_content = self.read_all_text(
+            path=thread_context.file_path,
+            commit_id=pull_request["pullRequest"]["lastMergeSourceCommit"]["commitId"],
+            check_if_exists=True,
+        )
+
+        if not original_content and not changed_content:
+            raise ValueError("Both left and right selection cannot be None")
+
+        left_selection = (
+            self._get_selection(
                 original_content, thread_context.left_file_start.line, thread_context.left_file_end.line
             )
+            if original_content and thread_context.left_file_start and thread_context.left_file_end
+            else None
+        )
 
-            if not changed_content or not thread_context.right_file_start or not thread_context.right_file_end:
-                raise ValueError("Both left and right selection cannot be None")
-
-            right_selection = self._get_selection(
+        right_selection = (
+            self._get_selection(
                 changed_content, thread_context.right_file_start.line, thread_context.right_file_end.line
             )
-
-        if changed_content and thread_context.right_file_start and thread_context.right_file_end:
-            right_selection = self._get_selection(
-                changed_content, thread_context.right_file_start.line, thread_context.right_file_end.line
-            )
+            if changed_content and thread_context.right_file_start and thread_context.right_file_end
+            else None
+        )
 
         return left_selection, right_selection
+
+    def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> str:
+        lines = file_contents.splitlines()
+
+        if line_end - line_start < MIN_CONTEXT_LINES:
+            return lines
+
+        if line_start < 1 or line_start > len(lines) or line_end < 1 or line_end > len(lines):
+            raise ValueError(
+                f"Selection region lineStart = {line_start}, lineEnd = {line_end}, lines length = {len(lines)}"
+            )
+
+        if line_start == line_end:
+            return [lines[line_start - 1]]
+
+        selection = lines[line_start - 1 : line_end]
+        return "\n".join(selection)
 
     def get_patches(self, pull_request_event, condensed=False) -> Iterable[List[str]]:
         """
@@ -236,7 +250,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             for git_change in git_changes
         ]
 
-    def get_changed_blobs(self, pull_request: GitPullRequest):
+    def get_changed_blobs(self, pull_request: GitPullRequest) -> List[str]:
         """
         Get the changed blobs in a pull request.
 
@@ -271,33 +285,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return changed_paths
 
-    def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> List[str]:
-        lines = file_contents.splitlines()
-
-        if line_end - line_start < MIN_CONTEXT_LINES:
-            return lines
-
-        if line_start < 1 or line_start > len(lines) or line_end < 1 or line_end > len(lines):
-            raise ValueError(
-                f"Selection region lineStart = {line_start}, lineEnd = {line_end}, lines length = {len(lines)}"
-            )
-
-        if line_start == line_end:
-            return [lines[line_start - 1]]
-
-        return lines[line_start - 1 : line_end]
-
     def _get_change(self, git_change, source_commit_head, condensed=False) -> List[str]:
-        return "\n".join(self._get_git_change(git_change["item"]["path"], source_commit_head, condensed))
-
-    def _get_git_change(self, file_path, source_commit_head, condensed=False) -> List[str]:
+        file_path = git_change["item"]["path"]
         try:
             original_content = self.read_all_text(file_path, check_if_exists=True)
         except AzureDevOpsServiceError:
             # File Not Found
             original_content = ""
         changed_content = self.read_all_text(file_path, commit_id=source_commit_head, check_if_exists=True)
-        return self._create_patch(original_content, changed_content, file_path, condensed)
+        patch = self._create_patch(original_content, changed_content, file_path, condensed)
+        return "\n".join(patch)
 
     def _create_patch(
         self, original_content: Optional[str], changed_content: Optional[str], file_path: str, condensed=False
@@ -316,21 +313,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         """
         left = original_content.splitlines() if original_content else []
         right = changed_content.splitlines() if changed_content else []
-        return self._create_patch_list(left, right, file_path, condensed)
 
-    def _create_patch_list(self, left: List[str], right: List[str], file_path: str, condensed=False) -> List[str]:
-        """
-        Create a patch list for a given file.
-
-        Args:
-            left (List[str]): The left side of the patch.
-            right (List[str]): The right side of the patch.
-            file_path (str): The file path.
-            condensed (bool, optional): If True, returns a condensed version of the patch. Defaults to False.
-
-        Returns:
-            List[str]: The patch list.
-        """
         needed_changes = self._calculate_minimum_change_needed(left, right)
         line, row = 1, 1
         patch = []
@@ -487,7 +470,7 @@ class DevOpsFunction(DevOpsClient):
             msg (func.QueueMessage): The Service Bus message.
         """
         body = msg.get_body().decode("utf-8")
-        logging.info("Python ServiceBus queue trigger processed message: %s", body)
+        logging.debug("Python ServiceBus queue trigger processed message: %s", body)
         if "copilot:summary" in body:
             self._process_summary(body)
         elif "copilot:" in body:
@@ -500,7 +483,7 @@ class DevOpsFunction(DevOpsClient):
         Args:
             body (str): The Service Bus payload.
         """
-        logging.info("Copilot Comment Alert Triggered")
+        logging.debug("Copilot Comment Alert Triggered")
         payload = json.loads(body)
 
         pr_id = self._get_pr_id(payload)
@@ -512,7 +495,7 @@ class DevOpsFunction(DevOpsClient):
         except Exception:
             diff = self.get_patches(pull_request_event=payload["resource"])
 
-        logging.info("Copilot diff: %s", diff)
+        logging.debug("Copilot diff: %s", diff)
         diff = "\n".join(diff)
 
         question = f"""
@@ -538,7 +521,7 @@ class DevOpsFunction(DevOpsClient):
             int: The comment ID.
         """
         comment_id = payload["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
-        logging.info("Copilot Commet ID: %s", comment_id)
+        logging.debug("Copilot Commet ID: %s", comment_id)
         return comment_id
 
     def _process_summary(self, body) -> None:
@@ -548,7 +531,7 @@ class DevOpsFunction(DevOpsClient):
         Args:
             body (str): The Service Bus payload.
         """
-        logging.info("Copilot Summary Alert Triggered")
+        logging.debug("Copilot Summary Alert Triggered")
         payload = json.loads(body)
 
         pr_id = self._get_pr_id(payload)
@@ -558,11 +541,11 @@ class DevOpsFunction(DevOpsClient):
         if "comment" in payload["resource"]:
             self._post_summary(payload, pr_id, link)
         else:
-            logging.info("Copilot Update from Updated PR")
+            logging.debug("Copilot Update from Updated PR")
 
     def _get_link(self, pr_id) -> str:
         link = f"https://{self.org}.visualstudio.com/{self.project}/_git/{self.repository_id}/pullrequest/{pr_id}"
-        logging.info("Copilot Link: %s", link)
+        logging.debug("Copilot Link: %s", link)
         return link
 
     def _get_pr_id(self, payload) -> int:
@@ -579,7 +562,7 @@ class DevOpsFunction(DevOpsClient):
             pr_id = payload["resource"]["pullRequestId"]
         else:
             pr_id = payload["resource"]["pullRequest"]["pullRequestId"]
-        logging.info("Copilot PR ID: %s", pr_id)
+        logging.debug("Copilot PR ID: %s", pr_id)
         return pr_id
 
     def _post_summary(self, payload, pr_id, link) -> None:
@@ -592,17 +575,11 @@ class DevOpsFunction(DevOpsClient):
             link (str): The link to the PR.
         """
         comment_id = payload["resource"]["comment"]["_links"]["threads"]["href"].split("/")[-1]
-        logging.info("Copilot Commet ID: %s", comment_id)
-
-        os.putenv("RISK_SUMMARY", "false")
-        os.putenv("FILE_SUMMARY_FULL", "false")
-        os.putenv("TEST_SUMMARY", "false")
-        os.putenv("BUG_SUMMARY", "false")
-        os.putenv("SUMMARY_SUGGEST", "false")
+        logging.debug("Copilot Commet ID: %s", comment_id)
 
         diff = self.get_patch(pull_request_event=payload["resource"], pull_request_id=pr_id, comment_id=comment_id)
         diff = "\n".join(diff)
-        logging.info("Copilot diff: %s", diff)
+        logging.debug("Copilot diff: %s", diff)
 
         self.post_pr_summary(diff, link=link)
 

@@ -12,6 +12,12 @@ HANDLER = DevOpsFunction(
     repository_id=os.environ["ADO_REPO"],
 )
 
+os.putenv("RISK_SUMMARY", "false")
+os.putenv("FILE_SUMMARY_FULL", "false")
+os.putenv("TEST_SUMMARY", "false")
+os.putenv("BUG_SUMMARY", "false")
+os.putenv("SUMMARY_SUGGEST", "false")
+
 
 def main(msg: func.ServiceBusMessage) -> None:
     """Handle an incoming message."""
