@@ -55,11 +55,10 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         # Create a connection to the org
         credentials = BasicAuthentication("", personal_access_token)
-        connection = Connection(base_url=organization_url, creds=credentials)
+        self.connection = Connection(base_url=organization_url, creds=credentials)
 
         # Get a client (the "core" client provides access to projects, teams, etc)
-        self.connection = connection
-        self.client: GitClient = connection.clients_v7_1.get_git_client()
+        self.client: GitClient = self.connection.clients_v7_1.get_git_client()
         self.project = project
         self.repository_id = repository_id
 
@@ -140,8 +139,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             str: The question from the Azure DevOps Comment.
         """
-        payload = json.loads(payload)
-        return payload["resource"]["comment"]["content"]
+        return json.loads(payload)["resource"]["comment"]["content"]
 
     def get_patch(self, pull_request_event, pull_request_id, comment_id) -> List[str]:
         """
@@ -525,7 +523,7 @@ class DevOpsFunction(DevOpsClient):
 
         response = _ask(
             question=question,
-            max_tokens=500,
+            max_tokens=1000,
         )
         self.create_comment(pull_request_id=pr_id, comment_id=comment_id, text=response["response"])
 
