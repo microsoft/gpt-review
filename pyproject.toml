@@ -22,6 +22,8 @@ classifiers = [
 requires-python = ">=3.8.1"
 dynamic = ["version"]
 dependencies = [
+  'azure-devops',
+  'azure-functions; python_version <= "3.10"',
   'azure-identity',
   'azure-keyvault-secrets',
   'llama-index>=0.6.0,<=0.6.8',
@@ -39,6 +41,8 @@ dependencies = [
 test = [
     "bandit[toml]==1.7.5",
     "black==23.3.0",
+    "cattrs",
+    "docx2txt",
     "check-manifest==0.49",
     "flake8-bugbear==23.5.9",
     "flake8-docstrings",
@@ -54,7 +58,8 @@ test = [
     "pytest-xdist",
     "pytest>=7.2.2",
     "pytest-github-actions-annotate-failures",
-    "shellcheck-py==0.9.0.2"
+    "shellcheck-py==0.9.0.2",
+    "requests_mock"
 ]
 
 [project.scripts]
@@ -116,6 +121,10 @@ ignore = [
     "F821",
     "W391", # Covered by Pylint trailing-newlines
 ]
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests", "azure"]
 
 [tool.pyright]
 include = ["src"]

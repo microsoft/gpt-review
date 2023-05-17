@@ -19,3 +19,10 @@ updates:
   allow:
   - dependency-type: direct
   - dependency-type: indirect
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "13:00"
+  commit-message:
+    prefix: "fix: "

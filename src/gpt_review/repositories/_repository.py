@@ -22,12 +22,12 @@ class _RepositoryClient:
 
     @staticmethod
     @abstractmethod
-    def post_pr_summary(pr_patch) -> None:
+    def post_pr_summary(diff) -> None:
         """
         Post a summary to a PR.
 
         Args:
-            pr_patch (str): The patch of the PR.
+            diff (str): The diff of the PR.
 
         Returns:
             str: The review of the PR.
