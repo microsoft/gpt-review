@@ -12,7 +12,7 @@ updates:
     time: "13:00"
   open-pull-requests-limit: 10
   reviewers:
-  - Azure-Core-GPT-Review
+  - dciborow
   commit-message:
     prefix: "fix: "
   allow:
@@ -26,4 +26,4 @@ updates:
   commit-message:
     prefix: "fix: "
   reviewers:
-  - Azure-Core-GPT-Review
+  - dciborow
