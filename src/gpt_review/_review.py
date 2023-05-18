@@ -21,7 +21,7 @@ _CHECKS = {
         {
             "flag": "SUMMARY_SUGGEST",
             "header": "Suggestions",
-            "goal": "Any suggestions for improving the changes in this PR?",
+            "goal": "Any suggestions for improving the changes in this PR? If everything looks ok its alright to say that you dont have any suggestions. ",
         },
     ],
     "RISK_CHECKS": [
