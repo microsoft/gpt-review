@@ -22,9 +22,9 @@ _CHECKS = {
             "flag": "SUMMARY_SUGGEST",
             "header": "Suggestions",
             "goal": """
-            Any suggestions for improving the changes in this PR?
-            If everything looks good, it's alright to say that you don't have any suggestions.
-            However, don't be afraid to point out small issues.
+            Provide suggestions for improving the changes in this PR.
+            If everything looks good, mention that no suggestions are needed.
+            Don't hesitate to point out even small issues.
             """,
         },
     ],
