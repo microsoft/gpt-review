@@ -109,6 +109,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         self,
         path: str,
         commit_id: str = None,
+        check_if_exists=True,
         **kwargs,
     ) -> str:
         """
@@ -127,6 +128,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             path=path,
             project=self.project,
             version_descriptor=GitVersionDescriptor(commit_id, version_type="commit") if commit_id else None,
+            check_if_exists=check_if_exists,
             **kwargs,
         )
         return "".join(byte.decode("utf-8") for byte in byte_iterator)
@@ -152,6 +154,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             pull_request_event (dict): The pull request event.
             pull_request_id (str): The Azure DevOps pull request ID.
             comment_id (str): The Azure DevOps comment ID.
+            condensed (bool): Whether to condense the diff.
 
         Returns:
             List[str]: The diff of the pull request.
@@ -163,9 +166,37 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             project=self.project,
         ).thread_context
 
-        left_selection, right_selection = self._calculate_selection(thread_context, pull_request_event)
+        left, right = self._calculate_selection(thread_context, pull_request_event)
 
-        return self._create_patch(left_selection, right_selection, thread_context.file_path)
+        return self._create_patch(left, right, thread_context.file_path)
+
+    def _create_patch(self, left, right, file_path):
+        changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
+
+        for i, j in itertools.product(range(len(left)), range(len(right))):
+            changes[i + 1][j + 1] = (
+                changes[i][j] if left[i] == right[j] else 1 + min(changes[i][j + 1], changes[i + 1][j], changes[i][j])
+            )
+
+        line, row = 1, 1
+        patch = [file_path]
+
+        while line < len(left) and row < len(right):
+            if changes[line][row] == changes[line - 1][row - 1]:
+                patch.append(left[line - 1])
+                line += 1
+                row += 1
+            elif changes[line - 1][row] < changes[line][row - 1]:
+                patch.append(f"- {left[line - 1]}")
+                line += 1
+            else:
+                patch.append(f"+ {right[row - 1]}")
+                row += 1
+
+        patch.extend(f"- {left[i - 1]}" for i in range(line, len(left) + 1))
+        patch.extend(f"+ {right[j - 1]}" for j in range(row, len(right) + 1))
+
+        return patch
 
     def _calculate_selection(self, thread_context, pull_request) -> Tuple[str, str]:
         """
@@ -180,22 +211,18 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             Tuple[List[str], List[str]]: The left and right selections.
         """
 
-        original_content = self.read_all_text(path=thread_context.file_path, check_if_exists=True)
+        original_content = self.read_all_text(path=thread_context.file_path)
         changed_content = self.read_all_text(
             path=thread_context.file_path,
             commit_id=pull_request["pullRequest"]["lastMergeSourceCommit"]["commitId"],
-            check_if_exists=True,
         )
-
-        if not original_content and not changed_content:
-            raise ValueError("Both left and right selection cannot be None")
 
         left_selection = (
             self._get_selection(
                 original_content, thread_context.left_file_start.line, thread_context.left_file_end.line
             )
             if original_content and thread_context.left_file_start and thread_context.left_file_end
-            else None
+            else []
         )
 
         right_selection = (
@@ -203,7 +230,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 changed_content, thread_context.right_file_start.line, thread_context.right_file_end.line
             )
             if changed_content and thread_context.right_file_start and thread_context.right_file_end
-            else None
+            else []
         )
 
         return left_selection, right_selection
@@ -211,27 +238,14 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
     def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> str:
         lines = file_contents.splitlines()
 
-        if line_end - line_start < MIN_CONTEXT_LINES:
-            return lines
+        return lines[line_start - 1 : line_end] if line_end - line_start > MIN_CONTEXT_LINES else lines
 
-        if line_start < 1 or line_start > len(lines) or line_end < 1 or line_end > len(lines):
-            raise ValueError(
-                f"Selection region lineStart = {line_start}, lineEnd = {line_end}, lines length = {len(lines)}"
-            )
-
-        if line_start == line_end:
-            return [lines[line_start - 1]]
-
-        selection = lines[line_start - 1 : line_end]
-        return "\n".join(selection)
-
-    def get_patches(self, pull_request_event, condensed=False) -> Iterable[List[str]]:
+    def get_patches(self, pull_request_event) -> Iterable[List[str]]:
         """
         Get the patches for a given pull request event.
 
         Args:
             pull_request_event (Any): The pull request event to retrieve patches for.
-            condensed (bool, optional): If True, returns a condensed version of the patch. Defaults to False.
 
         Returns:
             Iterable[List[str]]: An iterable of lists containing the patches for the pull request event.
@@ -245,7 +259,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             self._get_change(
                 git_change,
                 pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"],
-                condensed,
             )
             for git_change in git_changes
         ]
@@ -285,92 +298,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return changed_paths
 
-    def _get_change(self, git_change, source_commit_head, condensed=False) -> List[str]:
+    def _get_change(self, git_change, source_commit_head) -> List[str]:
         file_path = git_change["item"]["path"]
         try:
-            original_content = self.read_all_text(file_path, check_if_exists=True)
+            original_content = self.read_all_text(file_path)
         except AzureDevOpsServiceError:
             # File Not Found
             original_content = ""
-        changed_content = self.read_all_text(file_path, commit_id=source_commit_head, check_if_exists=True)
-        patch = self._create_patch(original_content, changed_content, file_path, condensed)
+        changed_content = self.read_all_text(file_path, commit_id=source_commit_head)
+        patch = self._create_patch(original_content, changed_content, file_path)
         return "\n".join(patch)
-
-    def _create_patch(
-        self, original_content: Optional[str], changed_content: Optional[str], file_path: str, condensed=False
-    ) -> List[str]:
-        """
-        Create a patch for a given file.
-
-        Args:
-            original_content (Optional[str]): The original content.
-            changed_content (Optional[str]): The changed content.
-            file_path (str): The file path.
-            condensed (bool, optional): If True, returns a condensed version of the patch. Defaults to False.
-
-        Returns:
-            List[str]: The patch.
-        """
-        left = original_content.splitlines() if original_content else []
-        right = changed_content.splitlines() if changed_content else []
-
-        needed_changes = self._calculate_minimum_change_needed(left, right)
-        line, row = 1, 1
-        patch = []
-
-        while line < len(left) and row < len(right):
-            if needed_changes[line][row] == needed_changes[line - 1][row - 1]:
-                patch.append(left[line - 1])
-                line += 1
-                row += 1
-            elif needed_changes[line - 1][row] < needed_changes[line][row - 1]:
-                patch.append(f"- {left[line - 1]}")
-                line += 1
-            else:
-                patch.append(f"+ {right[row - 1]}")
-                row += 1
-
-        while line <= len(left):
-            patch.append(f"- {left[line - 1]}")
-            line += 1
-
-        while row <= len(right):
-            patch.append(f"+ {right[row - 1]}")
-            row += 1
-
-        if condensed:
-            patch = self._get_condensed_patch(patch)
-
-        patch.insert(0, file_path)
-        return patch
-
-    def _get_condensed_patch(self, patch: List[str]) -> List[str]:
-        """
-        Get a condensed version of the patch.
-
-        Args:
-            patch (List[str]): The patch.
-
-        Returns:
-            List[str]: The condensed patch.
-        """
-        buffer = []
-        result = []
-        trailing_context = 0
-
-        for line in patch:
-            if line.startswith("+") or line.startswith("-"):
-                result.extend(buffer[-SURROUNDING_CONTEXT:])
-                buffer.clear()
-                result.append(line)
-                trailing_context = SURROUNDING_CONTEXT
-            elif trailing_context > 0:
-                result.append(line)
-                trailing_context -= 1
-            else:
-                buffer.append(line)
-
-        return result
 
     def _calculate_minimum_change_needed(self, left: List[str], right: List[str]) -> List[List[int]]:
         """
@@ -385,13 +322,10 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         """
         changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
 
-        for i, j in itertools.product(range(len(left) + 1), range(len(right) + 1)):
-            if i == 0 or j == 0:
-                changes[i][j] = 0
-            elif left[i - 1] == right[j - 1]:
-                changes[i][j] = changes[i - 1][j - 1]
-            else:
-                changes[i][j] = 1 + min(changes[i - 1][j], changes[i][j - 1], changes[i - 1][j - 1])
+        for i, j in itertools.product(range(len(left)), range(len(right))):
+            changes[i + 1][j + 1] = (
+                changes[i][j] if left[i] == right[j] else 1 + min(changes[i][j + 1], changes[i + 1][j], changes[i][j])
+            )
 
         return changes
 
