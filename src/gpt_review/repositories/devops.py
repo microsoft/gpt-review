@@ -26,6 +26,7 @@ from msrest.authentication import BasicAuthentication
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
 from gpt_review._review import _summarize_files
+from gpt_review.prompts._prompt import load_ask_yaml
 from gpt_review.repositories._repository import _RepositoryClient
 
 MIN_CONTEXT_LINES = 5
@@ -79,9 +80,13 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             Comment: The response from the API.
         """
-        new_comment = Comment(content=text)
         return self.client.create_comment(
-            new_comment, self.repository_id, pull_request_id, comment_id, project=self.project, **kwargs
+            comment=Comment(content=text),
+            repository_id=self.repository_id,
+            pull_request_id=pull_request_id,
+            thread_id=comment_id,
+            project=self.project,
+            **kwargs,
         )
 
     def update_pr(self, pull_request_id, title=None, description=None, **kwargs) -> GitPullRequest:
@@ -89,7 +94,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Update a pull request.
 
         Args:
-            pull_request_id (str): The Azure DevOps pull request ID.
+            pull_request_id (int): The Azure DevOps pull request ID.
             title (str): The title of the pull request.
             description (str): The description of the pull request.
             **kwargs: Any additional keyword arguments.
@@ -118,20 +123,25 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Args:
             path (str): The path to the file.
             commit_id (str): The commit ID.
+            check_if_exists (bool): Whether to check if the file exists.
             **kwargs: Any additional keyword arguments.
 
         Returns:
             str: The text of the file.
         """
-        byte_iterator = self.client.get_item_content(
-            repository_id=self.repository_id,
-            path=path,
-            project=self.project,
-            version_descriptor=GitVersionDescriptor(commit_id, version_type="commit") if commit_id else None,
-            check_if_exists=check_if_exists,
-            **kwargs,
-        )
-        return "".join(byte.decode("utf-8") for byte in byte_iterator)
+        try:
+            byte_iterator = self.client.get_item_content(
+                repository_id=self.repository_id,
+                path=path,
+                project=self.project,
+                version_descriptor=GitVersionDescriptor(commit_id, version_type="commit") if commit_id else None,
+                check_if_exists=check_if_exists,
+                **kwargs,
+            )
+            return "".join(byte.decode("utf-8") for byte in byte_iterator).splitlines()
+        except AzureDevOpsServiceError:
+            # File Not Found
+            return ""
 
     @staticmethod
     def process_comment_payload(payload: str) -> str:
@@ -154,7 +164,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             pull_request_event (dict): The pull request event.
             pull_request_id (str): The Azure DevOps pull request ID.
             comment_id (str): The Azure DevOps comment ID.
-            condensed (bool): Whether to condense the diff.
 
         Returns:
             List[str]: The diff of the pull request.
@@ -166,11 +175,23 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             project=self.project,
         ).thread_context
 
-        left, right = self._calculate_selection(thread_context, pull_request_event)
+        commit_id = pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"]
+        left, right = self._calculate_selection(thread_context, commit_id)
 
         return self._create_patch(left, right, thread_context.file_path)
 
-    def _create_patch(self, left, right, file_path):
+    def _create_patch(self, left, right, file_path) -> List:
+        """
+        Create a patch.
+
+        Args:
+            left (List[str]): The left side of the diff.
+            right (List[str]): The right side of the diff.
+            file_path (str): The file path.
+
+        Returns:
+            List: The patch.
+        """
         changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
 
         for i, j in itertools.product(range(len(left)), range(len(right))):
@@ -198,47 +219,37 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return patch
 
-    def _calculate_selection(self, thread_context, pull_request) -> Tuple[str, str]:
+    def _calculate_selection(self, thread, commit_id) -> Tuple[str, str]:
         """
         Calculate the selection for a given thread context.
 
         Args:
-            thread_context (CommentThreadContext): The thread context.
-            original_content (str): The original content.
-            changed_content (str): The changed content.
+            thread (GitPullRequestCommentThread): The thread context.
+            commit_id (str): The commit ID.
 
         Returns:
-            Tuple[List[str], List[str]]: The left and right selections.
+            Tuple[str, str]: The left and right selection.
         """
 
-        original_content = self.read_all_text(path=thread_context.file_path)
-        changed_content = self.read_all_text(
-            path=thread_context.file_path,
-            commit_id=pull_request["pullRequest"]["lastMergeSourceCommit"]["commitId"],
-        )
+        original_content = self.read_all_text(path=thread.file_path)
+        changed_content = self.read_all_text(path=thread.file_path, commit_id=commit_id)
 
         left_selection = (
-            self._get_selection(
-                original_content, thread_context.left_file_start.line, thread_context.left_file_end.line
-            )
-            if original_content and thread_context.left_file_start and thread_context.left_file_end
+            self._get_selection(original_content, thread.left_file_start.line, thread.left_file_end.line)
+            if thread.left_file_start and thread.left_file_end
             else []
         )
 
         right_selection = (
-            self._get_selection(
-                changed_content, thread_context.right_file_start.line, thread_context.right_file_end.line
-            )
-            if changed_content and thread_context.right_file_start and thread_context.right_file_end
+            self._get_selection(changed_content, thread.right_file_start.line, thread.right_file_end.line)
+            if thread.right_file_start and thread.right_file_end
             else []
         )
 
         return left_selection, right_selection
 
-    def _get_selection(self, file_contents: str, line_start: int, line_end: int) -> str:
-        lines = file_contents.splitlines()
-
-        return lines[line_start - 1 : line_end] if line_end - line_start > MIN_CONTEXT_LINES else lines
+    def _get_selection(self, lines: str, line_start: int, line_end: int) -> str:
+        return lines[line_start - 1 : line_end] if line_end - line_start >= MIN_CONTEXT_LINES else lines
 
     def get_patches(self, pull_request_event) -> Iterable[List[str]]:
         """
@@ -250,16 +261,11 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             Iterable[List[str]]: An iterable of lists containing the patches for the pull request event.
         """
-        pull_request_id = pull_request_event["pullRequest"]["pullRequestId"]
-        if not pull_request_id:
-            raise ValueError("pull_request_event.pullRequest is required")
+        pull_request = pull_request_event["pullRequest"]
 
-        git_changes = self.get_changed_blobs(pull_request_event["pullRequest"])
+        git_changes = self.get_changed_blobs(pull_request)
         return [
-            self._get_change(
-                git_change,
-                pull_request_event["pullRequest"]["lastMergeSourceCommit"]["commitId"],
-            )
+            self._get_change(git_change, pull_request["lastMergeSourceCommit"]["commitId"])
             for git_change in git_changes
         ]
 
@@ -274,11 +280,11 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             List[Dict[str, str]]: The changed blobs.
         """
         changed_paths = []
-        commit_diff_within_pr = None
+        pr_commits = None
 
         skip = 0
         while True:
-            commit_diff_within_pr = self.client.get_commit_diffs(
+            pr_commits = self.client.get_commit_diffs(
                 repository_id=self.repository_id,
                 project=self.project,
                 diff_common_commit=False,
@@ -289,45 +295,21 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                     target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
                 ),
             )
-            changed_paths.extend(
-                [change for change in commit_diff_within_pr.changes if "isFolder" not in change["item"]]
-            )
-            skip += len(commit_diff_within_pr.changes)
-            if commit_diff_within_pr.all_changes_included:
+            changed_paths.extend([change for change in pr_commits.changes if "isFolder" not in change["item"]])
+            skip += len(pr_commits.changes)
+            if pr_commits.all_changes_included:
                 break
 
         return changed_paths
 
     def _get_change(self, git_change, source_commit_head) -> List[str]:
         file_path = git_change["item"]["path"]
-        try:
-            original_content = self.read_all_text(file_path)
-        except AzureDevOpsServiceError:
-            # File Not Found
-            original_content = ""
+
+        original_content = self.read_all_text(file_path)
         changed_content = self.read_all_text(file_path, commit_id=source_commit_head)
+
         patch = self._create_patch(original_content, changed_content, file_path)
         return "\n".join(patch)
-
-    def _calculate_minimum_change_needed(self, left: List[str], right: List[str]) -> List[List[int]]:
-        """
-        Calculate the minimum change needed to transform the left side to the right side.
-
-        Args:
-            left (List[str]): The left side of the patch.
-            right (List[str]): The right side of the patch.
-
-        Returns:
-            List[List[int]]: The minimum change needed.
-        """
-        changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
-
-        for i, j in itertools.product(range(len(left)), range(len(right))):
-            changes[i + 1][j + 1] = (
-                changes[i][j] if left[i] == right[j] else 1 + min(changes[i][j + 1], changes[i + 1][j], changes[i][j])
-            )
-
-        return changes
 
 
 class DevOpsClient(_DevOpsClient):
@@ -421,7 +403,6 @@ class DevOpsFunction(DevOpsClient):
         payload = json.loads(body)
 
         pr_id = self._get_pr_id(payload)
-
         comment_id = self._get_comment_id(payload)
 
         try:
@@ -432,16 +413,10 @@ class DevOpsFunction(DevOpsClient):
         logging.debug("Copilot diff: %s", diff)
         diff = "\n".join(diff)
 
-        question = f"""
-    {diff}
+        question = load_ask_yaml().format(diff=diff, ask=_DevOpsClient.process_comment_payload(body))
 
-    {_DevOpsClient.process_comment_payload(body)}
-    """
+        response = _ask(question=question, max_tokens=1000)
 
-        response = _ask(
-            question=question,
-            max_tokens=1000,
-        )
         self.create_comment(pull_request_id=pr_id, comment_id=comment_id, text=response["response"])
 
     def _get_comment_id(self, payload) -> int:
@@ -469,13 +444,10 @@ class DevOpsFunction(DevOpsClient):
         payload = json.loads(body)
 
         pr_id = self._get_pr_id(payload)
-
         link = self._get_link(pr_id)
 
         if "comment" in payload["resource"]:
             self._post_summary(payload, pr_id, link)
-        else:
-            logging.debug("Copilot Update from Updated PR")
 
     def _get_link(self, pr_id) -> str:
         link = f"https://{self.org}.visualstudio.com/{self.project}/_git/{self.repository_id}/pullrequest/{pr_id}"

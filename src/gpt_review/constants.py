@@ -33,6 +33,7 @@ AZURE_LARGE_MODEL = "gpt-4-32k"
 AZURE_EMBEDDING_MODEL = "text-embedding-ada-002"
 AZURE_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 
+ASK_PROMPT_YAML = "prompt_ask.yaml"
 BUG_PROMPT_YAML = "prompt_bug.yaml"
 COVERAGE_PROMPT_YAML = "prompt_coverage.yaml"
 SUMMARY_PROMPT_YAML = "prompt_summary.yaml"

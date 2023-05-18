@@ -426,7 +426,7 @@ def test_int_get_patch(devops_client: DevOpsClient) -> None:
 def get_patch_pr_comment_test(devops_function: DevOpsFunction, expected_len: int) -> None:
     patch = devops_function.get_patches(pull_request_event=PR_COMMENT_PAYLOAD["resource"])
     patch = "\n".join(patch)
-    assert len(patch.splitlines()) == expected_len
+    assert len(patch) == expected_len
 
 
 def test_get_patch_pr_comment(mock_openai: None, mock_ado_client: None, devops_function: DevOpsFunction) -> None:
@@ -435,4 +435,4 @@ def test_get_patch_pr_comment(mock_openai: None, mock_ado_client: None, devops_f
 
 @pytest.mark.integration
 def test_int_get_patch_pr_comment(devops_function: DevOpsFunction) -> None:
-    get_patch_pr_comment_test(devops_function, 3079)
+    get_patch_pr_comment_test(devops_function, 3348)
