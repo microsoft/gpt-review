@@ -16,6 +16,7 @@ from azure.devops.v7_1.git.models import (
     GitPullRequest,
     GitTargetVersionDescriptor,
     GitVersionDescriptor,
+    GitPullRequestCommentThread,
 )
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
@@ -219,7 +220,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return patch
 
-    def _calculate_selection(self, thread, commit_id) -> Tuple[str, str]:
+    def _calculate_selection(self, thread: GitPullRequestCommentThread, commit_id: str) -> Tuple[str, str]:
         """
         Calculate the selection for a given thread context.
 
@@ -231,25 +232,24 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             Tuple[str, str]: The left and right selection.
         """
 
-        original_content = self.read_all_text(path=thread.file_path)
-        changed_content = self.read_all_text(path=thread.file_path, commit_id=commit_id)
+        original_content, changed_content = self._load_content(file_path=thread.file_path, commit_id=commit_id)
+
+        def get_selection(lines: str, line_start: int, line_end: int) -> str:
+            return lines[line_start - 1 : line_end] if line_end - line_start >= MIN_CONTEXT_LINES else lines
 
         left_selection = (
-            self._get_selection(original_content, thread.left_file_start.line, thread.left_file_end.line)
+            get_selection(original_content, thread.left_file_start.line, thread.left_file_end.line)
             if thread.left_file_start and thread.left_file_end
             else []
         )
 
         right_selection = (
-            self._get_selection(changed_content, thread.right_file_start.line, thread.right_file_end.line)
+            get_selection(changed_content, thread.right_file_start.line, thread.right_file_end.line)
             if thread.right_file_start and thread.right_file_end
             else []
         )
 
         return left_selection, right_selection
-
-    def _get_selection(self, lines: str, line_start: int, line_end: int) -> str:
-        return lines[line_start - 1 : line_end] if line_end - line_start >= MIN_CONTEXT_LINES else lines
 
     def get_patches(self, pull_request_event) -> Iterable[List[str]]:
         """
@@ -263,13 +263,13 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         """
         pull_request = pull_request_event["pullRequest"]
 
-        git_changes = self.get_changed_blobs(pull_request)
+        git_changes = self._get_changed_blobs(pull_request)
         return [
             self._get_change(git_change, pull_request["lastMergeSourceCommit"]["commitId"])
             for git_change in git_changes
         ]
 
-    def get_changed_blobs(self, pull_request: GitPullRequest) -> List[str]:
+    def _get_changed_blobs(self, pull_request: GitPullRequest) -> List[str]:
         """
         Get the changed blobs in a pull request.
 
@@ -302,14 +302,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return changed_paths
 
-    def _get_change(self, git_change, source_commit_head) -> List[str]:
+    def _get_change(self, git_change, commit_id) -> List[str]:
         file_path = git_change["item"]["path"]
 
-        original_content = self.read_all_text(file_path)
-        changed_content = self.read_all_text(file_path, commit_id=source_commit_head)
+        original_content, changed_content = self._load_content(file_path, commit_id)
 
         patch = self._create_patch(original_content, changed_content, file_path)
         return "\n".join(patch)
+
+    def _load_content(self, file_path, commit_id):
+        return self.read_all_text(file_path), self.read_all_text(file_path, commit_id=commit_id)
 
 
 class DevOpsClient(_DevOpsClient):
@@ -338,18 +340,7 @@ class DevOpsClient(_DevOpsClient):
         if link and access_token:
             review = _summarize_files(diff)
 
-            parsed_url = urlparse(link)
-
-            if "dev.azure.com" in parsed_url.netloc:
-                org = link.split("/")[3]
-                project = link.split("/")[4]
-                repo = link.split("/")[6]
-                pr_id = link.split("/")[8]
-            else:
-                org = link.split("/")[2].split(".")[0]
-                project = link.split("/")[3]
-                repo = link.split("/")[5]
-                pr_id = link.split("/")[7]
+            org, project, repo, pr_id = DevOpsClient._parse_url(link)
 
             DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
                 pull_request_id=pr_id,
@@ -359,6 +350,22 @@ class DevOpsClient(_DevOpsClient):
 
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
+
+    @staticmethod
+    def _parse_url(link):
+        parsed_url = urlparse(link)
+
+        if "dev.azure.com" in parsed_url.netloc:
+            org = link.split("/")[3]
+            project = link.split("/")[4]
+            repo = link.split("/")[6]
+            pr_id = link.split("/")[8]
+        else:
+            org = link.split("/")[2].split(".")[0]
+            project = link.split("/")[3]
+            repo = link.split("/")[5]
+            pr_id = link.split("/")[7]
+        return org, project, repo, pr_id
 
     @staticmethod
     def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
@@ -373,6 +380,21 @@ class DevOpsClient(_DevOpsClient):
         Returns:
             str: The diff of the PR.
         """
+        link = os.getenv("LINK")
+        access_token = os.getenv("ADO_TOKEN", access_token)
+
+        if link and access_token:
+            org, project, repo, pr_id = DevOpsClient._parse_url(link)
+
+            client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
+
+            diff = client.get_patches(pull_request_event=payload["resource"])
+            diff = "\n".join(diff)
+
+            return {"response": "PR posted"}
+
+        logging.warning("No PR to post too")
+        return {"response": "No PR to post too"}
 
 
 class DevOpsFunction(DevOpsClient):
@@ -500,7 +522,7 @@ def _review(diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]
     Returns:
         Dict[str, str]: The response.
     """
-    # diff = _DevOpsClient.get_pr_diff(repository, pull_request, access_token)
+    diff = DevOpsClient.get_pr_diff(repository, pull_request, access_token)
     with open(diff, "r", encoding="utf8") as file:
         diff_contents = file.read()
 
