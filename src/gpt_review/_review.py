@@ -24,7 +24,6 @@ _CHECKS = {
             "goal": """
             Provide suggestions for improving the changes in this PR.
             If the PR has no clear issues, mention that no suggestions are needed.
-            Don't hesitate to point out even small issues.
             """,
         },
     ],
