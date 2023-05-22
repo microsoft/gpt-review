@@ -2,10 +2,8 @@ _type: prompt
 input_variables:
     ["diff"]
 template: |
-  You are an experienced software developer.
-
-  Generate unit test cases for the code submitted
-  in the pull request, ensuring comprehensive coverage of all functions, methods,
-  and scenarios to validate the correctness and reliability of the implementation.
+  Summarize the following file changed in a pull request submitted by a developer on GitHub,
+  focusing on major modifications, additions, deletions, and any significant updates within the files.
+  Do not include the file name in the summary and list the summary with bullet points.
 
   {diff}

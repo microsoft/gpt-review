@@ -86,7 +86,7 @@ def _call_gpt(
         model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
         logging.debug("Model Selected based on prompt size: %s", model)
 
-        if os.environ["OPENAI_API_TYPE"] == C.AZURE_API_TYPE:
+        if os.environ.get("OPENAI_API_TYPE", "") == C.AZURE_API_TYPE:
             logging.debug("Using Azure Open AI.")
             completion = openai.ChatCompletion.create(
                 deployment_id=model,
