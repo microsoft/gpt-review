@@ -67,6 +67,7 @@ def _load_azure_openai_context() -> Context:
             vault_url=os.getenv("AZURE_KEY_VAULT_URL", C.AZURE_KEY_VAULT),
             credential=DefaultAzureCredential(additionally_allowed_tenants=["*"]),
         )
+        openai.api_type = os.environ["OPENAI_API_TYPE"] = C.AZURE_API_TYPE
         openai.api_base = os.environ["OPENAI_API_BASE"] = kv_client.get_secret("azure-open-ai").value  # type: ignore
         openai.api_key = os.environ["OPENAI_API_KEY"] = kv_client.get_secret("azure-openai-key").value  # type: ignore
 
