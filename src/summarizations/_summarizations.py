@@ -16,6 +16,7 @@ access_token = os.getenv("MSDATA_ADO_TOKEN")
 # diff_summarization = _summarize_files(diff)
 # print(diff_summarization)
 
+# todo make this a function load_pull_request_ids()
 pull_request_ids = []
 with open("/workspaces/gpt-review/src/summarizations/pull_request_list.csv", "r") as f:
     csv_file = csv.reader(f)
@@ -23,20 +24,11 @@ with open("/workspaces/gpt-review/src/summarizations/pull_request_list.csv", "r"
         if line[0].isdigit():
             pull_request_ids.append(line[0])
 
-# do 10 summaries at a time
-lower_number = 0
-upper_number = 10
-pull_request_ids_length = len(pull_request_ids)
-remainder = len(pull_request_ids) % upper_number
-summary_group = []
+# todo make this into a function summarize_pull_requests()
 summaries = []
-
-while lower_number < upper_number:
-    for pr_id in pull_request_ids[lower_number:upper_number]:
-        pull_request_link = C.PRROOT + pr_id
-        diff = DevOpsClient.get_pr_diff_link_parameter(pull_request_link, access_token)
-        diff_summarization = _summarize_files(diff)
-        summary_group.append(diff_summarization)
-    lower_number += 9 if lower_number == 0 else 10
-    upper_number += 10
-    summaries.append(_summarize_files(summary_group))
+# todo do all summaries first and then summarize the summaries 10 at a time
+for pr_id in pull_request_ids:
+    pull_request_link = C.PRROOT + pr_id
+    diff = DevOpsClient.get_pr_diff_link_parameter(pull_request_link, access_token)
+    diff_summarization = _summarize_files(diff)
+    summaries.append(diff_summarization)
