@@ -373,14 +373,17 @@ class DevOpsClient(_DevOpsClient):
         Get the diff of a PR.
 
         Args:
-            patch_repo (str): The repo.
+            patch_repo (str): The pointer to ADO in the format, org/project/repo
             patch_pr (str): The PR.
             access_token (str): The GitHub access token.
 
         Returns:
             str: The diff of the PR.
         """
-        link = os.getenv("LINK", f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}")
+        link = os.getenv(
+            "LINK",
+            f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+        )
         access_token = os.getenv("ADO_TOKEN", access_token)
 
         if link and access_token:
