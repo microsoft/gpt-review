@@ -512,7 +512,7 @@ class DevOpsFunction(DevOpsClient):
         self.post_pr_summary(diff, link=link)
 
 
-def _review(diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+def _review(repository=None, pull_request=None, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
     """Review Azure DevOps PR with Open AI, and post response as a comment.
 
     Args:
@@ -522,9 +522,11 @@ def _review(diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]
     Returns:
         Dict[str, str]: The response.
     """
-    diff = DevOpsClient.get_pr_diff(repository, pull_request, access_token)
-    with open(diff, "r", encoding="utf8") as file:
-        diff_contents = file.read()
+    if repository and pull_request:
+        diff_contents = DevOpsClient.get_pr_diff(repository, pull_request, access_token)
+    else:
+        with open(diff, "r", encoding="utf8") as file:
+            diff_contents = file.read()
 
     DevOpsClient.post_pr_summary(diff_contents, link, access_token)
     return {"response": "Review posted as a comment."}
