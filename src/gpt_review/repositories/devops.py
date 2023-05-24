@@ -380,7 +380,7 @@ class DevOpsClient(_DevOpsClient):
         Returns:
             str: The diff of the PR.
         """
-        link = os.getenv("LINK", f"https://{patch_repo.split("/")[0]}.visualstudio.com/{patch_repo.split("/")[1]}/_git/{patch_repo.split("/")[2]}/pullrequest/{patch_pr}")
+        link = os.getenv("LINK", f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}")
         access_token = os.getenv("ADO_TOKEN", access_token)
 
         if link and access_token:
