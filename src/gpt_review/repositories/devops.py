@@ -387,8 +387,8 @@ class DevOpsClient(_DevOpsClient):
             org, project, repo, pr_id = DevOpsClient._parse_url(link)
 
             client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
-
-            diff = client.get_patches(pull_request_event=payload["resource"])
+            pull_request = client.client.get_pull_request_by_id(pull_request_id=pr_id)
+            diff = client.get_patches(pull_request_event=pull_request)
             diff = "\n".join(diff)
 
             return {"response": "PR posted"}
