@@ -399,6 +399,34 @@ class DevOpsClient(_DevOpsClient):
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
 
+    @staticmethod
+    def get_pr_diff_link_parameter(pull_request_link=None, access_token=None) -> str:
+        """
+        Get the diff of a PR.
+
+        Args:
+            patch_repo (str): The repo.
+            patch_pr (str): The PR.
+            access_token (str): The GitHub access token.
+
+        Returns:
+            str: The diff of the PR.
+        """
+        access_token = os.getenv("ADO_TOKEN", access_token)
+
+        if pull_request_link and access_token:
+            org, project, repo, pr_id = DevOpsClient._parse_url(pull_request_link)
+
+            client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
+
+            diff = client.get_patches(pull_request_event=payload["resource"])
+            diff = "\n".join(diff)
+
+            return {"response": "PR posted"}
+
+        logging.warning("No PR to post too")
+        return {"response": "No PR to post too"}
+
 
 class DevOpsFunction(DevOpsClient):
     """Azure Function for process Service Messages from Azure DevOps."""

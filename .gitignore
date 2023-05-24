@@ -145,3 +145,7 @@ __blobstorage__
 __queuestorage__
 __azurite_db*__.json
 .python_packages
+
+#summarization development
+src/summarizations/pull_request_list.csv
+src/summarizations/constants.py
