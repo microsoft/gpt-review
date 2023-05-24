@@ -18,6 +18,7 @@ from azure.devops.v7_1.git.models import (
     GitVersionDescriptor,
     GitPullRequestCommentThread,
 )
+from httpx import post
 from knack import CLICommandsLoader
 from knack.arguments import ArgumentsContext
 from knack.commands import CommandGroup
@@ -318,7 +319,7 @@ class DevOpsClient(_DevOpsClient):
     """Azure DevOps client Wrapper for working with."""
 
     @staticmethod
-    def post_pr_summary(diff, link=None, access_token=None) -> Dict[str, str]:
+    def post_pr_summary(diff, link=None, access_token=None, post_summary=False) -> Dict[str, str]:
         """
         Get a review of a PR.
 
@@ -340,13 +341,15 @@ class DevOpsClient(_DevOpsClient):
         if link and access_token:
             review = _summarize_files(diff)
 
-            org, project, repo, pr_id = DevOpsClient._parse_url(link)
+            if post_summary:
+                org, project, repo, pr_id = DevOpsClient._parse_url(link)
 
-            DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
-                pull_request_id=pr_id,
-                description=review,
-            )
-            return {"response": "PR posted"}
+                DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
+                    pull_request_id=pr_id,
+                    description=review,
+                )
+                return {"response": "PR posted"}
+            return {"response": review}
 
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
@@ -543,7 +546,9 @@ class DevOpsFunction(DevOpsClient):
         self.post_pr_summary(diff, link=link)
 
 
-def _review(repository=None, pull_request=None, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
+def _review(
+    repository=None, pull_request=None, diff: str = ".diff", link=None, access_token=None, post_comment=False
+) -> Dict[str, str]:
     """Review Azure DevOps PR with Open AI, and post response as a comment.
 
     Args:
@@ -559,8 +564,7 @@ def _review(repository=None, pull_request=None, diff: str = ".diff", link=None, 
         with open(diff, "r", encoding="utf8") as file:
             diff_contents = file.read()
 
-    DevOpsClient.post_pr_summary(diff_contents, link, access_token)
-    return {"response": "Review posted as a comment."}
+    return DevOpsClient.post_pr_summary(diff_contents, link, access_token, post_summary=post_comment)
 
 
 def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
