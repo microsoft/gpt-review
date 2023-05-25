@@ -352,7 +352,7 @@ class DevOpsClient(_DevOpsClient):
                     pull_request_id=pr_id,
                     description=review,
                 )
-                return {"response": "PR posted"}
+                return {"response": "PR summary posted"}
             return {"response": review}
 
         logging.warning("No PR to post too")
@@ -381,18 +381,23 @@ class DevOpsClient(_DevOpsClient):
 
         Args:
             patch_repo (str): The pointer to ADO in the format, org/project/repo
-            patch_pr (str): The PR.
+            patch_pr (str): The PR id.
             access_token (str): The GitHub access token.
 
         Returns:
             str: The diff of the PR.
         """
         link = urllib.parse.unquote(
-            os.getenv(
-                "LINK",
-                f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
-            )
+            f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
         )
+
+        # TODO uncomment this later
+        # link = urllib.parse.unquote(
+        #     os.getenv(
+        #         "LINK",
+        #         f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+        #     )
+        # )
         access_token = os.getenv("ADO_TOKEN", access_token)
 
         if link and access_token:
@@ -403,37 +408,7 @@ class DevOpsClient(_DevOpsClient):
             diff = client.get_patches(pull_request_event=pull_request)
             diff = "\n".join(diff)
 
-            return {"response": "PR posted"}
-
-        logging.warning("No PR to post too")
-        return {"response": "No PR to post too"}
-
-    @staticmethod
-    def get_pr_diff_link_parameter(pull_request_link=None, access_token=None) -> str:
-        """
-        Get the diff of a PR.
-
-        Args:
-            patch_repo (str): The repo.
-            patch_pr (str): The PR.
-            access_token (str): The GitHub access token.
-
-        Returns:
-            str: The diff of the PR.
-        """
-        # TODO uncomment this later
-        # access_token = os.getenv("ADO_TOKEN", access_token)
-
-        if pull_request_link and access_token:
-            org, project, repo, pr_id = DevOpsClient._parse_url(urllib.parse.unquote(pull_request_link))
-
-            client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
-
-            pull_request = client.client.get_pull_request_by_id(pull_request_id=pr_id)
-            diff = client.get_patches(pull_request_event=pull_request)
-            diff = "\n".join(diff)
-
-            return {"response": "PR posted"}
+            return diff
 
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
