@@ -4,7 +4,8 @@ import itertools
 import json
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Tuple
+import urllib.parse
+from typing import Dict, Iterable, List, Tuple
 from urllib.parse import urlparse
 
 from azure.devops.connection import Connection
@@ -262,12 +263,15 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             Iterable[List[str]]: An iterable of lists containing the patches for the pull request event.
         """
-        pull_request = pull_request_event["pullRequest"]
+
+        if isinstance(pull_request_event, dict):
+            pull_request = GitPullRequest(pull_request_event["pullRequest"])
+        else:
+            pull_request = pull_request_event
 
         git_changes = self._get_changed_blobs(pull_request)
         return [
-            self._get_change(git_change, pull_request["lastMergeSourceCommit"]["commitId"])
-            for git_change in git_changes
+            self._get_change(git_change, pull_request.last_merge_source_commit.commit_id) for git_change in git_changes
         ]
 
     def _get_changed_blobs(self, pull_request: GitPullRequest) -> List[str]:
@@ -290,10 +294,10 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 project=self.project,
                 diff_common_commit=False,
                 base_version_descriptor=GitBaseVersionDescriptor(
-                    base_version=pull_request["lastMergeSourceCommit"]["commitId"], base_version_type="commit"
+                    base_version=pull_request.last_merge_source_commit.commit_id, base_version_type="commit"
                 ),
                 target_version_descriptor=GitTargetVersionDescriptor(
-                    target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
+                    target_version=pull_request.last_merge_target_commit.commit_id, target_version_type="commit"
                 ),
             )
             changed_paths.extend([change for change in pr_commits.changes if "isFolder" not in change["item"]])
@@ -383,9 +387,11 @@ class DevOpsClient(_DevOpsClient):
         Returns:
             str: The diff of the PR.
         """
-        link = os.getenv(
-            "LINK",
-            f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+        link = urllib.parse.unquote(
+            os.getenv(
+                "LINK",
+                f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+            )
         )
         access_token = os.getenv("ADO_TOKEN", access_token)
 
@@ -415,14 +421,16 @@ class DevOpsClient(_DevOpsClient):
         Returns:
             str: The diff of the PR.
         """
-        access_token = os.getenv("ADO_TOKEN", access_token)
+        # TODO uncomment this later
+        # access_token = os.getenv("ADO_TOKEN", access_token)
 
         if pull_request_link and access_token:
-            org, project, repo, pr_id = DevOpsClient._parse_url(pull_request_link)
+            org, project, repo, pr_id = DevOpsClient._parse_url(urllib.parse.unquote(pull_request_link))
 
             client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
 
-            diff = client.get_patches(pull_request_event=payload["resource"])
+            pull_request = client.client.get_pull_request_by_id(pull_request_id=pr_id)
+            diff = client.get_patches(pull_request_event=pull_request)
             diff = "\n".join(diff)
 
             return {"response": "PR posted"}
