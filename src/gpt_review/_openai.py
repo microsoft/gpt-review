@@ -86,7 +86,7 @@ def _call_gpt(
         model = _get_model(prompt, max_tokens=max_tokens, fast=fast, large=large)
         logging.debug("Model Selected based on prompt size: %s", model)
 
-        if os.environ["OPENAI_API_TYPE"] == C.AZURE_API_TYPE:
+        if os.environ.get("OPENAI_API_TYPE", "") == C.AZURE_API_TYPE:
             logging.debug("Using Azure Open AI.")
             completion = openai.ChatCompletion.create(
                 deployment_id=model,
@@ -111,7 +111,8 @@ def _call_gpt(
         return completion.choices[0].message.content  # type: ignore
     except RateLimitError as error:
         if retry < C.MAX_RETRIES:
-            _retry_with_exponential_backoff(retry, error.headers["Retry-After"])
+            retry_after = error.headers.get("Retry-After", C.DEFAULT_RETRY_AFTER)
+            _retry_with_exponential_backoff(retry, retry_after)
 
             return _call_gpt(prompt, temperature, max_tokens, top_p, frequency_penalty, presence_penalty, retry + 1)
         raise RateLimitError("Retry limit exceeded") from error
