@@ -8,6 +8,11 @@ import urllib.parse
 from typing import Dict, Iterable, List, Tuple
 from urllib.parse import urlparse
 
+from knack import CLICommandsLoader
+from knack.arguments import ArgumentsContext
+from knack.commands import CommandGroup
+from msrest.authentication import BasicAuthentication
+
 from azure.devops.connection import Connection
 from azure.devops.exceptions import AzureDevOpsServiceError
 from azure.devops.v7_1.git.git_client import GitClient
@@ -19,12 +24,6 @@ from azure.devops.v7_1.git.models import (
     GitVersionDescriptor,
     GitPullRequestCommentThread,
 )
-from httpx import post
-from knack import CLICommandsLoader
-from knack.arguments import ArgumentsContext
-from knack.commands import CommandGroup
-from msrest.authentication import BasicAuthentication
-
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
