@@ -288,6 +288,8 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         skip = 0
         while True:
+            # TODO error handling?
+            # TF401029: Couldn't find Git commit with ID ee3ca002f2e07b3a33321eeb2614a22d7a324bef.
             pr_commits = self.client.get_commit_diffs(
                 repository_id=self.repository_id,
                 project=self.project,
@@ -299,6 +301,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                     target_version=pull_request.last_merge_target_commit.commit_id, target_version_type="commit"
                 ),
             )
+            # TODO investigate further - "if that pr_commits.all_changes_included doesn't go true it go go for infinity"
             changed_paths.extend([change for change in pr_commits.changes if "isFolder" not in change["item"]])
             skip += len(pr_commits.changes)
             if pr_commits.all_changes_included:
@@ -386,18 +389,16 @@ class DevOpsClient(_DevOpsClient):
         Returns:
             str: The diff of the PR.
         """
+
         link = urllib.parse.unquote(
-            f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+            os.getenv(
+                "LINK",
+                f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+            )
         )
 
         # TODO uncomment this later
-        # link = urllib.parse.unquote(
-        #     os.getenv(
-        #         "LINK",
-        #         f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
-        #     )
-        # )
-        access_token = os.getenv("ADO_TOKEN", access_token)
+        # access_token = os.getenv("ADO_TOKEN", access_token)
 
         if link and access_token:
             org, project, repo, pr_id = DevOpsClient._parse_url(link)
