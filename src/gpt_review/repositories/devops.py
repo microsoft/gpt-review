@@ -325,7 +325,7 @@ class DevOpsClient(_DevOpsClient):
     """Azure DevOps client Wrapper for working with."""
 
     @staticmethod
-    def post_pr_summary(diff, link=None, access_token=None, post_summary=False) -> Dict[str, str]:
+    def generate_pr_summary(diff, link=None, access_token=None, post_summary=False) -> Dict[str, str]:
         """
         Get a review of a PR.
 
@@ -337,6 +337,9 @@ class DevOpsClient(_DevOpsClient):
 
         Args:
             diff (str): The patch of the PR.
+            link (str, optional): The link to the PR. Defaults to None.
+            access_token (str, optional): The GitHub access token. Defaults to None.
+            post_summary (bool, optional): Whether to post the summary to the PR. Defaults to False.
 
         Returns:
             Dict[str, str]: The review.
@@ -526,7 +529,7 @@ class DevOpsFunction(DevOpsClient):
         diff = "\n".join(diff)
         logging.debug("Copilot diff: %s", diff)
 
-        self.post_pr_summary(diff, link=link)
+        self.generate_pr_summary(diff, link=link)
 
 
 def _review(
@@ -547,7 +550,7 @@ def _review(
         with open(diff, "r", encoding="utf8") as file:
             diff_contents = file.read()
 
-    return DevOpsClient.post_pr_summary(diff_contents, link, access_token, post_summary=post_comment)
+    return DevOpsClient.generate_pr_summary(diff_contents, link, access_token, post_summary=post_comment)
 
 
 def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
