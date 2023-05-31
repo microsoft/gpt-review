@@ -20,6 +20,7 @@ from azure.devops.v7_1.git.models import (
     Comment,
     GitBaseVersionDescriptor,
     GitPullRequest,
+    GitCommitRef,
     GitTargetVersionDescriptor,
     GitVersionDescriptor,
     GitPullRequestCommentThread,
@@ -252,6 +253,55 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return left_selection, right_selection
 
+    def create_last_merge_source_commit_from_dict(self, commit_dict: Dict) -> GitCommitRef:
+        """Create a GitCommitRef object from a dictionary.
+
+        Args:
+            commit_dict (Dict): The dictionary to create the GitCommitRef object from.
+
+        Returns:
+            GitCommitRef: The GitCommitRef object.
+        """
+        return GitCommitRef(commit_id=commit_dict["commitId"], url=commit_dict["url"])
+
+    # TODO might be able to improve with something like https://stackoverflow.com/questions/59250557/how-to-convert-a-python-dict-to-a-class-object
+    # or creating our own model class inheriting msrest.serialization.Model
+    def create_git_pull_request_from_dict(self, pr_dict: Dict) -> GitPullRequest:
+        """Create a GitPullRequest object from a dictionary.
+
+        Args:
+            pr_dict (Dict): The dictionary to create the GitPullRequest object from.
+
+        Returns:
+            GitPullRequest: The GitPullRequest object.
+        """
+        pull_request = GitPullRequest(
+            title=pr_dict["title"],
+            description=pr_dict["description"],
+            source_ref_name=pr_dict["sourceRefName"],
+            target_ref_name=pr_dict["targetRefName"],
+            is_draft=pr_dict["isDraft"],
+            reviewers=pr_dict["reviewers"],
+            supports_iterations=pr_dict["supportsIterations"],
+            artifact_id=pr_dict["artifactId"],
+            status=pr_dict["status"],
+            created_by=pr_dict["createdBy"],
+            creation_date=pr_dict["creationDate"],
+            last_merge_source_commit=pr_dict["lastMergeSourceCommit"],
+            last_merge_target_commit=pr_dict["lastMergeTargetCommit"],
+            last_merge_commit=pr_dict["lastMergeCommit"],
+            url=pr_dict["url"],
+            repository=pr_dict["repository"],
+            merge_id=pr_dict["mergeId"],
+        )
+        pull_request.last_merge_source_commit = self.create_last_merge_source_commit_from_dict(
+            pull_request.last_merge_source_commit
+        )
+        pull_request.last_merge_target_commit = self.create_last_merge_source_commit_from_dict(
+            pull_request.last_merge_target_commit
+        )
+        return pull_request
+
     def get_patches(self, pull_request_event) -> Iterable[List[str]]:
         """
         Get the patches for a given pull request event.
@@ -264,7 +314,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         """
 
         if isinstance(pull_request_event, dict):
-            pull_request = GitPullRequest(pull_request_event["pullRequest"])
+            pull_request = self.create_git_pull_request_from_dict(pull_request_event["pullRequest"])
         else:
             pull_request = pull_request_event
 
@@ -287,9 +337,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         pr_commits = None
 
         skip = 0
-        while True:
-            # TODO error handling?
-            # TF401029: Couldn't find Git commit with ID ee3ca002f2e07b3a33321eeb2614a22d7a324bef.
+        while True and pull_request.status != "abandoned":
             pr_commits = self.client.get_commit_diffs(
                 repository_id=self.repository_id,
                 project=self.project,

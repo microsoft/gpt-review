@@ -45,9 +45,10 @@ def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> li
             patch_repo + pr_id
         )  # This is not a real link to a PR, but the link is needed to post the summary and this is not being done here
         diff = DevOpsClient.get_pr_diff(patch_repo, pr_id, access_token)
-        summary = DevOpsClient.generate_pr_summary(diff=diff, link=pr_link, access_token=access_token)
-        print(time.process_time() - start)
-        summaries_list.append(summary)
+        if diff:
+            summary = DevOpsClient.generate_pr_summary(diff=diff, link=pr_link, access_token=access_token)
+            print(time.process_time() - start)
+            summaries_list.append(summary)
     return summaries_list
 
 
@@ -98,10 +99,14 @@ def _get_summary(summaries_list: list) -> str:
     Returns:
         str: The final summary.
     """
-    summarized_summaries = _summarize_summaries(summaries_list)
-    while len(summarized_summaries) > 1:
-        summarized_summaries = _summarize_summaries(summarized_summaries)
-    return summarized_summaries[0]["response"]
+
+    if summaries_list:
+        summarized_summaries = _summarize_summaries(summaries_list)
+        while len(summarized_summaries) > 1:
+            summarized_summaries = _summarize_summaries(summarized_summaries)
+        return summarized_summaries[0]["response"]
+    else:
+        return "No summaries to summarize."
 
 
 access_token = C.MSAZURE_ADO_TOKEN
