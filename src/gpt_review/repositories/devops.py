@@ -31,9 +31,7 @@ from gpt_review._command import GPTCommandGroup
 from gpt_review._review import _summarize_files
 from gpt_review.prompts._prompt import load_ask_yaml
 from gpt_review.repositories._repository import _RepositoryClient
-
-MIN_CONTEXT_LINES = 5
-SURROUNDING_CONTEXT = 5
+import gpt_review.repositories.devops_constants as C
 
 
 class _DevOpsClient(_RepositoryClient, abc.ABC):
@@ -237,7 +235,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         original_content, changed_content = self._load_content(file_path=thread.file_path, commit_id=commit_id)
 
         def get_selection(lines: str, line_start: int, line_end: int) -> str:
-            return lines[line_start - 1 : line_end] if line_end - line_start >= MIN_CONTEXT_LINES else lines
+            return lines[line_start - 1 : line_end] if line_end - line_start >= C.MIN_CONTEXT_LINES else lines
 
         left_selection = (
             get_selection(original_content, thread.left_file_start.line, thread.left_file_end.line)
@@ -264,8 +262,6 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         """
         return GitCommitRef(commit_id=commit_dict["commitId"], url=commit_dict["url"])
 
-    # TODO might be able to improve with something like https://stackoverflow.com/questions/59250557/how-to-convert-a-python-dict-to-a-class-object
-    # or creating our own model class inheriting msrest.serialization.Model
     def create_git_pull_request_from_dict(self, pr_dict: Dict) -> GitPullRequest:
         """Create a GitPullRequest object from a dictionary.
 
@@ -337,19 +333,18 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         pr_commits = None
 
         skip = 0
-        while True and pull_request.status != "abandoned":
+        while pull_request.status != C.PR_TYPE_ABANDONED:
             pr_commits = self.client.get_commit_diffs(
                 repository_id=self.repository_id,
                 project=self.project,
                 diff_common_commit=False,
                 base_version_descriptor=GitBaseVersionDescriptor(
-                    base_version=pull_request.last_merge_source_commit.commit_id, base_version_type="commit"
+                    base_version=pull_request.last_merge_commit.commit_id, base_version_type="commit"
                 ),
                 target_version_descriptor=GitTargetVersionDescriptor(
                     target_version=pull_request.last_merge_target_commit.commit_id, target_version_type="commit"
                 ),
             )
-            # TODO investigate further - "if that pr_commits.all_changes_included doesn't go true it go go for infinity"
             changed_paths.extend([change for change in pr_commits.changes if "isFolder" not in change["item"]])
             skip += len(pr_commits.changes)
             if pr_commits.all_changes_included:
