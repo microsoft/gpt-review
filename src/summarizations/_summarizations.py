@@ -117,8 +117,8 @@ def _get_final_summary(summaries_list: list) -> str:
         return "No summaries to summarize."
 
 
-access_token = C.MSDATA_ADO_TOKEN
-pull_request_ids = _load_pull_request_ids(C.MSDATA_PULL_REQUEST_LIST)
-summaries = _summarize_pull_requests(pull_request_ids, C.MSDATA_PATCHREPO)
+access_token = C.MSAZURE_ADO_TOKEN
+pull_request_ids = _load_pull_request_ids(C.MSAZURE_PULL_REQUEST_LIST)
+summaries = _summarize_pull_requests(pull_request_ids, C.MSAZURE_PATCHREPO)
 final_summary = _get_final_summary(summaries)
 print(final_summary)
