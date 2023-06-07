@@ -150,3 +150,8 @@ __azurite_db*__.json
 src/summarizations/msdata_pull_request_list.csv
 src/summarizations/msazure_pull_request_list.csv
 src/summarizations/constants.py
+src/gpt_review/prompts/prompt_pr_review.yaml
+src/gpt_review/prompts/prompt_pr_batch_summary.yaml
+src/gpt_review/prompts/prompt_nature.yaml
+src/gpt_review/prompts/prompt_pr_summary.yaml
+src/summarizations/summaries/

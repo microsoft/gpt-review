@@ -205,7 +205,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         while line < len(left) and row < len(right):
             if changes[line][row] == changes[line - 1][row - 1]:
-                patch.append(left[line - 1])
+                # patch.append(left[line - 1])
                 line += 1
                 row += 1
             elif changes[line - 1][row] < changes[line][row - 1]:
@@ -355,13 +355,17 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
     def _get_change(self, git_change, commit_id) -> List[str]:
         file_path = git_change["item"]["path"]
 
-        original_content, changed_content = self._load_content(file_path, commit_id)
+        original_content, changed_content = self._load_content(
+            file_path, commit_id_original=git_change["item"]["commitId"], commit_id_changed=commit_id
+        )
 
-        patch = self._create_patch(original_content, changed_content, file_path)
+        patch = self._create_patch(original_content, changed_content, file_path)  # TODO - doesn't work for msdata ;-;
         return "\n".join(patch)
 
-    def _load_content(self, file_path, commit_id):
-        return self.read_all_text(file_path), self.read_all_text(file_path, commit_id=commit_id)
+    def _load_content(self, file_path, commit_id_original, commit_id_changed):
+        return self.read_all_text(file_path, commit_id=commit_id_original), self.read_all_text(
+            file_path, commit_id=commit_id_changed
+        )
 
 
 class DevOpsClient(_DevOpsClient):

@@ -142,7 +142,6 @@ def _split_diff(git_diff):
     """
     diff = "diff"
     git = "--git a/"
-    # TODO doesn't seem to be working as expected for one file changes
     return git_diff.split(f"{diff} {git}")[1:]  # Use formated string to prevent splitting
 
 
@@ -204,8 +203,6 @@ def _summarize_files(git_diff) -> str:
         if os.getenv("FILE_SUMMARY_FULL", "true").lower() == "true":
             summary += file_summary
 
-        # TODO "the summary of file changes cannot be provided as there are no specific files or
-        # details mentioned to analyze and summarize the files"
         summary += f"""
 ### Summary of File Changes
 {_request_goal(file_summary, goal="Summarize the changes to the files.")}

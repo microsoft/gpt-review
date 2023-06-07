@@ -1,13 +1,40 @@
 """Summarize the changes in a release."""
 import csv
 import time
-from typing import Dict
+import os
+from dataclasses import dataclass
 
 from gpt_review.repositories.devops import DevOpsClient
-from gpt_review.prompts._prompt_pr_summary import load_pr_summary_yaml
-from gpt_review._review import _ask, _summarize_files
+from gpt_review.prompts._prompt_pr_summary import load_pr_summary_yaml, load_batch_pr_summary_yaml, load_nature_yaml
+from gpt_review.prompts._prompt import load_summary_yaml
+from gpt_review._review import _ask
 
 import summarizations.constants as C
+
+FILE_SUMMARY_NAME = (
+    "/workspaces/gpt-review/src/summarizations/summaries/file_summary-"
+    + str(time.strftime("%b-%d-%Y %H:%M:%S"))
+    + ".csv"
+)
+
+
+@dataclass
+class GitFile:
+    """A git file with its diff contents."""
+
+    file_name: str
+    diff: str
+
+
+def _print_to_file(file_path: str, text: str) -> None:
+    """Print text to a file.
+
+    Args:
+        file_path (str): The path to the file.
+        text (str): The text to print.
+    """
+    with open(file_path, "a+", encoding="utf-8") as file:
+        file.write(text)
 
 
 def _load_pull_request_ids(file_path: str) -> list:
@@ -28,18 +55,93 @@ def _load_pull_request_ids(file_path: str) -> list:
     return pull_request_ids_list
 
 
-def generate_pr_review(diff) -> Dict[str, str]:
-    """Generate a pull request review.
+def _summarize_file(diff) -> str:
+    """Summarize a file in a git diff.
 
     Args:
-        diff (str): The diff to review.
+        diff (str): The file to summarize.
 
     Returns:
-        Dict[str, str]: The response from GPT-4.
+        str: The summary of the file.
     """
+    question = load_summary_yaml().format(diff=diff)
 
-    review = _summarize_files(diff)
-    return {"response": review}
+    response = _ask(question=[question], temperature=0.0)
+    return response["response"]
+
+
+def _request_goal(git_diff, goal, fast: bool = False, large: bool = False, temperature: float = 0) -> str:
+    """
+    Request a goal from GPT-4.
+
+    Args:
+        git_diff (str): The git diff to split.
+        goal (str): The goal to request from GPT-4.
+        fast (bool, optional): Whether to use the fast model. Defaults to False.
+        large (bool, optional): Whether to use the large model. Defaults to False.
+        temperature (float, optional): The temperature to use. Defaults to 0.
+
+    Returns:
+        response (str): The response from GPT-4.
+    """
+    prompt = f"""
+{goal}
+
+{git_diff}
+"""
+
+    return _ask([prompt], max_tokens=1500, fast=fast, large=large, temperature=temperature)["response"]
+
+
+def _split_diff(git_diff):
+    """Split a git diff into a list of files and their diff contents.
+
+    Args:
+        git_diff (str): The git diff to split.
+
+    Returns:
+        list: A list of tuples containing the file name and diff contents.
+    """
+    diff = "diff"
+    git = "--git a/"
+    return (
+        git_diff.split(f"{diff} {git}")[1:] if git_diff.split(f"{diff} {git}")[1:] else git_diff.split(f"{diff} {git}")
+    )  # Use formated string to prevent splitting
+
+
+def _summarize_pr_diff(diff) -> str:
+    """Summarize a pull request diff.
+
+    Args:
+        diff (str): The diff to summarize.
+
+    Returns:
+        str: The summary.
+    """
+    summary = ""
+    file_summary = ""
+    file_summary += "".join(_summarize_file(single_diff) for single_diff in _split_diff(diff))
+    summary += _request_goal(file_summary, goal="Summarize the changes to the files.")
+
+    return summary
+
+
+# TODO finalize this function
+# def _review_pr_diff(diff) -> str:
+#     """Review a pull request diff.
+
+#     Args:
+#         diff (str): The diff to review.
+
+#     Returns:
+#         str: The review.
+#     """
+#     review = "Review of File Changes"
+#     file_review = ""
+#     file_review += "".join(_review_file(single_diff) for single_diff in _split_diff(diff))
+#     review += _request_goal(file_review, goal="Review the changes to the files.")
+
+#     return review
 
 
 def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> list:
@@ -58,15 +160,19 @@ def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> li
         # pr_link = (
         #     patch_repo + pr_id
         # )  # This is not a real link to a PR, but the link is needed to post the summary and this is not being done here
-        diff = DevOpsClient.get_pr_diff(patch_repo, pr_id, access_token)
+        diff = DevOpsClient.get_pr_diff(
+            patch_repo, pr_id, access_token
+        )  # TODO pr_diff is not acurrately being calculated
         if diff:
-            summary = generate_pr_review(diff=diff)
+            summary = _summarize_pr_diff(diff=diff)
             print(time.process_time() - start)
             summaries_list.append(summary)
+            summary_to_print = f"{pr_id}, {summary}\n"
+            _print_to_file(FILE_SUMMARY_NAME, summary_to_print)
     return summaries_list
 
 
-def _summarize_summary(summary_group) -> str:
+def _summarize_summary_batch(summary_batch: list) -> str:
     """Summarize a list of summaries.
 
     Args:
@@ -76,7 +182,7 @@ def _summarize_summary(summary_group) -> str:
         str: The summary of the summary.
     """
 
-    question = load_pr_summary_yaml().format(summaries=summary_group)
+    question = load_batch_pr_summary_yaml().format(summaries=summary_batch)
     response = _ask(question=[question], temperature=0.0)
     return response
 
@@ -93,8 +199,8 @@ def _summarize_summaries(summaries_list: list) -> list:
 
     summarized_summaries_list = []
     for i in range(0, len(summaries_list), 10):
-        summary_group = summaries_list[i : i + 10]
-        summarized_summaries_list.append(_summarize_summary(summary_group))
+        summary_batch = summaries_list[i : i + 10]
+        summarized_summaries_list.append(_summarize_summary_batch(summary_batch))
     return summarized_summaries_list
 
 
@@ -108,17 +214,32 @@ def _get_final_summary(summaries_list: list) -> str:
         str: The final summary.
     """
 
-    if summaries_list:
-        summarized_summaries = _summarize_summaries(summaries_list)
-        while len(summarized_summaries) > 1:
-            summarized_summaries = _summarize_summaries(summarized_summaries)
-        return summarized_summaries[0]["response"]
-    else:
-        return "No summaries to summarize."
+    summarized_summaries = _summarize_summaries(summaries_list)
+    while len(summarized_summaries) > 1:
+        summarized_summaries = _summarize_summaries(summarized_summaries)
+        summaries_to_print = f"{len(summarized_summaries)}, {summarized_summaries}\n"
+        _print_to_file(FILE_SUMMARY_NAME, summaries_to_print)
+    return summarized_summaries[0]["response"]
+
+
+def _get_deployment_nature(summary) -> str:
+    """Get the nature of the deployment.
+
+    Args:
+        summary (str): The summary of the PRs in a deployment.
+
+    Returns:
+        str: The nature of the deployment.
+    """
+    question = load_nature_yaml().format(summary=summary)
+    response = _ask(question=[question], temperature=0.0)
+    return response["response"]
 
 
 access_token = C.MSAZURE_ADO_TOKEN
 pull_request_ids = _load_pull_request_ids(C.MSAZURE_PULL_REQUEST_LIST)
 summaries = _summarize_pull_requests(pull_request_ids, C.MSAZURE_PATCHREPO)
 final_summary = _get_final_summary(summaries)
-print(final_summary)
+_print_to_file(FILE_SUMMARY_NAME, "\nThe final summary is:\n" + final_summary)
+
+_print_to_file(FILE_SUMMARY_NAME, "\nThe nature of this deployment is: " + _get_deployment_nature(final_summary))
