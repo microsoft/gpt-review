@@ -325,9 +325,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             pull_request = pull_request_event
 
         git_changes = self._get_changed_blobs(pull_request)
-        return [
-            self._get_change(git_change, pull_request.last_merge_source_commit.commit_id) for git_change in git_changes
-        ]
+        return [self._get_change(git_change, pull_request.last_merge_commit.commit_id) for git_change in git_changes]
 
     def _get_changed_blobs(self, pull_request: GitPullRequest) -> List[str]:
         """
