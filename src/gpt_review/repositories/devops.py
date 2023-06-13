@@ -193,6 +193,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             List: The patch.
         """
+
         changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
 
         for i, j in itertools.product(range(len(left)), range(len(right))):
@@ -200,25 +201,58 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 changes[i][j] if left[i] == right[j] else 1 + min(changes[i][j + 1], changes[i + 1][j], changes[i][j])
             )
 
-        line, row = 1, 1
-        patch = [file_path]
+        # Attempt at reverting original C# code
+        # patch = [file_path]
+        # line, row = 1, 1
 
-        while line < len(left) and row < len(right):
-            if changes[line][row] == changes[line - 1][row - 1]:
-                # patch.append(left[line - 1])
-                line += 1
-                row += 1
+        # while line < len(left) and row < len(right):
+        #     if changes[line][row] <= changes[line - 1][row] and changes[line][row] <= changes[line][row - 1]:
+        #         if left[line - 1] != right[row - 1]:
+        #             patch.append(f"- {left[line - 1]}")
+        #             patch.append(f"+ {right[row - 1]}")
+        #         line += 1
+        #         row += 1
+        #     elif changes[line - 1][row] < changes[line][row - 1]:
+        #         patch.append(f"- {left[line - 1]}")
+        #         line += 1
+        #     else:
+        #         patch.append(f"+ {right[row - 1]}")
+        #         row += 1
+
+        # while line < len(left):
+        #     patch.append(f"- {left[line - 1]}")
+        #     line += 1
+
+        # while row < len(right):
+        #     patch.append(f"+ {right[row - 1]}")
+        #     row += 1
+
+        original_patch = [file_path]
+        # original C code, it works but not really because it adds the diff backwards
+        line, row = len(left), len(right)
+        while line > 0 and row > 0:
+            if changes[line][row] <= changes[line - 1][row] and changes[line][row] <= changes[line][row - 1]:
+                if left[line - 1] != right[row - 1]:
+                    original_patch.append(f"- {left[line - 1]}")
+                    original_patch.append(f"+ {right[row - 1]}")
+                line -= 1
+                row -= 1
             elif changes[line - 1][row] < changes[line][row - 1]:
-                patch.append(f"- {left[line - 1]}")
-                line += 1
+                original_patch.append(f"- {left[line - 1]}")
+                line -= 1
             else:
-                patch.append(f"+ {right[row - 1]}")
-                row += 1
+                original_patch.append(f"+ {right[row - 1]}")
+                row -= 1
 
-        patch.extend(f"- {left[i - 1]}" for i in range(line, len(left) + 1))
-        patch.extend(f"+ {right[j - 1]}" for j in range(row, len(right) + 1))
+        while line > 0:
+            original_patch.append(f"- {left[line - 1]}")
+            line -= 1
 
-        return patch
+        while row > 0:
+            original_patch.append(f"+ {right[row - 1]}")
+            row -= 1
+
+        return original_patch
 
     def _calculate_selection(self, thread: GitPullRequestCommentThread, commit_id: str) -> Tuple[str, str]:
         """
