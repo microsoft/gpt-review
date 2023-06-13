@@ -201,58 +201,34 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 changes[i][j] if left[i] == right[j] else 1 + min(changes[i][j + 1], changes[i + 1][j], changes[i][j])
             )
 
-        # Attempt at reverting original C# code
-        # patch = [file_path]
-        # line, row = 1, 1
-
-        # while line < len(left) and row < len(right):
-        #     if changes[line][row] <= changes[line - 1][row] and changes[line][row] <= changes[line][row - 1]:
-        #         if left[line - 1] != right[row - 1]:
-        #             patch.append(f"- {left[line - 1]}")
-        #             patch.append(f"+ {right[row - 1]}")
-        #         line += 1
-        #         row += 1
-        #     elif changes[line - 1][row] < changes[line][row - 1]:
-        #         patch.append(f"- {left[line - 1]}")
-        #         line += 1
-        #     else:
-        #         patch.append(f"+ {right[row - 1]}")
-        #         row += 1
-
-        # while line < len(left):
-        #     patch.append(f"- {left[line - 1]}")
-        #     line += 1
-
-        # while row < len(right):
-        #     patch.append(f"+ {right[row - 1]}")
-        #     row += 1
-
-        original_patch = [file_path]
-        # original C code, it works but not really because it adds the diff backwards
+        patch = []
         line, row = len(left), len(right)
         while line > 0 and row > 0:
             if changes[line][row] <= changes[line - 1][row] and changes[line][row] <= changes[line][row - 1]:
                 if left[line - 1] != right[row - 1]:
-                    original_patch.append(f"- {left[line - 1]}")
-                    original_patch.append(f"+ {right[row - 1]}")
+                    patch.append(f"+ {right[row - 1]}")
+                    patch.append(f"- {left[line - 1]}")
                 line -= 1
                 row -= 1
             elif changes[line - 1][row] < changes[line][row - 1]:
-                original_patch.append(f"- {left[line - 1]}")
+                patch.append(f"- {left[line - 1]}")
                 line -= 1
             else:
-                original_patch.append(f"+ {right[row - 1]}")
+                patch.append(f"+ {right[row - 1]}")
                 row -= 1
 
         while line > 0:
-            original_patch.append(f"- {left[line - 1]}")
+            patch.append(f"- {left[line - 1]}")
             line -= 1
 
         while row > 0:
-            original_patch.append(f"+ {right[row - 1]}")
+            patch.append(f"+ {right[row - 1]}")
             row -= 1
 
-        return original_patch
+        patch.append(file_path)
+        patch.reverse()
+
+        return patch
 
     def _calculate_selection(self, thread: GitPullRequestCommentThread, commit_id: str) -> Tuple[str, str]:
         """
@@ -266,7 +242,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             Tuple[str, str]: The left and right selection.
         """
 
-        original_content, changed_content = self._load_content(file_path=thread.file_path, commit_id=commit_id)
+        original_content, changed_content = self._load_content(file_path=thread.file_path, commit_id_changed=commit_id)
 
         def get_selection(lines: str, line_start: int, line_end: int) -> str:
             return lines[line_start - 1 : line_end] if line_end - line_start >= C.MIN_CONTEXT_LINES else lines
@@ -396,7 +372,12 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         patch = self._create_patch(original_content, changed_content, file_path)  # TODO - doesn't work for msdata ;-;
         return "\n".join(patch)
 
-    def _load_content(self, file_path, commit_id_original, commit_id_changed):
+    def _load_content(
+        self,
+        file_path,
+        commit_id_original: str = None,
+        commit_id_changed: str = None,
+    ):
         return self.read_all_text(file_path, commit_id=commit_id_original), self.read_all_text(
             file_path, commit_id=commit_id_changed
         )
@@ -461,7 +442,7 @@ class DevOpsClient(_DevOpsClient):
         return org, project, repo, pr_id
 
     @staticmethod
-    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
+    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None):
         """
         Get the diff of a PR.
 
@@ -469,9 +450,6 @@ class DevOpsClient(_DevOpsClient):
             patch_repo (str): The pointer to ADO in the format, org/project/repo
             patch_pr (str): The PR id.
             access_token (str): The GitHub access token.
-
-        Returns:
-            str: The diff of the PR.
         """
 
         link = urllib.parse.unquote(
@@ -490,7 +468,6 @@ class DevOpsClient(_DevOpsClient):
             client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
             pull_request = client.client.get_pull_request_by_id(pull_request_id=pr_id)
             diff = client.get_patches(pull_request_event=pull_request)
-            diff = "\n".join(diff)
 
             return diff
 

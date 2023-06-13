@@ -1,11 +1,10 @@
 """Summarize the changes in a release."""
 import csv
 import time
-import os
 from dataclasses import dataclass
 
 from gpt_review.repositories.devops import DevOpsClient
-from gpt_review.prompts._prompt_pr_summary import load_pr_summary_yaml, load_batch_pr_summary_yaml, load_nature_yaml
+from gpt_review.prompts._prompt_pr_summary import load_batch_pr_summary_yaml, load_nature_yaml
 from gpt_review.prompts._prompt import load_summary_yaml
 from gpt_review._review import _ask
 
@@ -93,22 +92,6 @@ def _request_goal(git_diff, goal, fast: bool = False, large: bool = False, tempe
     return _ask([prompt], max_tokens=1500, fast=fast, large=large, temperature=temperature)["response"]
 
 
-def _split_diff(git_diff):
-    """Split a git diff into a list of files and their diff contents.
-
-    Args:
-        git_diff (str): The git diff to split.
-
-    Returns:
-        list: A list of tuples containing the file name and diff contents.
-    """
-    diff = "diff"
-    git = "--git a/"
-    return (
-        git_diff.split(f"{diff} {git}")[1:] if git_diff.split(f"{diff} {git}")[1:] else git_diff.split(f"{diff} {git}")
-    )  # Use formated string to prevent splitting
-
-
 def _summarize_pr_diff(diff) -> str:
     """Summarize a pull request diff.
 
@@ -120,7 +103,7 @@ def _summarize_pr_diff(diff) -> str:
     """
     summary = ""
     file_summary = ""
-    file_summary += "".join(_summarize_file(single_diff) for single_diff in _split_diff(diff))
+    file_summary += "".join(_summarize_file(file_diff) for file_diff in diff)
     summary += _request_goal(file_summary, goal="Summarize the changes to the files.")
 
     return summary
@@ -157,12 +140,7 @@ def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> li
     summaries_list = []
     for pr_id in pull_request_ids_list:
         start = time.process_time()
-        # pr_link = (
-        #     patch_repo + pr_id
-        # )  # This is not a real link to a PR, but the link is needed to post the summary and this is not being done here
-        diff = DevOpsClient.get_pr_diff(
-            patch_repo, pr_id, access_token
-        )  # TODO pr_diff is not acurrately being calculated
+        diff = DevOpsClient.get_pr_diff(patch_repo, pr_id, access_token)
         if diff:
             summary = _summarize_pr_diff(diff=diff)
             print(time.process_time() - start)
@@ -219,7 +197,9 @@ def _get_final_summary(summaries_list: list) -> str:
         summarized_summaries = _summarize_summaries(summarized_summaries)
         summaries_to_print = f"{len(summarized_summaries)}, {summarized_summaries}\n"
         _print_to_file(FILE_SUMMARY_NAME, summaries_to_print)
-    return summarized_summaries[0]["response"]
+    if summarized_summaries:
+        return summarized_summaries[0]["response"]
+    return "No summaries were provided."
 
 
 def _get_deployment_nature(summary) -> str:
