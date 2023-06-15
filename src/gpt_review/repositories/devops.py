@@ -367,7 +367,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             file_path, commit_id_original=git_change["item"]["commitId"], commit_id_changed=commit_id
         )
 
-        patch = self._create_patch(original_content, changed_content, file_path)  # TODO - doesn't work for msdata ;-;
+        patch = self._create_patch(original_content, changed_content, file_path)
         return "\n".join(patch)
 
     def _load_content(
@@ -457,8 +457,7 @@ class DevOpsClient(_DevOpsClient):
             )
         )
 
-        # TODO uncomment this later
-        # access_token = os.getenv("ADO_TOKEN", access_token)
+        access_token = os.getenv("ADO_TOKEN", access_token)
 
         if link and access_token:
             org, project, repo, pr_id = DevOpsClient._parse_url(link)

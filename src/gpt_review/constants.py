@@ -43,3 +43,5 @@ PR_SUMMARY_PROMPT_YAML = "prompt_pr_summary.yaml"
 PR_REVIEW_PROMPT_YAML = "prompt_pr_review.yaml"
 PR_BATCH_SUMMARY_PROMPT_YAML = "prompt_pr_batch_summary.yaml"
 PROMPT_NATURE_YAML = "prompt_nature.yaml"
+
+ADO_CONFIG_FILE = "ado.yaml"

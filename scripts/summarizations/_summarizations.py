@@ -1,14 +1,15 @@
 """Summarize the changes in a release."""
 import csv
 import time
+import os
 from dataclasses import dataclass
-
-import constants as C
+import yaml
 
 from gpt_review.repositories.devops import DevOpsClient
 from gpt_review.prompts._prompt_pr_summary import load_batch_pr_summary_yaml, load_nature_yaml
 from gpt_review.prompts._prompt import load_summary_yaml
 from gpt_review._review import _ask
+import gpt_review.constants as C
 
 FILE_SUMMARY_NAME = (
     "/workspaces/gpt-review/scripts/summarizations/summaries/file_summary-"
@@ -109,24 +110,6 @@ def _summarize_pr_diff(diff) -> str:
     return summary
 
 
-# TODO finalize this function
-# def _review_pr_diff(diff) -> str:
-#     """Review a pull request diff.
-
-#     Args:
-#         diff (str): The diff to review.
-
-#     Returns:
-#         str: The review.
-#     """
-#     review = "Review of File Changes"
-#     file_review = ""
-#     file_review += "".join(_review_file(single_diff) for single_diff in _split_diff(diff))
-#     review += _request_goal(file_review, goal="Review the changes to the files.")
-
-#     return review
-
-
 def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> list:
     """Summarize pull requests.
 
@@ -216,9 +199,17 @@ def _get_deployment_nature(summary) -> str:
     return response["response"]
 
 
-access_token = C.MSAZURE_ADO_TOKEN
-pull_request_ids = _load_pull_request_ids(C.MSAZURE_PULL_REQUEST_LIST)
-summaries = _summarize_pull_requests(pull_request_ids, C.MSAZURE_PATCHREPO)
+def _load_config_file():
+    """Import from yaml file and return the config."""
+    config_file = "scripts/summarizations/" + os.getenv("CONFIG_FILE", C.ADO_CONFIG_FILE)
+    with open(config_file, "r", encoding="utf8") as file:
+        return yaml.load(file, Loader=yaml.SafeLoader)
+
+
+config = _load_config_file()
+access_token = os.getenv(config.get("ado_token"))
+pull_request_ids = _load_pull_request_ids(config.get("pull_request_list"))
+summaries = _summarize_pull_requests(pull_request_ids, config.get("patch_repo"))
 final_summary = _get_final_summary(summaries)
 _print_to_file(FILE_SUMMARY_NAME, "\nThe final summary is:\n" + final_summary)
 
