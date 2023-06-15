@@ -217,17 +217,8 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 patch.append(f"+ {right[row - 1]}")
                 row -= 1
 
-        # while line > 0:
-        #     patch.append(f"- {left[line - 1]}")
-        #     line -= 1
-
-        # while row > 0:
-        #     patch.append(f"+ {right[row - 1]}")
-        #     row -= 1
-
         patch.extend(f"- {left[i - 1]}" for i in range(0, line))
         patch.extend(f"+ {right[j - 1]}" for j in range(0, row))
-
         patch.append(file_path)
         patch.reverse()
 
