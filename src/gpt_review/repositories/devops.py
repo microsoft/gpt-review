@@ -255,7 +255,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return left_selection, right_selection
 
-    def create_last_merge_source_commit_from_dict(self, commit_dict: Dict) -> GitCommitRef:
+    def create_git_commit_ref_from_dict(self, commit_dict: Dict) -> GitCommitRef:
         """Create a GitCommitRef object from a dictionary.
 
         Args:
@@ -294,12 +294,13 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             repository=pr_dict["repository"],
             merge_id=pr_dict["mergeId"],
         )
-        pull_request.last_merge_source_commit = self.create_last_merge_source_commit_from_dict(
+        pull_request.last_merge_source_commit = self.create_git_commit_ref_from_dict(
             pull_request.last_merge_source_commit
         )
-        pull_request.last_merge_target_commit = self.create_last_merge_source_commit_from_dict(
+        pull_request.last_merge_target_commit = self.create_git_commit_ref_from_dict(
             pull_request.last_merge_target_commit
         )
+        pull_request.last_merge_commit = self.create_git_commit_ref_from_dict(pull_request.last_merge_commit)
         return pull_request
 
     def get_patches(self, pull_request_event) -> Iterable[List[str]]:
