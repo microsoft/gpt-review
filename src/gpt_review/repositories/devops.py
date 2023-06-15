@@ -388,7 +388,7 @@ class DevOpsClient(_DevOpsClient):
     """Azure DevOps client Wrapper for working with."""
 
     @staticmethod
-    def generate_pr_summary(diff, link=None, access_token=None, post_summary=False) -> Dict[str, str]:
+    def post_pr_summary(diff, link=None, access_token=None) -> Dict[str, str]:
         """
         Get a review of a PR.
 
@@ -402,7 +402,6 @@ class DevOpsClient(_DevOpsClient):
             diff (str): The patch of the PR.
             link (str, optional): The link to the PR. Defaults to None.
             access_token (str, optional): The GitHub access token. Defaults to None.
-            post_summary (bool, optional): Whether to post the summary to the PR. Defaults to False.
 
         Returns:
             Dict[str, str]: The review.
@@ -413,15 +412,13 @@ class DevOpsClient(_DevOpsClient):
         if link and access_token:
             review = _summarize_files(diff)
 
-            if post_summary:
-                org, project, repo, pr_id = DevOpsClient._parse_url(link)
+            org, project, repo, pr_id = DevOpsClient._parse_url(link)
 
-                DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
-                    pull_request_id=pr_id,
-                    description=review,
-                )
-                return {"response": "PR summary posted"}
-            return {"response": review}
+            DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo).update_pr(
+                pull_request_id=pr_id,
+                description=review,
+            )
+            return {"response": "PR posted"}
 
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
@@ -443,7 +440,7 @@ class DevOpsClient(_DevOpsClient):
         return org, project, repo, pr_id
 
     @staticmethod
-    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None):
+    def get_pr_diff(patch_repo=None, patch_pr=None, access_token=None) -> str:
         """
         Get the diff of a PR.
 
@@ -588,12 +585,10 @@ class DevOpsFunction(DevOpsClient):
         diff = "\n".join(diff)
         logging.debug("Copilot diff: %s", diff)
 
-        self.generate_pr_summary(diff, link=link)
+        self.post_pr_summary(diff, link=link)
 
 
-def _review(
-    repository=None, pull_request=None, diff: str = ".diff", link=None, access_token=None, post_comment=False
-) -> Dict[str, str]:
+def _review(repository=None, pull_request=None, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
     """Review Azure DevOps PR with Open AI, and post response as a comment.
 
     Args:
@@ -609,7 +604,7 @@ def _review(
         with open(diff, "r", encoding="utf8") as file:
             diff_contents = file.read()
 
-    return DevOpsClient.generate_pr_summary(diff_contents, link, access_token, post_summary=post_comment)
+    return DevOpsClient.post_pr_summary(diff_contents, link, access_token)
 
 
 def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
