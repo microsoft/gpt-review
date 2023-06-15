@@ -3,6 +3,7 @@ import csv
 import time
 import os
 from dataclasses import dataclass
+
 import yaml
 
 from gpt_review.repositories.devops import DevOpsClient
@@ -110,7 +111,32 @@ def _summarize_pr_diff(diff) -> str:
     return summary
 
 
-def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> list:
+def get_pr_diff(patch_repo=None, patch_pr=None, pat=None) -> list:
+    """
+    Get the diff of a PR.
+
+    Args:
+        patch_repo (str): The pointer to ADO in the format, org/project/repo
+        patch_pr (str): The PR id.
+        pat (str): The ADO access token.
+    """
+
+    org = patch_repo.split("/")[0]
+    project = patch_repo.split("/")[1]
+    repo = patch_repo.split("/")[2]
+    diff = []
+
+    if patch_pr and pat:
+        client = DevOpsClient(pat=pat, org=org, project=project, repository_id=repo)
+        pull_request = client.client.get_pull_request_by_id(pull_request_id=patch_pr)
+        diff = client.get_patches(pull_request_event=pull_request)
+
+        return diff
+
+    return diff
+
+
+def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str, pat: str) -> list:
     """Summarize pull requests.
 
     Args:
@@ -123,7 +149,7 @@ def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str) -> li
     summaries_list = []
     for pr_id in pull_request_ids_list:
         start = time.process_time()
-        diff = DevOpsClient.get_pr_diff(patch_repo, pr_id, access_token)
+        diff = get_pr_diff(patch_repo, pr_id, pat)
         if diff:
             summary = _summarize_pr_diff(diff=diff)
             print(time.process_time() - start)
@@ -209,7 +235,7 @@ def _load_config_file():
 config = _load_config_file()
 access_token = os.getenv(config.get("ado_token"))
 pull_request_ids = _load_pull_request_ids(config.get("pull_request_list"))
-summaries = _summarize_pull_requests(pull_request_ids, config.get("patch_repo"))
+summaries = _summarize_pull_requests(pull_request_ids, config.get("patch_repo"), access_token)
 final_summary = _get_final_summary(summaries)
 _print_to_file(FILE_SUMMARY_NAME, "\nThe final summary is:\n" + final_summary)
 

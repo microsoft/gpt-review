@@ -217,13 +217,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 patch.append(f"+ {right[row - 1]}")
                 row -= 1
 
-        while line > 0:
-            patch.append(f"- {left[line - 1]}")
-            line -= 1
+        # while line > 0:
+        #     patch.append(f"- {left[line - 1]}")
+        #     line -= 1
 
-        while row > 0:
-            patch.append(f"+ {right[row - 1]}")
-            row -= 1
+        # while row > 0:
+        #     patch.append(f"+ {right[row - 1]}")
+        #     row -= 1
+
+        patch.extend(f"- {left[i - 1]}" for i in range(0, line))
+        patch.extend(f"+ {right[j - 1]}" for j in range(0, row))
 
         patch.append(file_path)
         patch.reverse()
@@ -447,7 +450,7 @@ class DevOpsClient(_DevOpsClient):
         Args:
             patch_repo (str): The pointer to ADO in the format, org/project/repo
             patch_pr (str): The PR id.
-            access_token (str): The GitHub access token.
+            access_token (str): The ADO access token.
         """
 
         link = urllib.parse.unquote(
@@ -465,8 +468,9 @@ class DevOpsClient(_DevOpsClient):
             client = DevOpsClient(pat=access_token, org=org, project=project, repository_id=repo)
             pull_request = client.client.get_pull_request_by_id(pull_request_id=pr_id)
             diff = client.get_patches(pull_request_event=pull_request)
+            diff = "\n".join(diff)
 
-            return diff
+            return {"response": "PR posted"}
 
         logging.warning("No PR to post too")
         return {"response": "No PR to post too"}
