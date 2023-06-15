@@ -3,17 +3,17 @@ import csv
 import time
 from dataclasses import dataclass
 
+import constants as C
+
 from gpt_review.repositories.devops import DevOpsClient
 from gpt_review.prompts._prompt_pr_summary import load_batch_pr_summary_yaml, load_nature_yaml
 from gpt_review.prompts._prompt import load_summary_yaml
 from gpt_review._review import _ask
 
-import summarizations.constants as C
-
 FILE_SUMMARY_NAME = (
-    "/workspaces/gpt-review/src/summarizations/summaries/file_summary-"
+    "/workspaces/gpt-review/scripts/summarizations/summaries/file_summary-"
     + str(time.strftime("%b-%d-%Y %H:%M:%S"))
-    + ".csv"
+    + ".txt"
 )
 
 
