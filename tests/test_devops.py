@@ -68,7 +68,12 @@ LONG_PAYLOAD = {
                 "imageUrl": "https://msazure.visualstudio.com/_apis/GraphProfile/MemberAvatars/aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4",
                 "descriptor": "aad.OTgwYzcxNzEtMDI2Ni03YzVmLTk0YzEtMDNlYzU2YjViYjY4",
             },
-            "content": '```suggestion\n              inlineScript: |                \n                echo "##[section] Summarize Pull Request with Open AI"\n\n                echo "##[command]python3 -m pip install --upgrade pip"\n                python3 -m pip install --upgrade pip --quiet\n```\nhow could i update this code?',
+            "content": (
+                '```suggestion\n              inlineScript: |                \n                echo "##[section]'
+                ' Summarize Pull Request with Open AI"\n\n                echo "##[command]python3 -m pip install'
+                ' --upgrade pip"\n                python3 -m pip install --upgrade pip --quiet\n```\nhow could i update'
+                " this code?"
+            ),
             "publishedDate": "2023-05-13T00:30:56.68Z",
             "lastUpdatedDate": "2023-05-13T00:30:56.68Z",
             "lastContentUpdatedDate": "2023-05-13T00:30:56.68Z",
