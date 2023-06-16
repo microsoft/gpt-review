@@ -95,7 +95,10 @@ LONG_PAYLOAD = {
                 "project": {
                     "id": "b32aa71e-8ed2-41b2-9d77-5bc261222004",
                     "name": "One",
-                    "description": "MSAzure/One is the VSTS project containing all Azure team code bases and work items.\nPlease see https://aka.ms/azaccess for work item and source access policies.",
+                    "description": (
+                        "MSAzure/One is the VSTS project containing all Azure team code bases and work items.\nPlease"
+                        " see https://aka.ms/azaccess for work item and source access policies."
+                    ),
                     "url": "https://msazure.visualstudio.com/_apis/projects/b32aa71e-8ed2-41b2-9d77-5bc261222004",
                     "state": "wellFormed",
                     "revision": 307061,
