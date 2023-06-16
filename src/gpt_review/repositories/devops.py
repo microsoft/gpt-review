@@ -4,8 +4,14 @@ import itertools
 import json
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Tuple
+import urllib.parse
+from typing import Dict, Iterable, List, Tuple
 from urllib.parse import urlparse
+
+from knack import CLICommandsLoader
+from knack.arguments import ArgumentsContext
+from knack.commands import CommandGroup
+from msrest.authentication import BasicAuthentication
 
 from azure.devops.connection import Connection
 from azure.devops.exceptions import AzureDevOpsServiceError
@@ -14,24 +20,18 @@ from azure.devops.v7_1.git.models import (
     Comment,
     GitBaseVersionDescriptor,
     GitPullRequest,
+    GitCommitRef,
     GitTargetVersionDescriptor,
     GitVersionDescriptor,
     GitPullRequestCommentThread,
 )
-from knack import CLICommandsLoader
-from knack.arguments import ArgumentsContext
-from knack.commands import CommandGroup
-from msrest.authentication import BasicAuthentication
-
 
 from gpt_review._ask import _ask
 from gpt_review._command import GPTCommandGroup
 from gpt_review._review import _summarize_files
 from gpt_review.prompts._prompt import load_ask_yaml
 from gpt_review.repositories._repository import _RepositoryClient
-
-MIN_CONTEXT_LINES = 5
-SURROUNDING_CONTEXT = 5
+import gpt_review.repositories.devops_constants as C
 
 
 class _DevOpsClient(_RepositoryClient, abc.ABC):
@@ -193,6 +193,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             List: The patch.
         """
+
         changes = [[0] * (len(right) + 1) for _ in range(len(left) + 1)]
 
         for i, j in itertools.product(range(len(left)), range(len(right))):
@@ -200,23 +201,26 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
                 changes[i][j] if left[i] == right[j] else 1 + min(changes[i][j + 1], changes[i + 1][j], changes[i][j])
             )
 
-        line, row = 1, 1
-        patch = [file_path]
-
-        while line < len(left) and row < len(right):
-            if changes[line][row] == changes[line - 1][row - 1]:
-                patch.append(left[line - 1])
-                line += 1
-                row += 1
+        patch = []
+        line, row = len(left), len(right)
+        while line > 0 and row > 0:
+            if changes[line][row] <= changes[line - 1][row] and changes[line][row] <= changes[line][row - 1]:
+                if left[line - 1] != right[row - 1]:
+                    patch.append(f"+ {right[row - 1]}")
+                    patch.append(f"- {left[line - 1]}")
+                line -= 1
+                row -= 1
             elif changes[line - 1][row] < changes[line][row - 1]:
                 patch.append(f"- {left[line - 1]}")
-                line += 1
+                line -= 1
             else:
                 patch.append(f"+ {right[row - 1]}")
-                row += 1
+                row -= 1
 
-        patch.extend(f"- {left[i - 1]}" for i in range(line, len(left) + 1))
-        patch.extend(f"+ {right[j - 1]}" for j in range(row, len(right) + 1))
+        patch.extend(f"- {left[i - 1]}" for i in range(0, line))
+        patch.extend(f"+ {right[j - 1]}" for j in range(0, row))
+        patch.append(file_path)
+        patch.reverse()
 
         return patch
 
@@ -232,10 +236,10 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
             Tuple[str, str]: The left and right selection.
         """
 
-        original_content, changed_content = self._load_content(file_path=thread.file_path, commit_id=commit_id)
+        original_content, changed_content = self._load_content(file_path=thread.file_path, commit_id_changed=commit_id)
 
         def get_selection(lines: str, line_start: int, line_end: int) -> str:
-            return lines[line_start - 1 : line_end] if line_end - line_start >= MIN_CONTEXT_LINES else lines
+            return lines[line_start - 1 : line_end] if line_end - line_start >= C.MIN_CONTEXT_LINES else lines
 
         left_selection = (
             get_selection(original_content, thread.left_file_start.line, thread.left_file_end.line)
@@ -251,6 +255,54 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
 
         return left_selection, right_selection
 
+    def create_git_commit_ref_from_dict(self, commit_dict: Dict) -> GitCommitRef:
+        """Create a GitCommitRef object from a dictionary.
+
+        Args:
+            commit_dict (Dict): The dictionary to create the GitCommitRef object from.
+
+        Returns:
+            GitCommitRef: The GitCommitRef object.
+        """
+        return GitCommitRef(commit_id=commit_dict["commitId"], url=commit_dict["url"])
+
+    def create_git_pull_request_from_dict(self, pr_dict: Dict) -> GitPullRequest:
+        """Create a GitPullRequest object from a dictionary.
+
+        Args:
+            pr_dict (Dict): The dictionary to create the GitPullRequest object from.
+
+        Returns:
+            GitPullRequest: The GitPullRequest object.
+        """
+        pull_request = GitPullRequest(
+            title=pr_dict["title"],
+            description=pr_dict["description"],
+            source_ref_name=pr_dict["sourceRefName"],
+            target_ref_name=pr_dict["targetRefName"],
+            is_draft=pr_dict["isDraft"],
+            reviewers=pr_dict["reviewers"],
+            supports_iterations=pr_dict["supportsIterations"],
+            artifact_id=pr_dict["artifactId"],
+            status=pr_dict["status"],
+            created_by=pr_dict["createdBy"],
+            creation_date=pr_dict["creationDate"],
+            last_merge_source_commit=pr_dict["lastMergeSourceCommit"],
+            last_merge_target_commit=pr_dict["lastMergeTargetCommit"],
+            last_merge_commit=pr_dict["lastMergeCommit"],
+            url=pr_dict["url"],
+            repository=pr_dict["repository"],
+            merge_id=pr_dict["mergeId"],
+        )
+        pull_request.last_merge_source_commit = self.create_git_commit_ref_from_dict(
+            pull_request.last_merge_source_commit
+        )
+        pull_request.last_merge_target_commit = self.create_git_commit_ref_from_dict(
+            pull_request.last_merge_target_commit
+        )
+        pull_request.last_merge_commit = self.create_git_commit_ref_from_dict(pull_request.last_merge_commit)
+        return pull_request
+
     def get_patches(self, pull_request_event) -> Iterable[List[str]]:
         """
         Get the patches for a given pull request event.
@@ -261,13 +313,14 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         Returns:
             Iterable[List[str]]: An iterable of lists containing the patches for the pull request event.
         """
-        pull_request = pull_request_event["pullRequest"]
+
+        if isinstance(pull_request_event, dict):
+            pull_request = self.create_git_pull_request_from_dict(pull_request_event["pullRequest"])
+        else:
+            pull_request = pull_request_event
 
         git_changes = self._get_changed_blobs(pull_request)
-        return [
-            self._get_change(git_change, pull_request["lastMergeSourceCommit"]["commitId"])
-            for git_change in git_changes
-        ]
+        return [self._get_change(git_change, pull_request.last_merge_commit.commit_id) for git_change in git_changes]
 
     def _get_changed_blobs(self, pull_request: GitPullRequest) -> List[str]:
         """
@@ -283,16 +336,16 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         pr_commits = None
 
         skip = 0
-        while True:
+        while pull_request.status != C.PR_TYPE_ABANDONED:
             pr_commits = self.client.get_commit_diffs(
                 repository_id=self.repository_id,
                 project=self.project,
                 diff_common_commit=False,
                 base_version_descriptor=GitBaseVersionDescriptor(
-                    base_version=pull_request["lastMergeSourceCommit"]["commitId"], base_version_type="commit"
+                    base_version=pull_request.last_merge_commit.commit_id, base_version_type="commit"
                 ),
                 target_version_descriptor=GitTargetVersionDescriptor(
-                    target_version=pull_request["lastMergeTargetCommit"]["commitId"], target_version_type="commit"
+                    target_version=pull_request.last_merge_target_commit.commit_id, target_version_type="commit"
                 ),
             )
             changed_paths.extend([change for change in pr_commits.changes if "isFolder" not in change["item"]])
@@ -305,13 +358,22 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
     def _get_change(self, git_change, commit_id) -> List[str]:
         file_path = git_change["item"]["path"]
 
-        original_content, changed_content = self._load_content(file_path, commit_id)
+        original_content, changed_content = self._load_content(
+            file_path, commit_id_original=git_change["item"]["commitId"], commit_id_changed=commit_id
+        )
 
         patch = self._create_patch(original_content, changed_content, file_path)
         return "\n".join(patch)
 
-    def _load_content(self, file_path, commit_id):
-        return self.read_all_text(file_path), self.read_all_text(file_path, commit_id=commit_id)
+    def _load_content(
+        self,
+        file_path,
+        commit_id_original: str = None,
+        commit_id_changed: str = None,
+    ):
+        return self.read_all_text(file_path, commit_id=commit_id_original), self.read_all_text(
+            file_path, commit_id=commit_id_changed
+        )
 
 
 class DevOpsClient(_DevOpsClient):
@@ -330,6 +392,8 @@ class DevOpsClient(_DevOpsClient):
 
         Args:
             diff (str): The patch of the PR.
+            link (str, optional): The link to the PR. Defaults to None.
+            access_token (str, optional): The GitHub access token. Defaults to None.
 
         Returns:
             Dict[str, str]: The review.
@@ -374,16 +438,17 @@ class DevOpsClient(_DevOpsClient):
 
         Args:
             patch_repo (str): The pointer to ADO in the format, org/project/repo
-            patch_pr (str): The PR.
-            access_token (str): The GitHub access token.
-
-        Returns:
-            str: The diff of the PR.
+            patch_pr (str): The PR id.
+            access_token (str): The ADO access token.
         """
-        link = os.getenv(
-            "LINK",
-            f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+
+        link = urllib.parse.unquote(
+            os.getenv(
+                "LINK",
+                f"https://{patch_repo.split('/')[0]}.visualstudio.com/{patch_repo.split('/')[1]}/_git/{patch_repo.split('/')[2]}/pullrequest/{patch_pr}",
+            )
         )
+
         access_token = os.getenv("ADO_TOKEN", access_token)
 
         if link and access_token:
@@ -531,8 +596,7 @@ def _review(repository=None, pull_request=None, diff: str = ".diff", link=None, 
         with open(diff, "r", encoding="utf8") as file:
             diff_contents = file.read()
 
-    DevOpsClient.post_pr_summary(diff_contents, link, access_token)
-    return {"response": "Review posted as a comment."}
+    return DevOpsClient.post_pr_summary(diff_contents, link, access_token)
 
 
 def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, access_token=None) -> Dict[str, str]:
