@@ -50,9 +50,7 @@ def _load_pull_request_ids(file_path: str) -> list:
     pull_request_ids_list = []
     with open(file_path, "r", encoding="utf-8") as file:
         csv_file = csv.reader(file)
-        for line in csv_file:
-            if line[0].isdigit():
-                pull_request_ids_list.append(line[0])
+        pull_request_ids_list.extend(line[0] for line in csv_file if line[0].isdigit())
     return pull_request_ids_list
 
 
@@ -104,8 +102,7 @@ def _summarize_pr_diff(diff) -> str:
         str: The summary.
     """
     summary = ""
-    file_summary = ""
-    file_summary += "".join(_summarize_file(file_diff) for file_diff in diff)
+    file_summary = "" + "".join(_summarize_file(file_diff) for file_diff in diff)
     summary += _request_goal(file_summary, goal="Summarize the changes to the files.")
 
     return summary
@@ -124,16 +121,11 @@ def get_pr_diff(patch_repo=None, patch_pr=None, pat=None) -> list:
     org = patch_repo.split("/")[0]
     project = patch_repo.split("/")[1]
     repo = patch_repo.split("/")[2]
-    diff = []
-
     if patch_pr and pat:
         client = DevOpsClient(pat=pat, org=org, project=project, repository_id=repo)
         pull_request = client.client.get_pull_request_by_id(pull_request_id=patch_pr)
-        diff = client.get_patches(pull_request_event=pull_request)
-
-        return diff
-
-    return diff
+        return client.get_patches(pull_request_event=pull_request)
+    return []
 
 
 def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str, pat: str) -> list:
@@ -149,8 +141,7 @@ def _summarize_pull_requests(pull_request_ids_list: list, patch_repo: str, pat: 
     summaries_list = []
     for pr_id in pull_request_ids_list:
         start = time.process_time()
-        diff = get_pr_diff(patch_repo, pr_id, pat)
-        if diff:
+        if diff := get_pr_diff(patch_repo, pr_id, pat):
             summary = _summarize_pr_diff(diff=diff)
             print(time.process_time() - start)
             summaries_list.append(summary)
@@ -170,8 +161,7 @@ def _summarize_summary_batch(summary_batch: list) -> str:
     """
 
     question = load_batch_pr_summary_yaml().format(summaries=summary_batch)
-    response = _ask(question=[question], temperature=0.0)
-    return response
+    return _ask(question=[question], temperature=0.0)
 
 
 def _summarize_summaries(summaries_list: list) -> list:

@@ -206,8 +206,7 @@ class _DevOpsClient(_RepositoryClient, abc.ABC):
         while line > 0 and row > 0:
             if changes[line][row] <= changes[line - 1][row] and changes[line][row] <= changes[line][row - 1]:
                 if left[line - 1] != right[row - 1]:
-                    patch.append(f"+ {right[row - 1]}")
-                    patch.append(f"- {left[line - 1]}")
+                    patch.extend((f"+ {right[row - 1]}", f"- {left[line - 1]}"))
                 line -= 1
                 row -= 1
             elif changes[line - 1][row] < changes[line][row - 1]:
