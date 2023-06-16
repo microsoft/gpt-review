@@ -44,7 +44,12 @@ LONG_PAYLOAD = {
     "publisherId": "tfs",
     "message": {"text": "Daniel Ciborowski has replied to a pull request comment"},
     "detailedMessage": {
-        "text": 'Daniel Ciborowski has replied to a pull request comment\r\n```suggestion\n              inlineScript: |                \n                echo "##[section] Summarize Pull Request with Open AI"\n\n                echo "##[command]python3 -m pip install --upgrade pip"\n                python3 -m pip install --upgrade pip --quiet\n```\nhow could i update this code?\r\n'
+        "text": (
+            "Daniel Ciborowski has replied to a pull request comment\r\n```suggestion\n              inlineScript: |   "
+            '             \n                echo "##[section] Summarize Pull Request with Open AI"\n\n               '
+            ' echo "##[command]python3 -m pip install --upgrade pip"\n                python3 -m pip install --upgrade'
+            " pip --quiet\n```\nhow could i update this code?\r\n"
+        )
     },
     "resource": {
         "comment": {
