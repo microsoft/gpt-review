@@ -625,9 +625,9 @@ def _comment(question: str, comment_id: int, diff: str = ".diff", link=None, acc
         response = _ask(
             question=question,
         )
-        parsed_url = urlparse(link)
+        host = urlparse(link).hostname
 
-        if "dev.azure.com" in parsed_url.netloc:
+        if host and host.endswith("dev.azure.com"):
             org = link.split("/")[3]
             project = link.split("/")[4]
             repo = link.split("/")[6]
