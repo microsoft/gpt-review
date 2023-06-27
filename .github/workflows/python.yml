@@ -20,8 +20,9 @@ jobs:
       fail-fast: false
       matrix:
         tools: ['black', 'bandit', 'pylint', 'flake8']
+        python: ['3.10'] # '3.11.3'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -31,7 +32,7 @@ jobs:
           ${{ matrix.tools }}: true
           workdir: '.'
           testdir: 'tests'
-          python_version: '3.11.3'
+          python_version: ${{ matrix.python }}
 
   tests:
     runs-on: ubuntu-latest
@@ -45,11 +46,14 @@ jobs:
         args: ['-m unit']
         flags: ['unittests']
         include:
+          - python: 3.10
+            args: -m integration
+            flags: integration
           - python: 3.11
             args: -m integration
             flags: integration
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Azure/login@v1.4.6
@@ -69,7 +73,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           token: ${{ secrets.PAT }}
