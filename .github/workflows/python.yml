@@ -56,6 +56,18 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest allure-pytest
+
+      - name: ${{ matrix.tools }}
+        uses: microsoft/action-python@0.6.3
+        with:
+          pytest: true
+          args: -m unit --alluredir=allure-results
+
       - uses: Azure/login@v1.4.6
         if: ${{ matrix.flags == 'integration' }}
         with:
@@ -69,6 +81,32 @@ jobs:
           testdir: 'tests'
           python_version: ${{ matrix.python }}
           flags: ${{ matrix.flags }}-${{ matrix.python }}
+
+      - name: Get Allure history
+        uses: actions/checkout@v2
+        if: always()
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Allure Report action from marketplace
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-history
+
+      - uses: everpcpc/comment-on-pr-action@v1
+        with:
+          body: '[Pull Request Test Summary](https://microsoft.github.io/gpt-review/${{ github.run_number }})'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
     runs-on: ubuntu-latest

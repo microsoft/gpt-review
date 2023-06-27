@@ -1,0 +1,74 @@
+name: allure-python-pytest
+
+on:
+  pull_request:
+
+jobs:
+  autotests:
+    name: Run tests and generate Allure Report
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python: ['3.8', '3.9', '3.10', '3.11']
+        args: ['-m unit']
+        flags: ['unittests']
+        include:
+          - python: 3.11
+            args: -m integration
+            flags: integration
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest allure-pytest
+
+      - uses: Azure/login@v1.4.6
+        if: ${{ matrix.flags == 'integration' }}
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: ${{ matrix.flags }}-${{ matrix.python }}
+        uses: microsoft/action-python@0.6.3
+        with:
+          pytest: true
+          args: '${{ matrix.args }} --alluredir=allure-results'
+          workdir: '.'
+          testdir: 'tests'
+          python_version: ${{ matrix.python }}
+          flags: ${{ matrix.flags }}-${{ matrix.python }}
+
+      - name: Get Allure history
+        uses: actions/checkout@v2
+        if: always()
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Allure Report action from marketplace
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        with:
+          allure_results: allure-results
+          allure_history: allure-history
+
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: allure-history
+
+#       - name: Deploy report to Github Pages
+#         if: always()
+#         uses: peaceiris/actions-gh-pages@v3
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           publish_dir: allure-history
+
+      - uses: everpcpc/comment-on-pr-action@v1
+        with:
+          body: '[Pull Request Test Summary](https://microsoft.github.io/gpt-review/${{ github.run_number }})'
+          token: ${{ secrets.GITHUB_TOKEN }}
