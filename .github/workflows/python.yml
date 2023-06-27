@@ -45,6 +45,9 @@ jobs:
         args: ['-m unit']
         flags: ['unittests']
         include:
+          - python: 3.10
+            args: -m integration
+            flags: integration
           - python: 3.11
             args: -m integration
             flags: integration
