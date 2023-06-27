@@ -31,7 +31,7 @@ jobs:
           ${{ matrix.tools }}: true
           workdir: '.'
           testdir: 'tests'
-          python_version: '3.11.3'
+          python_version: '3.10'
 
   tests:
     runs-on: ubuntu-latest
