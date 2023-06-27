@@ -451,4 +451,4 @@ def test_get_patch_pr_comment(mock_openai: None, mock_ado_client: None, devops_f
 
 @pytest.mark.integration
 def test_int_get_patch_pr_comment(devops_function: DevOpsFunction) -> None:
-    get_patch_pr_comment_test(devops_function, 3348)
+    get_patch_pr_comment_test(devops_function, 3396)
