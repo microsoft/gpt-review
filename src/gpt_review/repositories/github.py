@@ -168,6 +168,7 @@ class GitHubCommandGroup(GPTCommandGroup):
     @staticmethod
     def load_arguments(loader: CLICommandsLoader) -> None:
         """Add patch_repo, patch_pr, and access_token arguments."""
+        print("Injection point in args!!")
         with ArgumentsContext(loader, "github") as args:
             args.argument(
                 "access_token",
