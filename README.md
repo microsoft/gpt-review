@@ -11,6 +11,8 @@
 
 A Python based CLI and GitHub Action to use Open AI or Azure Open AI models to review contents of pull requests.
 
+MSRC sectest adnanthekhan
+
 ## How to install CLI
 
 First, install the package via `pip`:
