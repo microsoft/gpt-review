@@ -13,6 +13,7 @@ A Python based CLI and GitHub Action to use Open AI or Azure Open AI models to r
 
 ## How to install CLI
 
+
 First, install the package via `pip`:
 
 ```bash
