@@ -27,7 +27,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.7.0
+        uses: microsoft/action-python@0.7.1
         with:
           ${{ matrix.tools }}: true
           workdir: '.'
@@ -61,7 +61,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.7.0
+        uses: microsoft/action-python@0.7.1
         with:
           pytest: true
           args: ${{ matrix.args }}
@@ -107,7 +107,7 @@ jobs:
         run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?.*)(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
 
       - name: Publish Snapshot to TestPyPi
-        uses: microsoft/action-python@0.7.0
+        uses: microsoft/action-python@0.7.1
         continue-on-error: true
         if: ${{ github.event_name == 'pull_request_target' }}
         with:
@@ -119,7 +119,7 @@ jobs:
           python_version: '3.11.3'
 
       - name: Publish RC to PyPi
-        uses: microsoft/action-python@0.7.0
+        uses: microsoft/action-python@0.7.1
         if: ${{ github.event_name == 'push' }}
         with:
           pypi_publish: true
@@ -129,7 +129,7 @@ jobs:
           python_version: '3.11.3'
 
       - name: Publish Release to PyPi
-        uses: microsoft/action-python@0.7.0
+        uses: microsoft/action-python@0.7.1
         if: ${{ github.event_name == 'release' }}
         with:
           pypi_publish: true
