@@ -145,3 +145,15 @@ __blobstorage__
 __queuestorage__
 __azurite_db*__.json
 .python_packages
+
+#summarization development
+scripts/summarizations/msazure.yaml
+scripts/summarizations/msdata.yaml
+scripts/summarizations/msazure_pull_request_list.csv
+scripts/summarizations/msdata_pull_request_list.csv
+scripts/summarizations/summaries/
+src/gpt_review/prompts/prompt_pr_batch_summary.yaml
+src/gpt_review/prompts/prompt_nature.yaml
+src/gpt_review/prompts/prompt_pr_summary.yaml
+
+

@@ -42,3 +42,9 @@ def load_summary_yaml() -> LangChainPrompt:
     """Load the summary yaml."""
     yaml_path = os.getenv("PROMPT_SUMMARY", str(Path(__file__).parents[0].joinpath(C.SUMMARY_PROMPT_YAML)))
     return LangChainPrompt.load(yaml_path)
+
+
+def load_ask_yaml() -> LangChainPrompt:
+    """Load the summary yaml."""
+    yaml_path = os.getenv("PROMPT_ASK", str(Path(__file__).parents[0].joinpath(C.ASK_PROMPT_YAML)))
+    return LangChainPrompt.load(yaml_path)

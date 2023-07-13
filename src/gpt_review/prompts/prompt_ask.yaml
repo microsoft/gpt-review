@@ -1,0 +1,7 @@
+_type: prompt
+input_variables:
+    ["diff", "ask"]
+template: |
+  {diff}
+
+  {ask}
