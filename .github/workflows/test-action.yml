@@ -1,61 +1,62 @@
-on: [pull_request_target]
+# Disable
+# on: [pull_request_target]
 
-jobs:
-  add_pr_comment:
-    permissions: write-all
-    runs-on: ubuntu-latest
-    name: OpenAI PR Comment
-    env:
-      GIT_COMMIT_HASH: ${{ github.event.pull_request.head.sha }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      PR_TITLE: ${{ github.event.pull_request.title }}
-      REPOSITORY_NAME: ${{ github.repository }}
-      AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
-      FILE_SUMMARY: false
-      TEST_SUMMARY: false
-      BUG_SUMMARY: false
-      RISK_SUMMARY: false
-      RISK_BREAKING: false
+# jobs:
+#   add_pr_comment:
+#     permissions: write-all
+#     runs-on: ubuntu-latest
+#     name: OpenAI PR Comment
+#     env:
+#       GIT_COMMIT_HASH: ${{ github.event.pull_request.head.sha }}
+#       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#       PR_NUMBER: ${{ github.event.pull_request.number }}
+#       PR_TITLE: ${{ github.event.pull_request.title }}
+#       REPOSITORY_NAME: ${{ github.repository }}
+#       AZURE_OPENAI_API: ${{ secrets.AZURE_OPENAI_API }}
+#       AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+#       LINK: "https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}"
+#       FILE_SUMMARY: false
+#       TEST_SUMMARY: false
+#       BUG_SUMMARY: false
+#       RISK_SUMMARY: false
+#       RISK_BREAKING: false
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
+#     steps:
+#       - uses: actions/checkout@v3
+#         with:
+#           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.11
+#       - name: Set up Python 3.11
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: 3.11
 
-      - uses: Azure/login@v1.4.6
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+#       - uses: Azure/login@v1.4.6
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - run: |
-          sudo apt-get update
-          python3 -m venv .env
-          source .env/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install gpt-review\
+#       - run: |
+#           sudo apt-get update
+#           python3 -m venv .env
+#           source .env/bin/activate
+#           python -m pip install --upgrade pip
+#           python -m pip install gpt-review\
 
-      - run: |
-          source .env/bin/activate
+#       - run: |
+#           source .env/bin/activate
 
-          gpt github review \
-            --access-token $GITHUB_TOKEN \
-            --pull-request $PR_NUMBER \
-            --repository $REPOSITORY_NAME
-        continue-on-error: true
+#           gpt github review \
+#             --access-token $GITHUB_TOKEN \
+#             --pull-request $PR_NUMBER \
+#             --repository $REPOSITORY_NAME
+#         continue-on-error: true
 
-      - run: |
-          source .env/bin/activate
+#       - run: |
+#           source .env/bin/activate
 
-          pip install -e .
+#           pip install -e .
 
-          gpt github review \
-            --access-token $GITHUB_TOKEN \
-            --pull-request $PR_NUMBER \
-            --repository $REPOSITORY_NAME
+#           gpt github review \
+#             --access-token $GITHUB_TOKEN \
+#             --pull-request $PR_NUMBER \
+#             --repository $REPOSITORY_NAME
