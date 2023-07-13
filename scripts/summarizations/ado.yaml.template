@@ -1,0 +1,3 @@
+ado_token : ADO_TOKEN
+pull_request_list : "path/to/pull/request/list/file"
+patch_repo : "org/project/repo"

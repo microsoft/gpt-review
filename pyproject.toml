@@ -97,7 +97,8 @@ omit = [
 fail_under = 100
 
 [tool.flake8]
-max-line-length = 120
+# Give black some extra room to work
+max-line-length = 160
 select = "F,E,W,B,B901,B902,B903"
 exclude = [
     ".eggs",
