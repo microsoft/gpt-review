@@ -22,7 +22,7 @@ jobs:
         tools: ['black', 'bandit', 'pylint', 'flake8']
         python: ['3.10'] # '3.11.3'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -53,7 +53,7 @@ jobs:
             args: -m integration
             flags: integration
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: Azure/login@v1.4.6
@@ -73,7 +73,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           token: ${{ secrets.PAT }}
