@@ -3,6 +3,7 @@ import logging
 import os
 
 import openai
+import litellm
 from openai.error import RateLimitError
 
 import gpt_review.constants as C
@@ -88,7 +89,7 @@ def _call_gpt(
 
         if os.environ.get("OPENAI_API_TYPE", "") == C.AZURE_API_TYPE:
             logging.debug("Using Azure Open AI.")
-            completion = openai.ChatCompletion.create(
+            completion = litellm.completion(
                 deployment_id=model,
                 messages=messages,
                 max_tokens=max_tokens,
@@ -96,10 +97,11 @@ def _call_gpt(
                 top_p=top_p,
                 frequency_penalty=frequency_penalty,
                 presence_penalty=presence_penalty,
+                azure=True,
             )
         else:
             logging.debug("Using Open AI.")
-            completion = openai.ChatCompletion.create(
+            completion = litellm.completion(
                 model=model,
                 messages=messages,
                 max_tokens=max_tokens,
