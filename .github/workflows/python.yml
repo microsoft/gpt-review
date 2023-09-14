@@ -74,9 +74,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        if: ${{ github.event_name == 'release' }}
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           token: ${{ secrets.PAT }}
+
+      - uses: actions/checkout@v2
+        if: ${{ github.event_name != 'release' }}
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - uses: actions/setup-python@v4
         with:
