@@ -37,3 +37,5 @@ AZURE_KEY_VAULT = "https://dciborow-openai.vault.azure.net/"
 BUG_PROMPT_YAML = "prompt_bug.yaml"
 COVERAGE_PROMPT_YAML = "prompt_coverage.yaml"
 SUMMARY_PROMPT_YAML = "prompt_summary.yaml"
+
+RESPONSE_LANG = None
