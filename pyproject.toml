@@ -39,7 +39,7 @@ dependencies = [
 
 [project.optional-dependencies]
 test = [
-    "bandit[toml]==1.7.5",
+    "bandit[toml]==1.7.6",
     "black==23.3.0",
     "cattrs",
     "docx2txt",
