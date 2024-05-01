@@ -9,7 +9,7 @@
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 </p>
 
-A Python based CLI and GitHub Action to use Open AI or Azure Open AI models to review contents of pull requests.
+A Python based CLI and GitHub Action to use Open AI or Azure OpenAI models to review contents of pull requests.
 
 ## How to install CLI
 
