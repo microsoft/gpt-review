@@ -1,5 +1,4 @@
 # gpt-review
-
 <p align="center">
 <a href="https://github.com/microsoft/gpt-review/actions"><img alt="Actions Status" src="https://github.com/microsoft/gpt-review/workflows/Python%20CI/badge.svg"></a>
 <a href="https://codecov.io/gh/microsoft/gpt-review"><img alt="Coverage Status" src="https://codecov.io/gh/microsoft/gpt-review/branch/main/graph/badge.svg"></a>
