@@ -1,0 +1,27 @@
+{
+  "mappings": [
+    {
+      "paths": ["src/**/*.py"],
+      "items": ["Python code includes tests"]
+    },
+    {
+      "triggers": [
+        "connection",
+        "session",
+        "CloseableHttpClient",
+        "HttpClient"
+      ],
+      "items": [
+        "Resources have been closed in finally block or using try-with-resources"
+      ]
+    },
+    {
+      "triggers": ["RequestMapping", "GetMapping", "PostMapping", "PutMapping"],
+      "items": ["Endpoint URLs exposed by application use only small case"]
+    },
+    {
+      "triggers": ["keyword1", "keyword2"],
+      "items": ["reminder about keywords", "another reminder about keywords"]
+    }
+  ]
+}
