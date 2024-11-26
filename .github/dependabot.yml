@@ -4,7 +4,23 @@
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
+registries:
+  my-nuget-feed:
+    type: nuget-feed
+    url: https://msazure.pkgs.visualstudio.com/One/_packaging/azure-core-quality-engineering/nuget/v3/index.json
+    username: dciborow@microsoft.com
+    password: ${{secrets.DEVOPS_PAT}}
+
 updates:
+- package-ecosystem: "nuget"
+  directory: "/" # Location of package manifests
+  schedule:
+    interval: "daily"
+  commit-message:
+    prefix: "fix: "
+  registries:
+    - my-nuget-feed
+
 - package-ecosystem: pip
   directory: "/"
   schedule:
@@ -18,6 +34,7 @@ updates:
   allow:
   - dependency-type: direct
   - dependency-type: indirect
+
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
