@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- This is the list of common SDKs used by .net core projects
+        when referencing SDKs via PackageReference in project files
+        do not include version.
+  -->
+  <ItemGroup>
+    <PackageVersion Include="Azure.AI.OpenAI" Version="1.0.0-beta.17" />
+    <PackageVersion Include="Azure.Core" Version="1.44.1" />
+    <PackageVersion Include="Azure.Data.Tables" Version="12.8.2" />
+    <PackageVersion Include="Azure.Identity" Version="1.12.0" />
+    <PackageVersion Include="Azure.Messaging.EventHubs" Version="5.11.5" />
+    <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.6.0" />
+    <PackageVersion Include="Azure.Storage.Blobs" Version="12.22.2" />
+    <PackageVersion Include="DiffPlex" Version="1.7.1" />
+    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.22.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="1.23.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.DurableTask" Version="1.0.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.17.2" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Data" Version="12.2.6" />
+    <PackageVersion Include="Microsoft.Azure.Kusto.Ingest" Version="12.2.6" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.10.0" />
+    <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="4.2.1" />
+    <PackageVersion Include="Microsoft.Cosmos.VcClient" Version="2.0.28" />
+    <PackageVersion Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.2" />
+    <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.7.3" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.Identity.ServiceEssentials.AspNetCore" Version="1.25.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.S2S.Extensions.AspNetCore" Version="3.31.1" />
+    <PackageVersion Include="Microsoft.Internal.CodeSign.CloudBuild" Version="[7.2.0]" />
+    <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.4.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.NETCore.Targets" Version="3.0.0" />
+    <PackageVersion Include="Microsoft.Rest.ClientRuntime" Version="2.3.24" />
+    <PackageVersion Include="Microsoft.Search.ObjectStore.AspCompliantBond3Client" Version="7.154.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.27.0" />
+    <PackageVersion Include="Microsoft.TeamFoundationServer.Client" Version="19.225.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Services.Client" Version="19.244.202409303" />
+    <PackageVersion Include="Microsoft.VisualStudio.Services.Search.Client" Version="19.225.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Services.ServiceHooks.WebApi" Version="19.225.1" />
+    <PackageVersion Include="Newtonsoft.json" Version="13.0.3" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.1.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.6.1" />
+    <PackageVersion Include="Polly" Version="8.2.1" />
+    <PackageVersion Include="SharpYaml" Version="2.1.1" />
+    <PackageVersion Include="System.CommandLine" Version="[2.0.0-beta4.22272.1]" />
+    <PackageVersion Include="System.CommandLine.NamingConventionBinder" Version="[2.0.0-beta4.22272.1]" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.1.2" />
+    <PackageVersion Include="YamlDotNet" Version="13.1.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="8.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="8.8.0" />
+    <PackageVersion Include="BlazorFluentUI.CoreComponents" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.10" />
+    <PackageVersion Include="Microsoft.Fast.Components.FluentUI" Version="3.7.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.6" />
+    <PackageVersion Include="Azure.Messaging.ServiceBus" Version="7.17.5" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Polly" Version="8.0.6" />
+    <PackageVersion Include="Unity" Version="5.11.10" />
+  </ItemGroup>
+  <ItemGroup Label="Code Analzyers">
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="[8.0.0]" />
+    <PackageVersion Include="Microsoft.Internal.Analyzers" Version="[2.9.7]" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
+  </ItemGroup>
+
+  <ItemGroup Label="Test Packages">
+    <PackageVersion Include="coverlet.msbuild" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="coverlet.collector" Version="6.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+  </ItemGroup>
+</Project>
