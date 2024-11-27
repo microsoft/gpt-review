@@ -1,0 +1,9 @@
+_type: prompt
+input_variables:
+    ["diff"]
+template: |
+  Summarize the following list of file diffs,
+  focusing on major modifications, additions, deletions, and any significant updates within the files.
+  Do not include the file name in the summary and list the summary with bullet points.
+
+  {diff}
