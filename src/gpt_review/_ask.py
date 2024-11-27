@@ -1,4 +1,5 @@
 """Ask GPT a question."""
+import os
 import logging
 from typing import Dict, List, Optional
 
@@ -102,6 +103,10 @@ def _ask(
     _load_azure_openai_context()
 
     prompt = "".join(question)
+
+    response_lang = os.getenv("RESPONSE_LANG")
+    if response_lang:
+        prompt = "Please reply in " + response_lang + prompt
 
     if files or directory or repository:
         response = _query_index(
