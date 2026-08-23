@@ -44,3 +44,5 @@ updates:
     prefix: "fix: "
   reviewers:
   - dciborow
+  cooldown:
+    default-days: 7

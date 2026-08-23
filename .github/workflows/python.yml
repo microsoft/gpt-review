@@ -22,12 +22,12 @@ jobs:
         tools: ['black', 'bandit', 'pylint', 'flake8']
         python: ['3.10'] # '3.11.3'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.7.1
+        uses: microsoft/action-python@00a1b4b98b48da3404eee8440de577dfc89fcb86 # 0.7.1
         with:
           ${{ matrix.tools }}: true
           workdir: '.'
@@ -53,15 +53,15 @@ jobs:
             args: -m integration
             flags: integration
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: Azure/login@v1.4.6
+      - uses: Azure/login@92a5484dfaf04ca78a94597f4f19fea633851fa2 # v1.4.6
         if: ${{ matrix.flags == 'integration' }}
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: ${{ matrix.tools }}
-        uses: microsoft/action-python@0.7.1
+        uses: microsoft/action-python@00a1b4b98b48da3404eee8440de577dfc89fcb86 # 0.7.1
         with:
           pytest: true
           args: ${{ matrix.args }}
@@ -73,25 +73,25 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         if: ${{ github.event_name == 'release' }}
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           token: ${{ secrets.PAT }}
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
         if: ${{ github.event_name != 'release' }}
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
         with:
           python-version: '3.11.3'
           cache: 'pip' # caching pip dependencies
 
       - name: Bump version and push tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2 # v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           dry_run: true
@@ -113,7 +113,7 @@ jobs:
         run: sed -ri 's/(__version__ = ")([0-9]+\.[0-9]+\.[0-9]+?.*)(")/\1'"$VERSION"'\3/' "src/gpt_review/__init__.py" || exit 1
 
       - name: Publish Snapshot to TestPyPi
-        uses: microsoft/action-python@0.7.1
+        uses: microsoft/action-python@00a1b4b98b48da3404eee8440de577dfc89fcb86 # 0.7.1
         continue-on-error: true
         if: ${{ github.event_name == 'pull_request_target' }}
         with:
@@ -125,7 +125,7 @@ jobs:
           python_version: '3.11.3'
 
       - name: Publish RC to PyPi
-        uses: microsoft/action-python@0.7.1
+        uses: microsoft/action-python@00a1b4b98b48da3404eee8440de577dfc89fcb86 # 0.7.1
         if: ${{ github.event_name == 'push' }}
         with:
           pypi_publish: true
@@ -135,7 +135,7 @@ jobs:
           python_version: '3.11.3'
 
       - name: Publish Release to PyPi
-        uses: microsoft/action-python@0.7.1
+        uses: microsoft/action-python@00a1b4b98b48da3404eee8440de577dfc89fcb86 # 0.7.1
         if: ${{ github.event_name == 'release' }}
         with:
           pypi_publish: true
